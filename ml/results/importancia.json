@@ -3,62 +3,77 @@
     {
       "variable": "G1",
       "nombre": "Nota del primer periodo",
-      "importancia": 0.2837
+      "importancia": 0.2882
     },
     {
       "variable": "es_matematicas",
       "nombre": "Asignatura (Matemáticas)",
-      "importancia": 0.0373
+      "importancia": 0.0448
     },
     {
       "variable": "failures",
       "nombre": "Suspensos previos",
-      "importancia": 0.0284
+      "importancia": 0.0326
+    },
+    {
+      "variable": "nota_practicas",
+      "nombre": "Nota de prácticas",
+      "importancia": 0.0205
+    },
+    {
+      "variable": "participacion",
+      "nombre": "Participación en clase",
+      "importancia": 0.0201
     },
     {
       "variable": "faltas_log",
       "nombre": "Faltas",
-      "importancia": 0.0188
+      "importancia": 0.0111
     },
     {
       "variable": "age",
       "nombre": "Edad",
-      "importancia": 0.0138
+      "importancia": 0.0092
     },
     {
-      "variable": "traveltime",
-      "nombre": "Tiempo de trayecto",
-      "importancia": 0.0098
+      "variable": "asistencia",
+      "nombre": "Asistencia",
+      "importancia": 0.0067
     },
     {
       "variable": "studytime",
       "nombre": "Tiempo de estudio semanal",
-      "importancia": 0.0086
+      "importancia": 0.0067
     },
     {
       "variable": "activities",
       "nombre": "Actividades extraescolares",
-      "importancia": 0.008
+      "importancia": 0.0066
+    },
+    {
+      "variable": "traveltime",
+      "nombre": "Tiempo de trayecto",
+      "importancia": 0.0056
     },
     {
       "variable": "famsup",
       "nombre": "Apoyo educativo familiar",
-      "importancia": 0.0071
+      "importancia": 0.004
     },
     {
       "variable": "internet",
       "nombre": "Internet en casa",
-      "importancia": 0.0064
+      "importancia": 0.0031
     },
     {
       "variable": "higher",
       "nombre": "Quiere hacer estudios superiores",
-      "importancia": 0.004
+      "importancia": 0.0027
     },
     {
       "variable": "paid",
       "nombre": "Clases particulares",
-      "importancia": 0.0033
+      "importancia": 0.0027
     },
     {
       "variable": "schoolsup",
@@ -67,138 +82,168 @@
     }
   ],
   "por_asignatura": {
-    "Matemáticas": [
-      {
-        "variable": "G1",
-        "nombre": "Nota del primer periodo",
-        "importancia": 0.3341
-      },
-      {
-        "variable": "es_matematicas",
-        "nombre": "Asignatura (Matemáticas)",
-        "importancia": 0.0819
-      },
-      {
-        "variable": "failures",
-        "nombre": "Suspensos previos",
-        "importancia": 0.0267
-      },
-      {
-        "variable": "faltas_log",
-        "nombre": "Faltas",
-        "importancia": 0.024
-      },
-      {
-        "variable": "age",
-        "nombre": "Edad",
-        "importancia": 0.0096
-      },
-      {
-        "variable": "studytime",
-        "nombre": "Tiempo de estudio semanal",
-        "importancia": 0.0092
-      },
-      {
-        "variable": "activities",
-        "nombre": "Actividades extraescolares",
-        "importancia": 0.0086
-      },
-      {
-        "variable": "traveltime",
-        "nombre": "Tiempo de trayecto",
-        "importancia": 0.0084
-      },
-      {
-        "variable": "famsup",
-        "nombre": "Apoyo educativo familiar",
-        "importancia": 0.0072
-      },
-      {
-        "variable": "internet",
-        "nombre": "Internet en casa",
-        "importancia": 0.0071
-      },
-      {
-        "variable": "paid",
-        "nombre": "Clases particulares",
-        "importancia": 0.0068
-      },
-      {
-        "variable": "higher",
-        "nombre": "Quiere hacer estudios superiores",
-        "importancia": 0.0037
-      },
-      {
-        "variable": "schoolsup",
-        "nombre": "Apoyo educativo del centro",
-        "importancia": 0.0037
-      }
-    ],
     "Portugués": [
       {
         "variable": "G1",
         "nombre": "Nota del primer periodo",
-        "importancia": 0.2531
+        "importancia": 0.2545
       },
       {
         "variable": "failures",
         "nombre": "Suspensos previos",
-        "importancia": 0.0294
+        "importancia": 0.0336
       },
       {
-        "variable": "age",
-        "nombre": "Edad",
-        "importancia": 0.0164
+        "variable": "participacion",
+        "nombre": "Participación en clase",
+        "importancia": 0.0206
       },
       {
-        "variable": "faltas_log",
-        "nombre": "Faltas",
-        "importancia": 0.0157
-      },
-      {
-        "variable": "traveltime",
-        "nombre": "Tiempo de trayecto",
-        "importancia": 0.0106
+        "variable": "nota_practicas",
+        "nombre": "Nota de prácticas",
+        "importancia": 0.0162
       },
       {
         "variable": "es_matematicas",
         "nombre": "Asignatura (Matemáticas)",
-        "importancia": 0.0101
+        "importancia": 0.0122
+      },
+      {
+        "variable": "faltas_log",
+        "nombre": "Faltas",
+        "importancia": 0.01
+      },
+      {
+        "variable": "age",
+        "nombre": "Edad",
+        "importancia": 0.0094
       },
       {
         "variable": "studytime",
         "nombre": "Tiempo de estudio semanal",
-        "importancia": 0.0082
+        "importancia": 0.0074
       },
       {
         "variable": "activities",
         "nombre": "Actividades extraescolares",
-        "importancia": 0.0077
+        "importancia": 0.0065
+      },
+      {
+        "variable": "asistencia",
+        "nombre": "Asistencia",
+        "importancia": 0.0059
+      },
+      {
+        "variable": "traveltime",
+        "nombre": "Tiempo de trayecto",
+        "importancia": 0.0053
       },
       {
         "variable": "famsup",
         "nombre": "Apoyo educativo familiar",
-        "importancia": 0.007
-      },
-      {
-        "variable": "internet",
-        "nombre": "Internet en casa",
-        "importancia": 0.006
+        "importancia": 0.0035
       },
       {
         "variable": "higher",
         "nombre": "Quiere hacer estudios superiores",
-        "importancia": 0.0041
+        "importancia": 0.0034
+      },
+      {
+        "variable": "internet",
+        "nombre": "Internet en casa",
+        "importancia": 0.0029
       },
       {
         "variable": "schoolsup",
         "nombre": "Apoyo educativo del centro",
-        "importancia": 0.0019
+        "importancia": 0.0018
       },
       {
         "variable": "paid",
         "nombre": "Clases particulares",
-        "importancia": 0.0011
+        "importancia": 0.0013
+      }
+    ],
+    "Matemáticas": [
+      {
+        "variable": "G1",
+        "nombre": "Nota del primer periodo",
+        "importancia": 0.3437
+      },
+      {
+        "variable": "es_matematicas",
+        "nombre": "Asignatura (Matemáticas)",
+        "importancia": 0.0984
+      },
+      {
+        "variable": "failures",
+        "nombre": "Suspensos previos",
+        "importancia": 0.031
+      },
+      {
+        "variable": "nota_practicas",
+        "nombre": "Nota de prácticas",
+        "importancia": 0.0275
+      },
+      {
+        "variable": "participacion",
+        "nombre": "Participación en clase",
+        "importancia": 0.0192
+      },
+      {
+        "variable": "faltas_log",
+        "nombre": "Faltas",
+        "importancia": 0.013
+      },
+      {
+        "variable": "age",
+        "nombre": "Edad",
+        "importancia": 0.0088
+      },
+      {
+        "variable": "asistencia",
+        "nombre": "Asistencia",
+        "importancia": 0.008
+      },
+      {
+        "variable": "activities",
+        "nombre": "Actividades extraescolares",
+        "importancia": 0.007
+      },
+      {
+        "variable": "traveltime",
+        "nombre": "Tiempo de trayecto",
+        "importancia": 0.006
+      },
+      {
+        "variable": "studytime",
+        "nombre": "Tiempo de estudio semanal",
+        "importancia": 0.0054
+      },
+      {
+        "variable": "paid",
+        "nombre": "Clases particulares",
+        "importancia": 0.0049
+      },
+      {
+        "variable": "famsup",
+        "nombre": "Apoyo educativo familiar",
+        "importancia": 0.0048
+      },
+      {
+        "variable": "schoolsup",
+        "nombre": "Apoyo educativo del centro",
+        "importancia": 0.0038
+      },
+      {
+        "variable": "internet",
+        "nombre": "Internet en casa",
+        "importancia": 0.0033
+      },
+      {
+        "variable": "higher",
+        "nombre": "Quiere hacer estudios superiores",
+        "importancia": 0.0016
       }
     ]
   },
@@ -207,134 +252,164 @@
       {
         "variable": "G1",
         "nombre": "Nota del primer periodo",
-        "importancia": 0.2714
+        "importancia": 0.2737
       },
       {
         "variable": "es_matematicas",
         "nombre": "Asignatura (Matemáticas)",
-        "importancia": 0.0423
+        "importancia": 0.0504
       },
       {
         "variable": "failures",
         "nombre": "Suspensos previos",
-        "importancia": 0.0252
+        "importancia": 0.0299
+      },
+      {
+        "variable": "nota_practicas",
+        "nombre": "Nota de prácticas",
+        "importancia": 0.0203
+      },
+      {
+        "variable": "participacion",
+        "nombre": "Participación en clase",
+        "importancia": 0.0196
       },
       {
         "variable": "faltas_log",
         "nombre": "Faltas",
-        "importancia": 0.0187
+        "importancia": 0.0111
       },
       {
         "variable": "age",
         "nombre": "Edad",
-        "importancia": 0.0129
+        "importancia": 0.0089
       },
       {
-        "variable": "traveltime",
-        "nombre": "Tiempo de trayecto",
-        "importancia": 0.0085
-      },
-      {
-        "variable": "studytime",
-        "nombre": "Tiempo de estudio semanal",
-        "importancia": 0.0084
+        "variable": "asistencia",
+        "nombre": "Asistencia",
+        "importancia": 0.0074
       },
       {
         "variable": "activities",
         "nombre": "Actividades extraescolares",
-        "importancia": 0.0075
+        "importancia": 0.0065
+      },
+      {
+        "variable": "studytime",
+        "nombre": "Tiempo de estudio semanal",
+        "importancia": 0.0063
+      },
+      {
+        "variable": "traveltime",
+        "nombre": "Tiempo de trayecto",
+        "importancia": 0.0055
       },
       {
         "variable": "famsup",
         "nombre": "Apoyo educativo familiar",
-        "importancia": 0.0061
-      },
-      {
-        "variable": "internet",
-        "nombre": "Internet en casa",
-        "importancia": 0.0052
-      },
-      {
-        "variable": "paid",
-        "nombre": "Clases particulares",
-        "importancia": 0.0037
-      },
-      {
-        "variable": "higher",
-        "nombre": "Quiere hacer estudios superiores",
-        "importancia": 0.0036
+        "importancia": 0.0035
       },
       {
         "variable": "schoolsup",
         "nombre": "Apoyo educativo del centro",
-        "importancia": 0.0032
+        "importancia": 0.0031
+      },
+      {
+        "variable": "paid",
+        "nombre": "Clases particulares",
+        "importancia": 0.0027
+      },
+      {
+        "variable": "internet",
+        "nombre": "Internet en casa",
+        "importancia": 0.0022
+      },
+      {
+        "variable": "higher",
+        "nombre": "Quiere hacer estudios superiores",
+        "importancia": 0.0022
       }
     ],
     "MS": [
       {
         "variable": "G1",
         "nombre": "Nota del primer periodo",
-        "importancia": 0.3186
+        "importancia": 0.3295
       },
       {
         "variable": "failures",
         "nombre": "Suspensos previos",
-        "importancia": 0.0375
+        "importancia": 0.0404
       },
       {
         "variable": "es_matematicas",
         "nombre": "Asignatura (Matemáticas)",
-        "importancia": 0.0228
+        "importancia": 0.0289
+      },
+      {
+        "variable": "participacion",
+        "nombre": "Participación en clase",
+        "importancia": 0.0215
+      },
+      {
+        "variable": "nota_practicas",
+        "nombre": "Nota de prácticas",
+        "importancia": 0.0211
       },
       {
         "variable": "faltas_log",
         "nombre": "Faltas",
-        "importancia": 0.0193
+        "importancia": 0.0112
       },
       {
         "variable": "age",
         "nombre": "Edad",
-        "importancia": 0.0165
-      },
-      {
-        "variable": "traveltime",
-        "nombre": "Tiempo de trayecto",
-        "importancia": 0.0133
-      },
-      {
-        "variable": "internet",
-        "nombre": "Internet en casa",
         "importancia": 0.0099
-      },
-      {
-        "variable": "famsup",
-        "nombre": "Apoyo educativo familiar",
-        "importancia": 0.0099
-      },
-      {
-        "variable": "activities",
-        "nombre": "Actividades extraescolares",
-        "importancia": 0.0093
       },
       {
         "variable": "studytime",
         "nombre": "Tiempo de estudio semanal",
-        "importancia": 0.0091
+        "importancia": 0.0076
+      },
+      {
+        "variable": "activities",
+        "nombre": "Actividades extraescolares",
+        "importancia": 0.0071
+      },
+      {
+        "variable": "traveltime",
+        "nombre": "Tiempo de trayecto",
+        "importancia": 0.0059
+      },
+      {
+        "variable": "internet",
+        "nombre": "Internet en casa",
+        "importancia": 0.0055
+      },
+      {
+        "variable": "famsup",
+        "nombre": "Apoyo educativo familiar",
+        "importancia": 0.0054
+      },
+      {
+        "variable": "asistencia",
+        "nombre": "Asistencia",
+        "importancia": 0.0047
       },
       {
         "variable": "higher",
         "nombre": "Quiere hacer estudios superiores",
-        "importancia": 0.0051
+        "importancia": 0.0043
       },
       {
         "variable": "paid",
         "nombre": "Clases particulares",
-        "importancia": 0.002
+        "importancia": 0.0024
       },
       {
         "variable": "schoolsup",
         "nombre": "Apoyo educativo del centro",
-        "importancia": 0.0008
+        "importancia": 0.0011
       }
     ]
   }

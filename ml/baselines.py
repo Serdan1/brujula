@@ -23,7 +23,7 @@ from sklearn.model_selection import GroupKFold, StratifiedGroupKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from features import cargar_uci, construir_variables
+from features import cargar_datos, construir_variables
 
 warnings.filterwarnings("ignore", category=UserWarning)
 RESULTS = Path("results")
@@ -78,7 +78,7 @@ def equidad(y, pred, auditoria):
 
 
 def main():
-    df = cargar_uci()
+    df = cargar_datos()
     ds = construir_variables(df)
     X, y, g = ds.X, ds.y_apoyo, ds.grupos
     resultados = {"clasificacion": {}, "regresion": {}}

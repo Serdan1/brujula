@@ -23,6 +23,9 @@ import pandas as pd
 
 RAW = Path("data/raw")
 PROCESSED = Path("data/processed")
+# Tablas del contrato generadas por Aarón (data/prepare_uci.py + data/extend.py)
+TABLAS = Path(__file__).resolve().parent.parent / "data" / "processed" / "tablas"
+REALES = ["Portugués", "Matemáticas"]
 
 # Atributos con los que la UCI identifica a un mismo alumno en ambos ficheros
 CLAVES_ALUMNO = ["school", "sex", "age", "address", "famsize", "Pstatus", "Medu", "Fedu",
@@ -60,13 +63,49 @@ def cargar_uci(raw: Path = RAW) -> pd.DataFrame:
     return df
 
 
+def cargar_tablas(tablas: Path = TABLAS, incluir_sinteticas: bool = False) -> pd.DataFrame:
+    """Lee las tablas de Aarón y devuelve el mismo formato que cargar_uci.
+
+    Alerta temprana: G1, faltas, prácticas, participación y asistencia son las del PERIODO 1.
+    G3 (objetivo) es la nota de examen del periodo 3. alumno_id y clase_id son los de la base de datos.
+    """
+    alumno = pd.read_csv(tablas / "alumno.csv")
+    clase = pd.read_csv(tablas / "clase.csv")
+    escuela = pd.read_csv(tablas / "escuela.csv").rename(columns={"id": "escuela_id", "nombre": "school"})
+    asig = pd.read_csv(tablas / "asignatura.csv").rename(columns={"id": "asignatura_id", "nombre": "asignatura"})
+    rend = pd.read_csv(tablas / "rendimiento.csv")
+    ctx = pd.read_csv(tablas / "contexto_alumno.csv")
+
+    p1 = rend[rend["periodo"] == 1].rename(columns={"nota_examen": "G1", "faltas": "absences"})
+    p3 = rend[rend["periodo"] == 3][["alumno_id", "asignatura_id", "nota_examen"]].rename(columns={"nota_examen": "G3"})
+    df = (p1[["alumno_id", "asignatura_id", "G1", "absences", "nota_practicas", "participacion", "asistencia"]]
+          .merge(p3, on=["alumno_id", "asignatura_id"])
+          .merge(ctx, on=["alumno_id", "asignatura_id"])
+          .merge(alumno.rename(columns={"id": "alumno_id", "edad": "age", "sexo": "sex", "zona": "address"}),
+                 on="alumno_id")
+          .merge(clase.rename(columns={"id": "clase_id"})[["clase_id", "escuela_id"]], on="clase_id")
+          .merge(escuela, on="escuela_id")
+          .merge(asig, on="asignatura_id"))
+    if not incluir_sinteticas:
+        df = df[df["asignatura"].isin(REALES)]
+    return df.sort_values(["alumno_id", "asignatura_id"]).reset_index(drop=True)
+
+
+def cargar_datos(incluir_sinteticas: bool = False) -> pd.DataFrame:
+    """Usa las tablas de Aarón si existen; si no, el dataset original de la UCI."""
+    if (TABLAS / "rendimiento.csv").exists():
+        return cargar_tablas(incluir_sinteticas=incluir_sinteticas)
+    print("Aviso: no se encuentran las tablas de Aarón; se usa el dataset original de la UCI")
+    return cargar_uci()
+
+
 def construir_variables(df: pd.DataFrame) -> Dataset:
     X = pd.DataFrame(index=df.index)
     for col in NUMERICAS:
         X[col] = df[col].astype(float)
     X["faltas_log"] = np.log1p(df["absences"].astype(float))
     for col in BINARIAS:
-        X[col] = (df[col] == "yes").astype(int)
+        X[col] = df[col].isin(["yes", True, "True", "true"]).astype(int)
     X["es_matematicas"] = (df["asignatura"] == "Matemáticas").astype(int)
     for col in OPCIONALES:
         if col in df.columns:
@@ -88,7 +127,7 @@ def construir_variables(df: pd.DataFrame) -> Dataset:
 
 
 if __name__ == "__main__":
-    df = cargar_uci()
+    df = cargar_datos()
     ds = construir_variables(df)
 
     PROCESSED.mkdir(parents=True, exist_ok=True)

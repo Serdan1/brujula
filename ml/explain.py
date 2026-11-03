@@ -26,7 +26,7 @@ import torch
 from lightgbm import LGBMClassifier
 
 from baselines import SEMILLA, equidad
-from features import cargar_uci, construir_variables
+from features import cargar_datos, construir_variables
 from model import RedBrujula
 
 RESULTS = Path("results")
@@ -60,7 +60,8 @@ MIN_SHAP = 0.01  # peso mínimo (1 punto porcentual de probabilidad) para mostra
 # Sentido esperado: +1 = valores altos aumentan la necesidad de apoyo; -1 = la reducen.
 # Una explicación solo se muestra si su efecto es coherente con este sentido (evita artefactos
 # como "0 faltas aumenta la necesidad de apoyo", causado por los abandonos sin faltas registradas).
-SENTIDO = {"G1": -1, "failures": 1, "faltas_log": 1, "studytime": -1, "age": 1}
+SENTIDO = {"G1": -1, "failures": 1, "faltas_log": 1, "studytime": -1, "age": 1,
+           "nota_practicas": -1, "participacion": -1, "asistencia": -1}
 
 
 def coherente(col: str, valor: float, referencia: float, shap_v: float) -> bool:
@@ -98,7 +99,9 @@ def umbral_combinado() -> float:
 
 def valor_legible(col: str, v: float) -> str:
     if col == "faltas_log":
-        return f"{int(round(np.expm1(v)))} faltas"
+        return f"{int(round(np.expm1(v)))} faltas en el periodo 1"
+    if col == "asistencia":
+        return f"{v:.0f} %"
     if col in {"schoolsup", "famsup", "paid", "activities", "higher", "internet", "es_matematicas"}:
         return "sí" if v >= 0.5 else "no"
     if col == "studytime":
@@ -117,7 +120,7 @@ def importancia(shap_vals: np.ndarray, columnas, mascara=None):
 
 
 def main():
-    df = cargar_uci()
+    df = cargar_datos()
     ds = construir_variables(df)
     columnas = list(ds.X.columns)
     X = ds.X.to_numpy(dtype=np.float64)

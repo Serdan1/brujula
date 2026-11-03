@@ -2,31 +2,31 @@
   "sex=F": {
     "n": 591,
     "recall": 0.856,
-    "falsas_alarmas": 0.122
+    "falsas_alarmas": 0.116
   },
   "sex=M": {
     "n": 453,
-    "recall": 0.819,
-    "falsas_alarmas": 0.129
+    "recall": 0.81,
+    "falsas_alarmas": 0.144
   },
   "address=R": {
     "n": 285,
     "recall": 0.831,
-    "falsas_alarmas": 0.154
+    "falsas_alarmas": 0.163
   },
   "address=U": {
     "n": 759,
-    "recall": 0.843,
+    "recall": 0.837,
     "falsas_alarmas": 0.116
   },
   "school=GP": {
     "n": 772,
     "recall": 0.828,
-    "falsas_alarmas": 0.113
+    "falsas_alarmas": 0.124
   },
   "school=MS": {
     "n": 272,
-    "recall": 0.859,
-    "falsas_alarmas": 0.166
+    "recall": 0.847,
+    "falsas_alarmas": 0.139
   }
 }

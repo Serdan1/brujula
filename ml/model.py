@@ -23,7 +23,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import GroupShuffleSplit, StratifiedGroupKFold
 
 from baselines import equidad, metricas, umbral_para_recall
-from features import cargar_uci, construir_variables
+from features import cargar_datos, construir_variables
 
 RESULTS = Path("results")
 SEMILLA = 42
@@ -149,7 +149,7 @@ def predecir_mc(red, esc, X, sigma_resid, pasadas, objetivo, idx_g1):
 
 
 def main():
-    df = cargar_uci()
+    df = cargar_datos()
     ds = construir_variables(df)
     X = ds.X.to_numpy(dtype=np.float32)
     y = ds.y_apoyo.to_numpy()

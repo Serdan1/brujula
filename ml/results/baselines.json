@@ -8,78 +8,78 @@
     },
     "logistica": {
       "umbral_0.5": {
-        "recall": 0.874,
-        "precision": 0.63,
-        "f1": 0.732,
-        "alertas": 319,
-        "auc": 0.938,
-        "pr_auc": 0.785
+        "recall": 0.887,
+        "precision": 0.648,
+        "f1": 0.749,
+        "alertas": 315,
+        "auc": 0.943,
+        "pr_auc": 0.798
       },
-      "mismo_recall_que_regla (umbral 0.545)": {
+      "mismo_recall_que_regla (umbral 0.576)": {
         "recall": 0.839,
-        "precision": 0.643,
-        "f1": 0.728,
-        "alertas": 300,
-        "auc": 0.938,
-        "pr_auc": 0.785
+        "precision": 0.687,
+        "f1": 0.755,
+        "alertas": 281,
+        "auc": 0.943,
+        "pr_auc": 0.798
       },
-      "detectados_que_G1_no_ve": 8
+      "detectados_que_G1_no_ve": 9
     },
     "lightgbm": {
       "umbral_0.5": {
-        "recall": 0.787,
-        "precision": 0.683,
-        "f1": 0.731,
-        "alertas": 265,
-        "auc": 0.929,
-        "pr_auc": 0.765
+        "recall": 0.77,
+        "precision": 0.694,
+        "f1": 0.73,
+        "alertas": 255,
+        "auc": 0.923,
+        "pr_auc": 0.749
       },
-      "mismo_recall_que_regla (umbral 0.393)": {
+      "mismo_recall_que_regla (umbral 0.284)": {
         "recall": 0.839,
-        "precision": 0.67,
-        "f1": 0.745,
-        "alertas": 288,
-        "auc": 0.929,
-        "pr_auc": 0.765
+        "precision": 0.661,
+        "f1": 0.739,
+        "alertas": 292,
+        "auc": 0.923,
+        "pr_auc": 0.749
       },
-      "detectados_que_G1_no_ve": 18
+      "detectados_que_G1_no_ve": 17
     }
   },
   "regresion": {
     "regla_G3_igual_G1": 1.132,
-    "ridge": 1.08,
-    "lightgbm": 1.096
+    "ridge": 1.083,
+    "lightgbm": 1.113
   },
   "equidad_lightgbm": {
     "sex=F": {
       "n": 591,
       "recall": 0.848,
-      "falsas_alarmas": 0.118
+      "falsas_alarmas": 0.105
     },
     "sex=M": {
       "n": 453,
       "recall": 0.829,
-      "falsas_alarmas": 0.115
+      "falsas_alarmas": 0.144
     },
     "address=R": {
       "n": 285,
-      "recall": 0.831,
-      "falsas_alarmas": 0.154
+      "recall": 0.857,
+      "falsas_alarmas": 0.168
     },
     "address=U": {
       "n": 759,
-      "recall": 0.843,
-      "falsas_alarmas": 0.104
+      "recall": 0.83,
+      "falsas_alarmas": 0.106
     },
     "school=GP": {
       "n": 772,
       "recall": 0.834,
-      "falsas_alarmas": 0.104
+      "falsas_alarmas": 0.118
     },
     "school=MS": {
       "n": 272,
       "recall": 0.847,
-      "falsas_alarmas": 0.16
+      "falsas_alarmas": 0.134
     }
   }
 }
