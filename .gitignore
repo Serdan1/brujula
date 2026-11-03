@@ -10,4 +10,8 @@ __pycache__/
 .DS_Store
 ml/data/raw/*.zip
 data/raw/
-data/processed/
+data/processed/*.pkl
+ml/data/processed/
+ml/results/oof_*.csv
+ml/results/shap_alumnos.csv
+ml/data/raw/*_old
