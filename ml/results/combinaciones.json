@@ -1,0 +1,58 @@
+[
+  {
+    "modelos":"logistica + lightgbm",
+    "pr_auc":0.799,
+    "precision":0.699,
+    "alertas":276,
+    "g1_no_ve":14,
+    "umbral":0.511
+  },
+  {
+    "modelos":"logistica",
+    "pr_auc":0.798,
+    "precision":0.687,
+    "alertas":281,
+    "g1_no_ve":9,
+    "umbral":0.576
+  },
+  {
+    "modelos":"red + logistica + lightgbm",
+    "pr_auc":0.796,
+    "precision":0.645,
+    "alertas":299,
+    "g1_no_ve":12,
+    "umbral":0.485
+  },
+  {
+    "modelos":"red + logistica",
+    "pr_auc":0.794,
+    "precision":0.652,
+    "alertas":296,
+    "g1_no_ve":10,
+    "umbral":0.548
+  },
+  {
+    "modelos":"red + lightgbm",
+    "pr_auc":0.783,
+    "precision":0.65,
+    "alertas":297,
+    "g1_no_ve":12,
+    "umbral":0.433
+  },
+  {
+    "modelos":"red",
+    "pr_auc":0.77,
+    "precision":0.601,
+    "alertas":321,
+    "g1_no_ve":13,
+    "umbral":0.516
+  },
+  {
+    "modelos":"lightgbm",
+    "pr_auc":0.749,
+    "precision":0.661,
+    "alertas":292,
+    "g1_no_ve":17,
+    "umbral":0.284
+  }
+]
