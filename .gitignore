@@ -9,3 +9,5 @@ __pycache__/
 *.pt
 .DS_Store
 ml/data/raw/*.zip
+data/raw/
+data/processed/
