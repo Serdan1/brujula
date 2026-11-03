@@ -15,3 +15,6 @@ ml/data/processed/
 ml/results/oof_*.csv
 ml/results/shap_alumnos.csv
 ml/data/raw/*_old
+
+*.pkl
+data/processed/
