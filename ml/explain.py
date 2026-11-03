@@ -1,6 +1,9 @@
-"""Explicabilidad del modelo de alertas de Brújula (combinación red neuronal + LightGBM).
+"""Explicabilidad del modelo de alertas de Brújula (combinación regresión logística + LightGBM).
 
-- Entrena LightGBM final con todos los datos y carga la red final (results/modelo_final.pt).
+El modelo de alertas se eligió con combinar.py (mejor PR-AUC y menos falsas alarmas).
+La red neuronal se usa para la nota estimada, no para las alertas.
+
+- Entrena la logística y LightGBM finales con todos los datos.
 - SHAP (KernelExplainer) sobre la probabilidad combinada de "necesita apoyo".
 - Importancia global, por asignatura y por escuela; 3 variables principales por alumno.
 - Equidad del modelo combinado (predicciones fuera de fold).
@@ -12,7 +15,6 @@ Salidas en results/: shap_alumnos.csv, importancia.json, equidad_combinado.json,
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 
 import joblib
@@ -22,12 +24,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import shap
-import torch
 from lightgbm import LGBMClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 from baselines import SEMILLA, equidad
-from features import cargar_uci, construir_variables
-from model import RedBrujula
+from features import cargar_datos, construir_variables
 
 RESULTS = Path("results")
 FIG = RESULTS / "figures"
@@ -60,7 +63,8 @@ MIN_SHAP = 0.01  # peso mínimo (1 punto porcentual de probabilidad) para mostra
 # Sentido esperado: +1 = valores altos aumentan la necesidad de apoyo; -1 = la reducen.
 # Una explicación solo se muestra si su efecto es coherente con este sentido (evita artefactos
 # como "0 faltas aumenta la necesidad de apoyo", causado por los abandonos sin faltas registradas).
-SENTIDO = {"G1": -1, "failures": 1, "faltas_log": 1, "studytime": -1, "age": 1}
+SENTIDO = {"G1": -1, "failures": 1, "faltas_log": 1, "studytime": -1, "age": 1,
+           "nota_practicas": -1, "participacion": -1, "asistencia": -1}
 
 
 def coherente(col: str, valor: float, referencia: float, shap_v: float) -> bool:
@@ -73,32 +77,19 @@ def coherente(col: str, valor: float, referencia: float, shap_v: float) -> bool:
     return np.sign(shap_v) == SENTIDO[col] * np.sign(diferencia)
 
 
-def cargar_red(columnas):
-    ck = torch.load(RESULTS / "modelo_final.pt", weights_only=False)
-    assert ck["columnas"] == columnas, "Las columnas del modelo no coinciden con features.py"
-    red = RedBrujula(len(columnas), ck["config"]["ocultas"], ck["config"]["dropout"])
-    red.load_state_dict(ck["estado"])
-    red.eval()
-    media, desv = np.array(ck["media"]), np.array(ck["desv"])
-
-    def prob_red(X: np.ndarray) -> np.ndarray:
-        Xt = torch.tensor((X - media) / desv, dtype=torch.float32)
-        with torch.no_grad():
-            logit, _ = red(Xt)
-        return torch.sigmoid(logit).numpy()
-
-    return prob_red
+MODELO_ALERTAS = "logistica + lightgbm"
 
 
 def umbral_combinado() -> float:
-    res = json.loads((RESULTS / "red_neuronal.json").read_text(encoding="utf-8"))
-    clave = next(k for k in res["combinacion_red_lightgbm"] if k.startswith("mismo_recall"))
-    return float(re.search(r"umbral ([0-9.]+)", clave).group(1))
+    tabla = json.loads((RESULTS / "combinaciones.json").read_text(encoding="utf-8"))
+    return float(next(f["umbral"] for f in tabla if f["modelos"] == MODELO_ALERTAS))
 
 
 def valor_legible(col: str, v: float) -> str:
     if col == "faltas_log":
-        return f"{int(round(np.expm1(v)))} faltas"
+        return f"{int(round(np.expm1(v)))} faltas en el periodo 1"
+    if col == "asistencia":
+        return f"{v:.0f} %"
     if col in {"schoolsup", "famsup", "paid", "activities", "higher", "internet", "es_matematicas"}:
         return "sí" if v >= 0.5 else "no"
     if col == "studytime":
@@ -117,7 +108,7 @@ def importancia(shap_vals: np.ndarray, columnas, mascara=None):
 
 
 def main():
-    df = cargar_uci()
+    df = cargar_datos()
     ds = construir_variables(df)
     columnas = list(ds.X.columns)
     X = ds.X.to_numpy(dtype=np.float64)
@@ -128,12 +119,13 @@ def main():
                           class_weight="balanced", random_state=SEMILLA, verbose=-1)
     lgbm.fit(ds.X, y)
     joblib.dump(lgbm, RESULTS / "lgbm_final.pkl")
-    prob_red = cargar_red(columnas)
+    logistica = make_pipeline(StandardScaler(), LogisticRegression(class_weight="balanced", max_iter=1000))
+    logistica.fit(ds.X, y)
+    joblib.dump(logistica, RESULTS / "logistica_final.pkl")
 
     def prob_combinada(Xa: np.ndarray) -> np.ndarray:
-        Xa = np.asarray(Xa, dtype=np.float64)
-        p_lgbm = lgbm.predict_proba(pd.DataFrame(Xa, columns=columnas))[:, 1]
-        return (prob_red(Xa) + p_lgbm) / 2
+        Xd = pd.DataFrame(np.asarray(Xa, dtype=np.float64), columns=columnas)
+        return (logistica.predict_proba(Xd)[:, 1] + lgbm.predict_proba(Xd)[:, 1]) / 2
 
     # ---------- SHAP ----------
     print("Calculando SHAP (1–3 minutos)...")
@@ -181,9 +173,8 @@ def main():
     pd.DataFrame(filas).to_csv(RESULTS / "shap_alumnos.csv", index=False)
 
     # ---------- Equidad del modelo combinado (fuera de fold) ----------
-    oof_red = pd.read_csv(RESULTS / "oof_red.csv")
     oof_base = pd.read_csv(RESULTS / "oof_baselines.csv")
-    comb = (oof_red["prob_red"].to_numpy() + oof_base["prob_lightgbm"].to_numpy()) / 2
+    comb = (oof_base["prob_logistica"].to_numpy() + oof_base["prob_lightgbm"].to_numpy()) / 2
     eq = equidad(y, (comb >= u).astype(int), ds.auditoria)
     (RESULTS / "equidad_combinado.json").write_text(json.dumps(eq, indent=2, ensure_ascii=False), encoding="utf-8")
 

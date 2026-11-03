@@ -15,69 +15,69 @@
   },
   "clasificacion": {
     "umbral_0.5": {
-      "recall": 0.878,
-      "precision": 0.596,
-      "f1": 0.71,
-      "alertas": 339,
-      "auc": 0.933,
-      "pr_auc": 0.78
+      "recall": 0.861,
+      "precision": 0.595,
+      "f1": 0.703,
+      "alertas": 333,
+      "auc": 0.931,
+      "pr_auc": 0.77
     },
-    "mismo_recall_que_regla (umbral 0.562)": {
+    "mismo_recall_que_regla (umbral 0.516)": {
       "recall": 0.839,
-      "precision": 0.625,
-      "f1": 0.716,
-      "alertas": 309,
-      "auc": 0.933,
-      "pr_auc": 0.78
+      "precision": 0.601,
+      "f1": 0.701,
+      "alertas": 321,
+      "auc": 0.931,
+      "pr_auc": 0.77
     },
-    "detectados_que_G1_no_ve": 10
+    "detectados_que_G1_no_ve": 13
   },
   "regresion": {
-    "mae": 1.052,
-    "cobertura_intervalo_80": 0.817,
-    "ancho_medio_intervalo": 3.45
+    "mae": 1.054,
+    "cobertura_intervalo_80": 0.804,
+    "ancho_medio_intervalo": 3.4
   },
   "equidad": {
     "sex=F": {
       "n": 591,
-      "recall": 0.864,
-      "falsas_alarmas": 0.139
+      "recall": 0.856,
+      "falsas_alarmas": 0.152
     },
     "sex=M": {
       "n": 453,
-      "recall": 0.81,
-      "falsas_alarmas": 0.147
+      "recall": 0.819,
+      "falsas_alarmas": 0.164
     },
     "address=R": {
       "n": 285,
-      "recall": 0.831,
-      "falsas_alarmas": 0.178
+      "recall": 0.818,
+      "falsas_alarmas": 0.202
     },
     "address=U": {
       "n": 759,
-      "recall": 0.843,
-      "falsas_alarmas": 0.13
+      "recall": 0.85,
+      "falsas_alarmas": 0.142
     },
     "school=GP": {
       "n": 772,
-      "recall": 0.807,
-      "falsas_alarmas": 0.129
+      "recall": 0.834,
+      "falsas_alarmas": 0.156
     },
     "school=MS": {
       "n": 272,
-      "recall": 0.894,
-      "falsas_alarmas": 0.187
+      "recall": 0.847,
+      "falsas_alarmas": 0.16
     }
   },
   "combinacion_red_lightgbm": {
-    "mismo_recall_que_regla (umbral 0.475)": {
+    "mismo_recall_que_regla (umbral 0.433)": {
       "recall": 0.839,
-      "precision": 0.654,
-      "f1": 0.735,
-      "alertas": 295,
-      "auc": 0.939,
-      "pr_auc": 0.799
+      "precision": 0.65,
+      "f1": 0.732,
+      "alertas": 297,
+      "auc": 0.937,
+      "pr_auc": 0.783
     },
-    "detectados_que_G1_no_ve": 14
+    "detectados_que_G1_no_ve": 12
   }
 }
