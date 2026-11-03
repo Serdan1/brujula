@@ -1,0 +1,16 @@
+/* Brújula — tokens visuales propuestos para el frontend */
+:root {
+  --color-primary: #174A55;
+  --color-background: #F7F4ED;
+  --color-warning: #E9B45C;
+  --color-surface: #FFFFFF;
+  --color-chart-secondary: #A7C5C7;
+  --color-text: #24343A;
+  --color-muted: #64777A;
+  --color-border: #CBD5D4;
+  --color-warning-surface: #F9E9C9;
+  --color-warning-text: #78541B;
+  --font-ui: Inter, system-ui, sans-serif;
+  --radius-card: 12px;
+  --radius-control: 8px;
+}
