@@ -1,0 +1,83 @@
+{
+  "config": {
+    "ocultas": [
+      64,
+      32
+    ],
+    "dropout": 0.2,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "epocas_max": 400,
+    "paciencia": 30,
+    "batch": 64,
+    "peso_nota": 1.0,
+    "pasadas_mc": 50
+  },
+  "clasificacion": {
+    "umbral_0.5": {
+      "recall": 0.878,
+      "precision": 0.596,
+      "f1": 0.71,
+      "alertas": 339,
+      "auc": 0.933,
+      "pr_auc": 0.78
+    },
+    "mismo_recall_que_regla (umbral 0.562)": {
+      "recall": 0.839,
+      "precision": 0.625,
+      "f1": 0.716,
+      "alertas": 309,
+      "auc": 0.933,
+      "pr_auc": 0.78
+    },
+    "detectados_que_G1_no_ve": 10
+  },
+  "regresion": {
+    "mae": 1.052,
+    "cobertura_intervalo_80": 0.817,
+    "ancho_medio_intervalo": 3.45
+  },
+  "equidad": {
+    "sex=F": {
+      "n": 591,
+      "recall": 0.864,
+      "falsas_alarmas": 0.139
+    },
+    "sex=M": {
+      "n": 453,
+      "recall": 0.81,
+      "falsas_alarmas": 0.147
+    },
+    "address=R": {
+      "n": 285,
+      "recall": 0.831,
+      "falsas_alarmas": 0.178
+    },
+    "address=U": {
+      "n": 759,
+      "recall": 0.843,
+      "falsas_alarmas": 0.13
+    },
+    "school=GP": {
+      "n": 772,
+      "recall": 0.807,
+      "falsas_alarmas": 0.129
+    },
+    "school=MS": {
+      "n": 272,
+      "recall": 0.894,
+      "falsas_alarmas": 0.187
+    }
+  },
+  "combinacion_red_lightgbm": {
+    "mismo_recall_que_regla (umbral 0.475)": {
+      "recall": 0.839,
+      "precision": 0.654,
+      "f1": 0.735,
+      "alertas": 295,
+      "auc": 0.939,
+      "pr_auc": 0.799
+    },
+    "detectados_que_G1_no_ve": 14
+  }
+}
