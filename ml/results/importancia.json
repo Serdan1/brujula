@@ -1,0 +1,341 @@
+{
+  "global": [
+    {
+      "variable": "G1",
+      "nombre": "Nota del primer periodo",
+      "importancia": 0.2837
+    },
+    {
+      "variable": "es_matematicas",
+      "nombre": "Asignatura (Matemáticas)",
+      "importancia": 0.0373
+    },
+    {
+      "variable": "failures",
+      "nombre": "Suspensos previos",
+      "importancia": 0.0284
+    },
+    {
+      "variable": "faltas_log",
+      "nombre": "Faltas",
+      "importancia": 0.0188
+    },
+    {
+      "variable": "age",
+      "nombre": "Edad",
+      "importancia": 0.0138
+    },
+    {
+      "variable": "traveltime",
+      "nombre": "Tiempo de trayecto",
+      "importancia": 0.0098
+    },
+    {
+      "variable": "studytime",
+      "nombre": "Tiempo de estudio semanal",
+      "importancia": 0.0086
+    },
+    {
+      "variable": "activities",
+      "nombre": "Actividades extraescolares",
+      "importancia": 0.008
+    },
+    {
+      "variable": "famsup",
+      "nombre": "Apoyo educativo familiar",
+      "importancia": 0.0071
+    },
+    {
+      "variable": "internet",
+      "nombre": "Internet en casa",
+      "importancia": 0.0064
+    },
+    {
+      "variable": "higher",
+      "nombre": "Quiere hacer estudios superiores",
+      "importancia": 0.004
+    },
+    {
+      "variable": "paid",
+      "nombre": "Clases particulares",
+      "importancia": 0.0033
+    },
+    {
+      "variable": "schoolsup",
+      "nombre": "Apoyo educativo del centro",
+      "importancia": 0.0026
+    }
+  ],
+  "por_asignatura": {
+    "Matemáticas": [
+      {
+        "variable": "G1",
+        "nombre": "Nota del primer periodo",
+        "importancia": 0.3341
+      },
+      {
+        "variable": "es_matematicas",
+        "nombre": "Asignatura (Matemáticas)",
+        "importancia": 0.0819
+      },
+      {
+        "variable": "failures",
+        "nombre": "Suspensos previos",
+        "importancia": 0.0267
+      },
+      {
+        "variable": "faltas_log",
+        "nombre": "Faltas",
+        "importancia": 0.024
+      },
+      {
+        "variable": "age",
+        "nombre": "Edad",
+        "importancia": 0.0096
+      },
+      {
+        "variable": "studytime",
+        "nombre": "Tiempo de estudio semanal",
+        "importancia": 0.0092
+      },
+      {
+        "variable": "activities",
+        "nombre": "Actividades extraescolares",
+        "importancia": 0.0086
+      },
+      {
+        "variable": "traveltime",
+        "nombre": "Tiempo de trayecto",
+        "importancia": 0.0084
+      },
+      {
+        "variable": "famsup",
+        "nombre": "Apoyo educativo familiar",
+        "importancia": 0.0072
+      },
+      {
+        "variable": "internet",
+        "nombre": "Internet en casa",
+        "importancia": 0.0071
+      },
+      {
+        "variable": "paid",
+        "nombre": "Clases particulares",
+        "importancia": 0.0068
+      },
+      {
+        "variable": "higher",
+        "nombre": "Quiere hacer estudios superiores",
+        "importancia": 0.0037
+      },
+      {
+        "variable": "schoolsup",
+        "nombre": "Apoyo educativo del centro",
+        "importancia": 0.0037
+      }
+    ],
+    "Portugués": [
+      {
+        "variable": "G1",
+        "nombre": "Nota del primer periodo",
+        "importancia": 0.2531
+      },
+      {
+        "variable": "failures",
+        "nombre": "Suspensos previos",
+        "importancia": 0.0294
+      },
+      {
+        "variable": "age",
+        "nombre": "Edad",
+        "importancia": 0.0164
+      },
+      {
+        "variable": "faltas_log",
+        "nombre": "Faltas",
+        "importancia": 0.0157
+      },
+      {
+        "variable": "traveltime",
+        "nombre": "Tiempo de trayecto",
+        "importancia": 0.0106
+      },
+      {
+        "variable": "es_matematicas",
+        "nombre": "Asignatura (Matemáticas)",
+        "importancia": 0.0101
+      },
+      {
+        "variable": "studytime",
+        "nombre": "Tiempo de estudio semanal",
+        "importancia": 0.0082
+      },
+      {
+        "variable": "activities",
+        "nombre": "Actividades extraescolares",
+        "importancia": 0.0077
+      },
+      {
+        "variable": "famsup",
+        "nombre": "Apoyo educativo familiar",
+        "importancia": 0.007
+      },
+      {
+        "variable": "internet",
+        "nombre": "Internet en casa",
+        "importancia": 0.006
+      },
+      {
+        "variable": "higher",
+        "nombre": "Quiere hacer estudios superiores",
+        "importancia": 0.0041
+      },
+      {
+        "variable": "schoolsup",
+        "nombre": "Apoyo educativo del centro",
+        "importancia": 0.0019
+      },
+      {
+        "variable": "paid",
+        "nombre": "Clases particulares",
+        "importancia": 0.0011
+      }
+    ]
+  },
+  "por_escuela": {
+    "GP": [
+      {
+        "variable": "G1",
+        "nombre": "Nota del primer periodo",
+        "importancia": 0.2714
+      },
+      {
+        "variable": "es_matematicas",
+        "nombre": "Asignatura (Matemáticas)",
+        "importancia": 0.0423
+      },
+      {
+        "variable": "failures",
+        "nombre": "Suspensos previos",
+        "importancia": 0.0252
+      },
+      {
+        "variable": "faltas_log",
+        "nombre": "Faltas",
+        "importancia": 0.0187
+      },
+      {
+        "variable": "age",
+        "nombre": "Edad",
+        "importancia": 0.0129
+      },
+      {
+        "variable": "traveltime",
+        "nombre": "Tiempo de trayecto",
+        "importancia": 0.0085
+      },
+      {
+        "variable": "studytime",
+        "nombre": "Tiempo de estudio semanal",
+        "importancia": 0.0084
+      },
+      {
+        "variable": "activities",
+        "nombre": "Actividades extraescolares",
+        "importancia": 0.0075
+      },
+      {
+        "variable": "famsup",
+        "nombre": "Apoyo educativo familiar",
+        "importancia": 0.0061
+      },
+      {
+        "variable": "internet",
+        "nombre": "Internet en casa",
+        "importancia": 0.0052
+      },
+      {
+        "variable": "paid",
+        "nombre": "Clases particulares",
+        "importancia": 0.0037
+      },
+      {
+        "variable": "higher",
+        "nombre": "Quiere hacer estudios superiores",
+        "importancia": 0.0036
+      },
+      {
+        "variable": "schoolsup",
+        "nombre": "Apoyo educativo del centro",
+        "importancia": 0.0032
+      }
+    ],
+    "MS": [
+      {
+        "variable": "G1",
+        "nombre": "Nota del primer periodo",
+        "importancia": 0.3186
+      },
+      {
+        "variable": "failures",
+        "nombre": "Suspensos previos",
+        "importancia": 0.0375
+      },
+      {
+        "variable": "es_matematicas",
+        "nombre": "Asignatura (Matemáticas)",
+        "importancia": 0.0228
+      },
+      {
+        "variable": "faltas_log",
+        "nombre": "Faltas",
+        "importancia": 0.0193
+      },
+      {
+        "variable": "age",
+        "nombre": "Edad",
+        "importancia": 0.0165
+      },
+      {
+        "variable": "traveltime",
+        "nombre": "Tiempo de trayecto",
+        "importancia": 0.0133
+      },
+      {
+        "variable": "internet",
+        "nombre": "Internet en casa",
+        "importancia": 0.0099
+      },
+      {
+        "variable": "famsup",
+        "nombre": "Apoyo educativo familiar",
+        "importancia": 0.0099
+      },
+      {
+        "variable": "activities",
+        "nombre": "Actividades extraescolares",
+        "importancia": 0.0093
+      },
+      {
+        "variable": "studytime",
+        "nombre": "Tiempo de estudio semanal",
+        "importancia": 0.0091
+      },
+      {
+        "variable": "higher",
+        "nombre": "Quiere hacer estudios superiores",
+        "importancia": 0.0051
+      },
+      {
+        "variable": "paid",
+        "nombre": "Clases particulares",
+        "importancia": 0.002
+      },
+      {
+        "variable": "schoolsup",
+        "nombre": "Apoyo educativo del centro",
+        "importancia": 0.0008
+      }
+    ]
+  }
+}
