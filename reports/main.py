@@ -84,14 +84,6 @@ def generar_informe_clase(
 
     return ruta_pdf
 
-
-    return generar_pdf(
-        nombre_plantilla="clase.html",
-        datos=datos,
-        nombre_archivo=f"informe_clase_{clase_id}_{asignatura_id}_p{periodo}.pdf"
-    )
-
-
 def main():
     parser = argparse.ArgumentParser(description="Genera los informes de clase en PDF")
     parser.add_argument("--clase", type=int, help="Solo esta clase (para probar en local)")
