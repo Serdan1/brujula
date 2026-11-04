@@ -99,7 +99,31 @@
         </tbody>
     </table>
 
-    <h2>3. Equidad del modelo</h2>
+    {% if equidad and "No hay métricas" not in equidad %}
+<h2>3. Equidad del modelo</h2>
+<p>{{ equidad }}</p>
+{% endif %}
+
+{% if acciones %}
+<h2>4. Acciones de seguimiento</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Tipo de acción</th>
+            <th>Cantidad</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for accion in acciones %}
+        <tr>
+            <td>{{ accion.tipo }}</td>
+            <td>{{ accion.cantidad }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
 
     <p>{{ equidad }}</p>
 
