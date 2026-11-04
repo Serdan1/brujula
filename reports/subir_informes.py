@@ -15,8 +15,6 @@ def subir_informe(ruta_pdf, ruta_storage):
     """
     Sube un informe PDF al bucket privado 'informes'
     de Supabase Storage.
-
-    Si el archivo ya existe, lo actualiza.
     """
 
     url_supabase = os.getenv("SUPABASE_URL", "").rstrip("/")
@@ -24,8 +22,7 @@ def subir_informe(ruta_pdf, ruta_storage):
 
     if not url_supabase or not clave_servicio:
         raise ValueError(
-            "Faltan SUPABASE_URL o SUPABASE_SERVICE_KEY. "
-            "La subida requiere credenciales de servicio."
+            "Faltan SUPABASE_URL o SUPABASE_SERVICE_KEY."
         )
 
     ruta_pdf = Path(ruta_pdf)
@@ -48,23 +45,24 @@ def subir_informe(ruta_pdf, ruta_storage):
     )
 
     headers = {
-    "apikey": clave_servicio,
-    "Content-Type": "application/pdf",
-    "x-upsert": "true",
-    "Cache-Control": "no-cache"
-}
+        "apikey": clave_servicio,
+        "Content-Type": "application/pdf",
+        "x-upsert": "true",
+        "Cache-Control": "no-cache",
+    }
 
-# Las claves antiguas service_role son JWT.
-# Las claves modernas sb_secret_ se envían como apikey.
+    # Las claves modernas sb_secret_ se envían
+    # mediante la cabecera apikey.
     if not clave_servicio.startswith("sb_secret_"):
         headers["Authorization"] = f"Bearer {clave_servicio}"
 
-        with ruta_pdf.open("rb") as archivo:
-            respuesta = requests.post(
+    # Este bloque debe estar FUERA del if anterior.
+    with ruta_pdf.open("rb") as archivo:
+        respuesta = requests.post(
             endpoint,
             headers=headers,
             data=archivo,
-            timeout=60
+            timeout=60,
         )
 
     if not respuesta.ok:
@@ -75,7 +73,7 @@ def subir_informe(ruta_pdf, ruta_storage):
         )
 
     print(
-        f"PDF subido correctamente: "
+        "PDF subido correctamente: "
         f"informes/{ruta_storage}"
     )
 
@@ -83,7 +81,4 @@ def subir_informe(ruta_pdf, ruta_storage):
 
 
 if __name__ == "__main__":
-    print(
-        "Módulo de subida preparado. "
-        "Debe llamarse desde el generador de informes."
-    )
+    print("Módulo de subida preparado.")
