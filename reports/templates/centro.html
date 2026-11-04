@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Informe de centro - Brújula</title>
+
     <style>
         @page {
             size: A4;
@@ -50,21 +51,30 @@
             color: white;
         }
 
+        tr {
+            page-break-inside: avoid;
+        }
+
         .nota {
             font-size: 10px;
             color: #666;
             margin-top: 25px;
+            line-height: 1.5;
         }
     </style>
 </head>
+
 <body>
 
+    <!-- TÍTULO -->
     <h1>Brújula | Informe de centro</h1>
 
+    <!-- INFORMACIÓN GENERAL -->
     <p><strong>Centro:</strong> {{ centro }}</p>
     <p><strong>Periodo:</strong> {{ periodo }}</p>
     <p><strong>Fecha:</strong> {{ fecha }}</p>
 
+    <!-- 1. RESUMEN GENERAL -->
     <h2>1. Resumen general</h2>
 
     <div class="resumen">
@@ -74,6 +84,7 @@
         <p>Alertas activas: {{ total_alertas }}</p>
     </div>
 
+    <!-- 2. COMPARACIÓN ENTRE CLASES -->
     <h2>2. Comparación entre clases</h2>
 
     <table>
@@ -86,48 +97,58 @@
                 <th>Alertas</th>
             </tr>
         </thead>
+
         <tbody>
             {% for clase in clases %}
             <tr>
                 <td>{{ clase.nombre }}</td>
                 <td>{{ clase.alumnos }}</td>
-                <td>{{ clase.nota_media }}</td>
-                <td>{{ clase.asistencia }}%</td>
+
+                <td>
+                    {% if clase.nota_media is not none %}
+                        {{ clase.nota_media }}
+                    {% else %}
+                        Sin datos
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if clase.asistencia is not none %}
+                        {{ clase.asistencia }}%
+                    {% else %}
+                        Sin datos
+                    {% endif %}
+                </td>
+
                 <td>{{ clase.alertas }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
+    <!-- 3. EQUIDAD DEL MODELO -->
+    <!-- Solo se muestra si existen métricas reales -->
+
     {% if equidad and "No hay métricas" not in equidad %}
-<h2>3. Equidad del modelo</h2>
-<p>{{ equidad }}</p>
-{% endif %}
 
-{% if acciones %}
-<h2>4. Acciones de seguimiento</h2>
-
-<table>
-    <thead>
-        <tr>
-            <th>Tipo de acción</th>
-            <th>Cantidad</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for accion in acciones %}
-        <tr>
-            <td>{{ accion.tipo }}</td>
-            <td>{{ accion.cantidad }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endif %}
+    <h2>3. Equidad del modelo</h2>
 
     <p>{{ equidad }}</p>
 
-    <h2>4. Acciones de seguimiento</h2>
+    {% endif %}
+
+    <!-- 4. ACCIONES DE SEGUIMIENTO -->
+    <!-- Solo se muestra si existen acciones -->
+
+    {% if acciones %}
+
+    <h2>
+        {% if equidad and "No hay métricas" not in equidad %}
+            4. Acciones de seguimiento
+        {% else %}
+            3. Acciones de seguimiento
+        {% endif %}
+    </h2>
 
     <table>
         <thead>
@@ -136,6 +157,7 @@
                 <th>Cantidad</th>
             </tr>
         </thead>
+
         <tbody>
             {% for accion in acciones %}
             <tr>
@@ -146,13 +168,18 @@
         </tbody>
     </table>
 
+    {% endif %}
+
+    <!-- INFORMACIÓN DE LA FUENTE -->
     <p class="nota">
-    Fuente: {{ fuente }}.
-    {{ observaciones }}
-    Las predicciones son herramientas de apoyo,
-    no diagnósticos.
-    No se muestran datos individuales de alumnos.
-</p>
+        <strong>Fuente:</strong> {{ fuente }}.
+        {{ observaciones }}
+
+        Las predicciones son herramientas de apoyo,
+        no diagnósticos.
+
+        No se muestran datos individuales de alumnos.
+    </p>
 
 </body>
 </html>
