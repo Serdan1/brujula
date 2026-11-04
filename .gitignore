@@ -22,3 +22,6 @@ data/processed/
 
 reports/.env
 reports/.token
+
+# Informes PDF generados
+reports/output/*.pdf
