@@ -16,11 +16,20 @@ class SupabaseClient:
 
     def __init__(self, access_token=None):
         self.url = os.getenv("SUPABASE_URL", "").rstrip("/")
-        self.api_key = (
-            os.getenv("SUPABASE_PUBLISHABLE_KEY")
-            or os.getenv("SUPABASE_ANON_KEY")
-        )
         self.access_token = access_token
+
+        # Modo servicio (GitHub Actions): usa la clave secreta y no necesita iniciar sesión.
+        # En local, sin esa variable, se sigue usando la clave pública con el token del usuario.
+        clave_servicio = os.getenv("SUPABASE_SERVICE_KEY")
+        self.modo_servicio = bool(clave_servicio) and not access_token
+
+        if self.modo_servicio:
+            self.api_key = clave_servicio
+        else:
+            self.api_key = (
+                os.getenv("SUPABASE_PUBLISHABLE_KEY")
+                or os.getenv("SUPABASE_ANON_KEY")
+            )
 
     def esta_configurado(self):
         return bool(self.url and self.api_key)
@@ -37,15 +46,18 @@ class SupabaseClient:
                 "Comprueba el archivo reports/.env."
             )
 
-        if not self.access_token:
+        if not self.access_token and not self.modo_servicio:
             raise ValueError(
                 "No hay una sesión autenticada de Supabase."
             )
 
-        headers = {
-            "apikey": self.api_key,
-            "Authorization": f"Bearer {self.access_token}",
-        }
+        headers = {"apikey": self.api_key}
+
+        if self.access_token:
+            headers["Authorization"] = f"Bearer {self.access_token}"
+        elif not self.api_key.startswith("sb_"):
+            # Claves antiguas en formato JWT
+            headers["Authorization"] = f"Bearer {self.api_key}"
 
         parametros = {"select": "*"}
 
