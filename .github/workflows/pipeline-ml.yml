@@ -1,20 +1,34 @@
-# Brújula — proceso completo de datos y modelos
-# - Manual (Actions > Pipeline ML > Run workflow): ejecuta todo y, si se marca, publica en Supabase.
-# - Automático al subir cambios a develop en ml/ o data/: ejecuta todo SIN publicar, para comprobar que nada se rompe.
-# Secretos necesarios para publicar (Settings > Secrets and variables > Actions):
-#   SUPABASE_URL y SUPABASE_SERVICE_KEY
+
+# Brújula — proceso completo de datos, modelos e informes PDF
+#
+# Manual (Actions > Pipeline ML > Run workflow):
+# Ejecuta el pipeline completo.
+# Si publicar está activado, publica resultados e informes en Supabase.
+#
+# Automático al subir cambios a develop en ml/ o data/:
+# Ejecuta el pipeline SIN publicar resultados ni informes.
+#
+# Secretos necesarios:
+# SUPABASE_URL
+# SUPABASE_SERVICE_KEY
+
 name: Pipeline ML
 
 on:
   workflow_dispatch:
     inputs:
       publicar:
-        description: "Publicar los resultados en Supabase"
+        description: "Publicar los resultados e informes en Supabase"
         type: boolean
         default: true
+
   push:
     branches: [develop]
-    paths: ["ml/**", "data/**", ".github/workflows/pipeline-ml.yml"]
+    paths:
+      - "ml/**"
+      - "data/**"
+      - "reports/**"
+      - ".github/workflows/pipeline-ml.yml"
 
 concurrency:
   group: pipeline-ml
@@ -24,49 +38,83 @@ jobs:
   pipeline:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+
     defaults:
       run:
         working-directory: ml
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+
+      # 1. Descargar el repositorio
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      # 2. Configurar Python
+      - name: Configurar Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: ml/requirements-ci.txt
 
+      # 3. Instalar dependencias de inteligencia artificial
       - name: Instalar dependencias
         run: |
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements-ci.txt
 
+      # 4. Instalar dependencias para generar PDF
+      - name: Instalar dependencias de informes PDF
+        working-directory: .
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            libpango-1.0-0 \
+            libpangocairo-1.0-0 \
+            libcairo2 \
+            libgdk-pixbuf-2.0-0 \
+            libffi-dev \
+            fonts-dejavu-core
+
+          pip install -r reports/requirements.txt
+
+      # 5. Preparar datos UCI y ampliación sintética
       - name: Generar las tablas (UCI + ampliación sintética)
         working-directory: .
         run: |
-          # Usa los CSV de la UCI ya incluidos en el repositorio para no depender de la web de la UCI
-          mkdir -p data/raw && cp ml/data/raw/student-*.csv data/raw/
+          # Utilizar los CSV incluidos en el repositorio
+          mkdir -p data/raw
+          cp ml/data/raw/student-*.csv data/raw/
+
           python data/prepare_uci.py
           python data/extend.py
 
+      # 6. Generar variables
       - name: Variables
         run: python features.py
 
+      # 7. Ejecutar modelos de referencia
       - name: Modelos de referencia
         run: python baselines.py
 
+      # 8. Ejecutar red neuronal
       - name: Red neuronal
         run: python model.py
 
+      # 9. Comparar modelos
       - name: Comparar combinaciones
         run: python combinar.py
 
+      # 10. Generar explicabilidad SHAP
       - name: Explicabilidad SHAP
         run: python explain.py
 
+      # 11. Generar alertas educativas
       - name: Alertas
         run: python alerts.py
 
+      # 12. Publicar resultados en Supabase
       - name: Publicar en Supabase
         if: github.event_name == 'workflow_dispatch' && inputs.publicar
         env:
@@ -74,6 +122,21 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python publish.py
 
+      # 13. Generar y subir informes PDF a Supabase Storage
+      - name: Generar y subir informes PDF
+        if: github.event_name == 'workflow_dispatch' && inputs.publicar
+        working-directory: .
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PUBLICAR_INFORMES: "true"
+        run: |
+          echo "Generando informes de clase del periodo 1..."
+          python reports/main.py --periodo 1
+
+          echo "Generación y subida de informes finalizada."
+
+      # 14. Guardar resultados del pipeline
       - name: Guardar resultados
         if: always()
         uses: actions/upload-artifact@v4
