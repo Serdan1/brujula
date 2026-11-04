@@ -1,79 +1,178 @@
-# Brújula — proceso completo de datos y modelos
-# - Manual (Actions > Pipeline ML > Run workflow): ejecuta todo y, si se marca, publica en Supabase.
-# - Automático al subir cambios a develop en ml/ o data/: ejecuta todo SIN publicar, para comprobar que nada se rompe.
-# Secretos necesarios para publicar (Settings > Secrets and variables > Actions):
-#   SUPABASE_URL y SUPABASE_SERVICE_KEY
+
+# Brújula — Pipeline ML e informes PDF
+#
+# EJECUCIÓN MANUAL:
+# - solo_pipeline: ejecuta la IA sin publicar.
+# - publicar_todo: ejecuta la IA, publica resultados
+#   y genera informes PDF de clases y centro.
+# - solo_centro: genera y sube únicamente el informe
+#   del centro, sin ejecutar los modelos de IA.
+#
+# PERIODO:
+# Se selecciona desde GitHub Actions: 1, 2 o 3.
+#
+# EJECUCIÓN AUTOMÁTICA EN DEVELOP:
+# Ejecuta el pipeline ML sin publicar en Supabase.
+#
+# SECRETOS NECESARIOS PARA PUBLICAR:
+# SUPABASE_URL
+# SUPABASE_SERVICE_KEY
+
 name: Pipeline ML
 
 on:
   workflow_dispatch:
     inputs:
-      publicar:
-        description: "Publicar los resultados en Supabase"
-        type: boolean
-        default: true
+      modo:
+        description: "Tipo de ejecución"
+        type: choice
+        required: true
+        default: solo_pipeline
+        options:
+          - solo_pipeline
+          - publicar_todo
+          - solo_centro
+
+      periodo:
+        description: "Periodo académico"
+        type: choice
+        required: true
+        default: "1"
+        options:
+          - "1"
+          - "2"
+          - "3"
+
   push:
     branches: [develop]
-    paths: ["ml/**", "data/**", ".github/workflows/pipeline-ml.yml"]
+    paths:
+      - "ml/**"
+      - "data/**"
+      - "reports/**"
+      - ".github/workflows/pipeline-ml.yml"
 
 concurrency:
   group: pipeline-ml
   cancel-in-progress: false
 
 jobs:
+
+  # =====================================================
+  # TRABAJO 1: PIPELINE DE INTELIGENCIA ARTIFICIAL
+  # =====================================================
+
   pipeline:
+    if: >-
+      github.event_name != 'workflow_dispatch' ||
+      inputs.modo != 'solo_centro'
+
     runs-on: ubuntu-latest
     timeout-minutes: 60
+
     defaults:
       run:
         working-directory: ml
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+
+      # 1. Descargar el repositorio
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      # 2. Configurar Python
+      - name: Configurar Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: ml/requirements-ci.txt
 
+      # 3. Instalar dependencias de IA
       - name: Instalar dependencias
         run: |
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements-ci.txt
 
+      # 4. Instalar dependencias PDF
+      - name: Instalar dependencias de informes PDF
+        working-directory: .
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            libpango-1.0-0 \
+            libpangocairo-1.0-0 \
+            libcairo2 \
+            libgdk-pixbuf-2.0-0 \
+            libffi-dev \
+            fonts-dejavu-core
+
+          pip install -r reports/requirements.txt
+
+      # 5. Preparar datos UCI y ampliación sintética
       - name: Generar las tablas (UCI + ampliación sintética)
         working-directory: .
         run: |
-          # Usa los CSV de la UCI ya incluidos en el repositorio para no depender de la web de la UCI
-          mkdir -p data/raw && cp ml/data/raw/student-*.csv data/raw/
+          mkdir -p data/raw
+          cp ml/data/raw/student-*.csv data/raw/
+
           python data/prepare_uci.py
           python data/extend.py
 
+      # 6. Generar variables
       - name: Variables
         run: python features.py
 
+      # 7. Ejecutar modelos de referencia
       - name: Modelos de referencia
         run: python baselines.py
 
+      # 8. Ejecutar red neuronal
       - name: Red neuronal
         run: python model.py
 
+      # 9. Comparar modelos
       - name: Comparar combinaciones
         run: python combinar.py
 
+      # 10. Explicabilidad SHAP
       - name: Explicabilidad SHAP
         run: python explain.py
 
+      # 11. Generar alertas
       - name: Alertas
         run: python alerts.py
 
+      # 12. Publicar resultados de IA en Supabase
       - name: Publicar en Supabase
-        if: github.event_name == 'workflow_dispatch' && inputs.publicar
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          inputs.modo == 'publicar_todo'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python publish.py
 
+      # 13. Generar y subir informes PDF de clases y centro
+      - name: Generar y subir informes PDF
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          inputs.modo == 'publicar_todo'
+        working-directory: .
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PUBLICAR_INFORMES: "true"
+          PERIODO: ${{ inputs.periodo }}
+        run: |
+          echo "Generando informes de clases y centro..."
+          echo "Periodo seleccionado: $PERIODO"
+
+          python reports/main.py --periodo "$PERIODO"
+
+          echo "Generación y subida de informes finalizada."
+
+      # 14. Guardar resultados del pipeline
       - name: Guardar resultados
         if: always()
         uses: actions/upload-artifact@v4
@@ -84,3 +183,57 @@ jobs:
             ml/results/figures/
             ml/results/publicar/
           retention-days: 14
+
+  # =====================================================
+  # TRABAJO 2: INFORME INDEPENDIENTE DEL CENTRO
+  # =====================================================
+
+  informe_centro:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.modo == 'solo_centro'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+
+      # 1. Descargar el repositorio
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      # 2. Configurar Python
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Instalar dependencias para generar PDF
+      - name: Instalar dependencias PDF
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            libpango-1.0-0 \
+            libpangocairo-1.0-0 \
+            libcairo2 \
+            libgdk-pixbuf-2.0-0 \
+            libffi-dev \
+            fonts-dejavu-core
+
+          pip install -r reports/requirements.txt
+
+      # 4. Generar y subir el informe del centro
+      - name: Generar y subir informe del centro
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PUBLICAR_INFORMES: "true"
+          PERIODO: ${{ inputs.periodo }}
+        run: |
+          echo "Iniciando informe del centro..."
+          echo "Periodo seleccionado: $PERIODO"
+
+          python reports/main.py --solo-centro --periodo "$PERIODO"
+
+          echo "Informe del centro generado y subido."

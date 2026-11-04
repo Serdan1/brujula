@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Brújula - Informe de clase</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #24343A;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #174A55;
+            font-size: 24px;
+            border-bottom: 3px solid #E9B45C;
+            padding-bottom: 12px;
+        }
+
+        h2 {
+            color: #174A55;
+            font-size: 19px;
+            margin-top: 25px;
+        }
+
+        h3 {
+            color: #174A55;
+            font-size: 15px;
+            margin-top: 20px;
+        }
+
+        .cabecera {
+            margin-bottom: 25px;
+        }
+
+        .resumen {
+            background-color: #F7F4ED;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+
+        .indicador {
+            margin-bottom: 12px;
+        }
+
+        .indicador strong {
+            color: #174A55;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        th {
+            background-color: #174A55;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #DDDDDD;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F7F4ED;
+        }
+
+        .sin-alertas {
+            background-color: #F7F4ED;
+            padding: 15px;
+            border-left: 4px solid #E9B45C;
+            margin-top: 15px;
+        }
+
+        .nota {
+            font-size: 10px;
+            color: #666666;
+            margin-top: 25px;
+        }
+
+        .pie {
+            margin-top: 35px;
+            padding-top: 10px;
+            border-top: 1px solid #DDDDDD;
+            font-size: 10px;
+            color: #666666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cabecera">
+        <h1>Brújula | Informe de clase</h1>
+
+        <h2>{{ clase }}</h2>
+
+        <p>
+            <strong>Asignatura:</strong>
+            {{ asignatura }}
+        </p>
+
+        <p>
+            <strong>Periodo académico:</strong>
+            {{ periodo }}
+        </p>
+
+        <p>
+            <strong>Fecha de generación:</strong>
+            {{ fecha }}
+        </p>
+    </div>
+
+    <h2>1. Resumen académico</h2>
+
+    <div class="resumen">
+
+        <div class="indicador">
+            <strong>Total de alumnos:</strong>
+            {{ total_alumnos }}
+        </div>
+
+        <div class="indicador">
+            <strong>Nota media de examen:</strong>
+            {{ nota_media }}
+        </div>
+
+        <div class="indicador">
+            <strong>Asistencia media:</strong>
+            {{ asistencia_media }} %
+        </div>
+
+        <div class="indicador">
+            <strong>Alertas activas:</strong>
+            {{ total_alertas }}
+        </div>
+
+    </div>
+
+    <h2>2. Alertas educativas</h2>
+
+    <p>
+        Esta sección presenta las alertas educativas
+        disponibles para la clase y el periodo seleccionado.
+    </p>
+
+    {% if alertas %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Motivo</th>
+                <th>Severidad</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for alerta in alertas %}
+            <tr>
+                <td>{{ alerta.motivo }}</td>
+                <td>{{ alerta.severidad }}</td>
+                <td>{{ alerta.estado }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+
+    <div class="sin-alertas">
+        <p>
+            El detalle de las alertas individuales
+            todavía no está integrado en esta versión
+            del informe.
+        </p>
+    </div>
+
+    {% endif %}
+
+    <h2>3. Interpretación de los resultados</h2>
+
+    <p>
+        Los indicadores académicos permiten analizar
+        el rendimiento general de la clase y detectar
+        posibles necesidades de seguimiento educativo.
+    </p>
+
+    <p>
+        Las alertas y las predicciones de inteligencia
+        artificial son herramientas de apoyo para
+        el profesorado. No constituyen diagnósticos
+        ni sustituyen la valoración del docente.
+    </p>
+
+    <h2>4. Información del informe</h2>
+
+    <p>
+        <strong>Fuente de datos:</strong>
+        {{ fuente }}
+    </p>
+
+    <p>
+        <strong>Periodo analizado:</strong>
+        {{ periodo }}
+    </p>
+
+    <div class="pie">
+        <p>
+            Brújula - Hack4Edu 2026
+        </p>
+
+        <p>
+            Informe académico generado automáticamente.
+            Documento destinado al personal autorizado.
+        </p>
+    </div>
+
+</body>
+</html>
