@@ -1,15 +1,22 @@
 
 # Brújula — Pipeline ML e informes PDF
 #
-# Ejecución manual:
-# - Ejecuta el pipeline de inteligencia artificial.
-# - Si publicar está activado, publica resultados
-#   e informes PDF en Supabase.
+# EJECUCIÓN MANUAL:
+# 1. Sin opciones:
+#    Ejecuta el pipeline de inteligencia artificial sin publicar.
 #
-# Ejecución automática en develop:
-# - Ejecuta el pipeline sin publicar.
+# 2. Publicar resultados e informes:
+#    Ejecuta el pipeline completo y publica los resultados
+#    de IA y los informes PDF de clases y centro.
 #
-# Secretos necesarios:
+# 3. Publicar solo el informe del centro:
+#    Genera y sube únicamente el informe del centro.
+#    No ejecuta los modelos de inteligencia artificial.
+#
+# EJECUCIÓN AUTOMÁTICA EN DEVELOP:
+# Ejecuta el pipeline sin publicar en Supabase.
+#
+# SECRETOS NECESARIOS:
 # SUPABASE_URL
 # SUPABASE_SERVICE_KEY
 
@@ -20,6 +27,11 @@ on:
     inputs:
       publicar:
         description: "Publicar los resultados e informes en Supabase"
+        type: boolean
+        default: false
+
+      publicar_solo_centro:
+        description: "Generar y subir únicamente el informe del centro"
         type: boolean
         default: false
 
@@ -36,7 +48,16 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+
+  # =====================================================
+  # TRABAJO 1: PIPELINE DE INTELIGENCIA ARTIFICIAL
+  # =====================================================
+
   pipeline:
+    if: >-
+      github.event_name != 'workflow_dispatch' ||
+      !inputs.publicar_solo_centro
+
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -45,6 +66,7 @@ jobs:
         working-directory: ml
 
     steps:
+
       # 1. Descargar el repositorio
       - name: Descargar repositorio
         uses: actions/checkout@v4
@@ -68,6 +90,7 @@ jobs:
         working-directory: .
         run: |
           sudo apt-get update
+
           sudo apt-get install -y \
             libpango-1.0-0 \
             libpangocairo-1.0-0 \
@@ -78,12 +101,13 @@ jobs:
 
           pip install -r reports/requirements.txt
 
-      # 5. Preparar datos
+      # 5. Preparar datos UCI y ampliación sintética
       - name: Generar las tablas (UCI + ampliación sintética)
         working-directory: .
         run: |
           mkdir -p data/raw
           cp ml/data/raw/student-*.csv data/raw/
+
           python data/prepare_uci.py
           python data/extend.py
 
@@ -103,7 +127,7 @@ jobs:
       - name: Comparar combinaciones
         run: python combinar.py
 
-      # 10. Explicabilidad
+      # 10. Explicabilidad SHAP
       - name: Explicabilidad SHAP
         run: python explain.py
 
@@ -111,28 +135,34 @@ jobs:
       - name: Alertas
         run: python alerts.py
 
-      # 12. Publicar resultados
+      # 12. Publicar resultados de IA en Supabase
       - name: Publicar en Supabase
-        if: github.event_name == 'workflow_dispatch' && inputs.publicar
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          inputs.publicar
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python publish.py
 
-      # 13. Generar y subir informes PDF
+      # 13. Generar y subir informes PDF de clases y centro
       - name: Generar y subir informes PDF
-        if: github.event_name == 'workflow_dispatch' && inputs.publicar
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          inputs.publicar
         working-directory: .
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           PUBLICAR_INFORMES: "true"
         run: |
-          echo "Generando informes de clase del periodo 1..."
+          echo "Generando informes de clases y centro..."
+
           python reports/main.py --periodo 1
+
           echo "Generación y subida de informes finalizada."
 
-      # 14. Guardar resultados
+      # 14. Guardar resultados del pipeline
       - name: Guardar resultados
         if: always()
         uses: actions/upload-artifact@v4
@@ -143,3 +173,56 @@ jobs:
             ml/results/figures/
             ml/results/publicar/
           retention-days: 14
+
+  # =====================================================
+  # TRABAJO 2: INFORME INDEPENDIENTE DEL CENTRO
+  # =====================================================
+
+  informe_centro:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.publicar_solo_centro &&
+      !inputs.publicar
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+
+      # 1. Descargar el repositorio
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      # 2. Configurar Python
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Instalar dependencias para generar PDF
+      - name: Instalar dependencias PDF
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            libpango-1.0-0 \
+            libpangocairo-1.0-0 \
+            libcairo2 \
+            libgdk-pixbuf-2.0-0 \
+            libffi-dev \
+            fonts-dejavu-core
+
+          pip install -r reports/requirements.txt
+
+      # 4. Generar y subir el informe del centro
+      - name: Generar y subir informe del centro
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PUBLICAR_INFORMES: "true"
+        run: |
+          echo "Iniciando informe del centro..."
+
+          python reports/main.py --solo-centro --periodo 1
+
+          echo "Informe del centro generado y subido."
