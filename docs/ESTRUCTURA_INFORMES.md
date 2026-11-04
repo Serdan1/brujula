@@ -2,7 +2,7 @@
 
 **Hack4Edu 2026 · Reto 13**  
 **Responsable:** Alex · Informes, diagramas y entrega  
-**Estado:** propuesta de diseño; pendiente de validación del equipo y de integración con Supabase.
+**Estado:** propuesta de diseño
 
 ## Objetivo y criterios comunes
 

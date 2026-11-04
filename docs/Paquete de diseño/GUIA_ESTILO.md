@@ -2,8 +2,6 @@
 
 **Responsable:** Alex · **Destinatario:** Iván (frontend) · **Proyecto:** Hack4Edu 2026, Reto 13
 
-> Propuesta de diseño para aprobación del equipo. Respeta la indicación del reparto: azul petróleo, fondo arena, ámbar para avisos y ausencia de rojo intenso.
-
 ## 1. Paleta
 
 | Token | HEX | Uso |
@@ -67,7 +65,3 @@
 3. **Clase:** tabla legible con notas, prácticas, participación y asistencia; alertas explicadas.
 4. **Análisis completo:** SHAP, comparación de modelos, equidad e intervalos.
 5. **Registrar acción:** formulario con tipo, descripción y fecha de revisión.
-
-## 7. Entrega a Iván
-
-Compartir esta guía y `tokens.css`. Los colores son una propuesta y deben validarse con el equipo antes de fijarlos como contrato visual.
