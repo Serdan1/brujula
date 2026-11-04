@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { cargarAlertas, nombreClase } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
+import BotonInforme from '../components/BotonInforme';
 
 export default function Clase() {
   const { asig, id } = useParams();
@@ -48,9 +49,12 @@ export default function Clase() {
             {alumnos.length} alumnos · {conAlerta} con alguna alerta · datos del primer periodo
           </p>
         </div>
-        <Link to={`/asignatura/${asig}/clase/${id}/analisis`} className="px-4 py-2 bg-[#0f3d4c] text-white rounded">
-          Análisis completo de la clase →
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <BotonInforme ruta={`clases/${id}/asignatura_${asig}/periodo_1.pdf`} />
+          <Link to={`/asignatura/${asig}/clase/${id}/analisis`} className="px-4 py-2 bg-[#0f3d4c] text-white rounded">
+            Análisis completo de la clase →
+          </Link>
+        </div>
       </div>
 
       {deGrupo.map((a) => (
