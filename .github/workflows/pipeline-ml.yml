@@ -1,12 +1,13 @@
 
-# Brújula — proceso completo de datos, modelos e informes PDF
+# Brújula — Pipeline ML e informes PDF
 #
-# Manual (Actions > Pipeline ML > Run workflow):
-# Ejecuta el pipeline completo.
-# Si publicar está activado, publica resultados e informes en Supabase.
+# Ejecución manual:
+# - Pipeline normal: ejecuta los modelos de IA.
+# - Publicar: publica resultados e informes en Supabase.
+# - Probar Storage: genera y sube únicamente un PDF ficticio.
 #
-# Automático al subir cambios a develop en ml/ o data/:
-# Ejecuta el pipeline SIN publicar resultados ni informes.
+# Ejecución automática en develop:
+# - Ejecuta los modelos sin publicar en Supabase.
 #
 # Secretos necesarios:
 # SUPABASE_URL
@@ -20,7 +21,12 @@ on:
       publicar:
         description: "Publicar los resultados e informes en Supabase"
         type: boolean
-        default: true
+        default: false
+
+      probar_storage:
+        description: "Probar solo la subida de un PDF ficticio"
+        type: boolean
+        default: false
 
   push:
     branches: [develop]
@@ -35,7 +41,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+
+  # =====================================================
+  # TRABAJO 1: PIPELINE COMPLETO DE INTELIGENCIA ARTIFICIAL
+  # =====================================================
+
   pipeline:
+    if: github.event_name != 'workflow_dispatch' || (!inputs.probar_storage && !inputs.publicar || !inputs.probar_storage && inputs.publicar)
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -78,12 +90,11 @@ jobs:
             fonts-dejavu-core
 
           pip install -r reports/requirements.txt
-      
+
       # 5. Preparar datos UCI y ampliación sintética
       - name: Generar las tablas (UCI + ampliación sintética)
         working-directory: .
         run: |
-          # Utilizar los CSV incluidos en el repositorio
           mkdir -p data/raw
           cp ml/data/raw/student-*.csv data/raw/
 
@@ -122,7 +133,7 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python publish.py
 
-      # 13. Generar y subir informes PDF a Supabase Storage
+      # 13. Generar y subir informes PDF
       - name: Generar y subir informes PDF
         if: github.event_name == 'workflow_dispatch' && inputs.publicar
         working-directory: .
@@ -132,6 +143,7 @@ jobs:
           PUBLICAR_INFORMES: "true"
         run: |
           echo "Generando informes de clase del periodo 1..."
+
           python reports/main.py --periodo 1
 
           echo "Generación y subida de informes finalizada."
@@ -147,3 +159,52 @@ jobs:
             ml/results/figures/
             ml/results/publicar/
           retention-days: 14
+
+  # =====================================================
+  # TRABAJO 2: PRUEBA AISLADA DE SUPABASE STORAGE
+  # =====================================================
+
+  prueba_storage:
+    if: github.event_name == 'workflow_dispatch' && inputs.probar_storage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+
+      # 1. Descargar el repositorio
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      # 2. Configurar Python
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Instalar dependencias para generar PDF
+      - name: Instalar dependencias PDF
+        run: |
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            libpango-1.0-0 \
+            libpangocairo-1.0-0 \
+            libcairo2 \
+            libgdk-pixbuf-2.0-0 \
+            libffi-dev \
+            fonts-dejavu-core
+
+          pip install -r reports/requirements.txt
+
+      # 4. Generar y subir PDF ficticio a Supabase
+      - name: Generar y subir PDF ficticio
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CONFIRMAR_PRUEBA_STORAGE: "true"
+        run: |
+          echo "Iniciando prueba de Supabase Storage..."
+
+          python reports/probar_storage_ci.py
+
+          echo "Prueba de Storage finalizada."
