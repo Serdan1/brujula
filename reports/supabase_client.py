@@ -62,3 +62,43 @@ class SupabaseClient:
         respuesta.raise_for_status()
 
         return respuesta.json()
+
+    def consultar_resumen(
+        self,
+        vista,
+        columnas,
+        filtros=None
+    ):
+        """
+        Consulta vistas agregadas de Supabase.
+
+        vista: nombre de la vista autorizada
+        columnas: columnas que necesitamos
+        filtros: condiciones PostgREST
+        """
+
+        vistas_permitidas = {
+            "v_clase_resumen",
+            "v_asignatura_resumen"
+        }
+
+        if vista not in vistas_permitidas:
+            raise ValueError(
+                "La vista solicitada no está permitida."
+            )
+
+        if not columnas:
+            raise ValueError(
+                "Debes indicar las columnas a consultar."
+            )
+
+        parametros = {
+            "select": ",".join(columnas)
+        }
+
+        if filtros:
+            parametros.update(filtros)
+
+        # Reutilizamos el método de consulta existente.
+        # Su parámetro select puede sobrescribirse.
+        return self.consultar(vista, parametros)

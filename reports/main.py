@@ -1,33 +1,11 @@
 
+from datos_informes import obtener_datos_clase
 from pdf_generator import generar_pdf
 
 
 def generar_informe_clase():
 
-    # Datos ficticios de demostración
-    datos = {
-        "clase": "3º A",
-        "asignatura": "Matemáticas",
-        "total_alumnos": 25,
-        "total_alertas": 3,
-        "alertas": [
-            {
-                "motivo": "Bajada de notas",
-                "severidad": "Alta",
-                "estado": "Nueva"
-            },
-            {
-                "motivo": "Baja participación",
-                "severidad": "Media",
-                "estado": "Revisada"
-            },
-            {
-                "motivo": "Faltas en aumento",
-                "severidad": "Media",
-                "estado": "Nueva"
-            }
-        ]
-    }
+    datos = obtener_datos_clase(modo="demo")
 
     generar_pdf(
         nombre_plantilla="clase.html",
