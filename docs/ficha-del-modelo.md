@@ -1,6 +1,6 @@
 # Ficha del modelo — Brújula v1.0
 
-*#hack4edu 2026 · Reto 13 «La escuela que aprende de sus datos» · 3 de noviembre de 2026*
+*#hack4edu 2026 · Reto 13 «La escuela que aprende de sus datos» · v1.1 · 4 de noviembre de 2026*
 *Responsable: Daniel Serrano (deep learning) · Código: `ml/` · Licencia MIT*
 
 ## 1. Qué hace y qué no hace
@@ -28,6 +28,14 @@ Con esto se generan alertas por alumno, por clase y por asignatura que el profes
 |---|---|---|
 | [UCI Student Performance](https://archive.ics.uci.edu/dataset/320/student+performance) (CC BY 4.0) | 395 alumnos de Matemáticas y 649 de Portugués de dos institutos portugueses (curso 2005-06): notas de 3 periodos (G1, G2, G3), faltas y contexto | Real |
 | Ampliación del equipo (`data/extend.py`) | Clases, profesores, asignaturas de Inglés y Ciencias, nota de prácticas, participación en clase, asistencia y reparto de las faltas por periodo, correlacionados con las notas reales | Sintético |
+
+Las tres variables sintéticas del periodo se calculan con fórmulas a partir de datos que el modelo ya tiene:
+
+- **Nota de prácticas** ≈ 0,7 × nota del periodo + 3,5 + ajuste por tiempo de estudio − ajuste por faltas + ruido
+- **Participación** ≈ 0,35 × nota del periodo + 1 + ajuste por tiempo de estudio − ajuste por faltas + ruido
+- **Asistencia** = 100 × (1 − faltas del periodo / 40 sesiones)
+
+Hacen que los datos de la demo sean coherentes, pero **no aportan información nueva** sobre el alumno (ver sección 4.1 y limitación 2).
 
 - **674 alumnos únicos** (370 están en las dos asignaturas reales) en 28 clases.
 - **Entrenamiento:** solo las asignaturas reales, con 1.044 filas alumno-asignatura.
@@ -77,6 +85,16 @@ Se compararon 7 combinaciones de modelos fijando **el mismo recall que la regla 
 
 **Resultado.** El modelo elegido detecta a los mismos alumnos que la regla G1 con **23 falsas alarmas menos**, y encuentra a **14 alumnos que aprobaron el primer periodo pero acabarán necesitando apoyo**. El umbral de decisión es 0,511.
 
+**¿Inflan los resultados las variables sintéticas?** Para medirlo, se reentrenó el modelo de alertas sin la nota de prácticas, la participación y la asistencia:
+
+| Modelo de alertas | PR-AUC | Precisión | Alertas | Detectados que G1 no ve |
+|---|---|---|---|---|
+| Regla G1 < 10 | — | 0,642 | 299 | — |
+| Logística + LightGBM **sin variables sintéticas** | 0,797 | 0,677 | 285 | 13 |
+| Logística + LightGBM con variables sintéticas | 0,799 | 0,699 | 276 | 14 |
+
+La mejora sobre la regla G1 se mantiene casi entera solo con datos reales: de las 23 falsas alarmas menos, 14 se consiguen sin ninguna variable sintética.
+
 ### 4.2 Nota final estimada
 
 | Modelo | Error medio (MAE, puntos sobre 20) |
@@ -108,7 +126,7 @@ Cada alerta muestra hasta 3 motivos, calculados con **SHAP** (KernelExplainer) s
 - **Con un peso mínimo** de 1 punto porcentual en la probabilidad.
 - **En una alerta, solo los factores que la provocan.**
 
-**Variables más importantes (global):** nota del primer periodo, asignatura, suspensos previos, nota de prácticas y participación en clase.
+**Variables más importantes (global):** nota del primer periodo, asignatura, suspensos previos, nota de prácticas y participación en clase. La importancia de prácticas y participación refleja cómo se generaron estos datos sintéticos a partir de la nota (SHAP reparte entre ellas parte del peso de la nota del primer periodo), **no es un hallazgo sobre el aprendizaje**. Entre las variables reales, las que más pesan después de la nota son los suspensos previos, la edad y las faltas.
 
 ## 6. Equidad
 
@@ -122,7 +140,6 @@ Medida con el modelo de alertas elegido, con predicciones fuera de partición.
 | Zona urbana | 759 | 0,837 | 8,4 % |
 | Gabriel Pereira | 772 | 0,834 | 9,7 % |
 | Mousinho da Silveira | 272 | 0,847 | 11,8 % |
-
 
 **Lectura.**
 
@@ -144,7 +161,7 @@ Medida con el modelo de alertas elegido, con predicciones fuera de partición.
 ## 8. Limitaciones
 
 1. **Datos de hace 20 años** de dos institutos portugueses: los patrones pueden no trasladarse a otros contextos. Antes de usarlo en una escuela real hay que reentrenarlo con sus propios datos.
-2. **Variables sintéticas.** Prácticas, participación, asistencia, faltas por periodo, y las asignaturas de Inglés y Ciencias, son sintéticas. Las predicciones para Inglés y Ciencias extrapolan un modelo entrenado con Matemáticas y Portugués.
+2. **Variables sintéticas derivadas de las reales.** La nota de prácticas, la participación y la asistencia se generaron con fórmulas a partir de la nota del periodo, el tiempo de estudio y las faltas. No aportan información nueva sobre el alumno, y su importancia en SHAP refleja cómo se construyeron, no un hallazgo sobre el aprendizaje. Reentrenado sin ellas, el modelo de alertas obtiene un PR-AUC de 0,797 frente a 0,799, y da 285 alertas frente a 276 con el mismo recall: la mayor parte de la mejora sobre la regla G1 se mantiene solo con datos reales. Con datos reales de una escuela, el peso de estas variables podría ser muy distinto. También son sintéticos el reparto de las faltas por periodo y las asignaturas de Inglés y Ciencias, cuyas predicciones extrapolan un modelo entrenado con Matemáticas y Portugués.
 3. **El umbral de decisión** se fijó con las mismas predicciones fuera de partición con las que se evalúa, así que las métricas pueden ser ligeramente optimistas.
 4. **La nota del primer periodo domina** las predicciones: el modelo complementa, no sustituye, el criterio del profesor.
 5. **Diferencia de falsas alarmas en zona rural** (sección 6).
@@ -172,3 +189,4 @@ Todo usa semilla fija (42). Las credenciales de Supabase se leen de `ml/.env`, q
 | Versión | Fecha | Cambios |
 |---|---|---|
 | v1.0 | 3 nov 2026 | Primera versión: modelo de alertas logística + LightGBM y nota estimada con red neuronal |
+| v1.1 | 4 nov 2026 | Documentado cómo se generan las variables sintéticas y experimento de ablación sin ellas |
