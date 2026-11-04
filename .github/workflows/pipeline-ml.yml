@@ -78,7 +78,10 @@ jobs:
             fonts-dejavu-core
 
           pip install -r reports/requirements.txt
-          
+      - name: Comprobar generador PDF en Linux
+        working-directory: .
+        run: |
+          python -c "from reports.pdf_generator import generar_pdf; generar_pdf('clase.html', {'clase':'Clase de prueba','asignatura':'Prueba','periodo':'1','fecha':'04/11/2026','total_alumnos':25,'nota_media':12.5,'asistencia_media':95,'total_alertas':0,'alertas':[],'fuente':'Prueba de GitHub Actions'}, 'prueba_ci.pdf')"
 
       # 5. Preparar datos UCI y ampliación sintética
       - name: Generar las tablas (UCI + ampliación sintética)
@@ -147,4 +150,5 @@ jobs:
             ml/results/*.json
             ml/results/figures/
             ml/results/publicar/
+            reports/output/prueba_ci.pdf
           retention-days: 14
