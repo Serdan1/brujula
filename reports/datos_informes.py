@@ -158,3 +158,132 @@ def obtener_datos_clase_reales(
         # de las alertas individuales.
         "alertas": []
     }
+
+def obtener_datos_centro_reales(cliente, periodo):
+    """
+    Construye un resumen del centro a partir
+    de la vista v_clase_resumen de Supabase.
+
+    Cada registro representa una combinación
+    de clase, asignatura y periodo.
+    """
+
+    registros = cliente.consultar_resumen(
+        vista="v_clase_resumen",
+        columnas=[
+            "clase_id",
+            "curso",
+            "letra",
+            "asignatura_id",
+            "periodo",
+            "n_alumnos",
+            "media_examen",
+            "media_asistencia",
+            "alertas_activas"
+        ],
+        filtros={
+            "periodo": f"eq.{periodo}"
+        }
+    )
+
+    if not registros:
+        raise ValueError(
+            "No hay datos del centro para el periodo indicado."
+        )
+
+    clases = {}
+
+    for registro in registros:
+        clase_id = registro["clase_id"]
+
+        if clase_id not in clases:
+            clases[clase_id] = {
+                "nombre": (
+                    f"{registro['curso']}º "
+                    f"{registro['letra']}"
+                ),
+                "alumnos": 0,
+                "notas": [],
+                "asistencias": [],
+                "alertas": 0
+            }
+
+        clase = clases[clase_id]
+
+        clase["alumnos"] = max(
+            clase["alumnos"],
+            registro["n_alumnos"] or 0
+        )
+
+        if registro["media_examen"] is not None:
+            clase["notas"].append(
+                float(registro["media_examen"])
+            )
+
+        if registro["media_asistencia"] is not None:
+            clase["asistencias"].append(
+                float(registro["media_asistencia"])
+            )
+
+        clase["alertas"] += (
+            registro["alertas_activas"] or 0
+        )
+
+    def promedio(valores):
+        if not valores:
+            return None
+        return round(sum(valores) / len(valores), 2)
+
+    resumen_clases = []
+
+    for clase in clases.values():
+        resumen_clases.append({
+            "nombre": clase["nombre"],
+            "alumnos": clase["alumnos"],
+            "nota_media": promedio(clase["notas"]),
+            "asistencia": promedio(
+                clase["asistencias"]
+            ),
+            "alertas": clase["alertas"]
+        })
+
+    resumen_clases.sort(key=lambda c: c["nombre"])
+
+    total_alumnos = sum(
+        clase["alumnos"]
+        for clase in resumen_clases
+    )
+
+    total_alertas = sum(
+        clase["alertas"]
+        for clase in resumen_clases
+    )
+
+    asignaturas = {
+        registro["asignatura_id"]
+        for registro in registros
+    }
+
+    return {
+        "centro": "Centro educativo",
+        "periodo": f"Periodo {periodo}",
+        "fecha": date.today().strftime("%d/%m/%Y"),
+        "fuente": "Supabase - v_clase_resumen",
+        "total_clases": len(clases),
+        "total_alumnos": total_alumnos,
+        "total_asignaturas": len(asignaturas),
+        "total_alertas": total_alertas,
+        "clases": resumen_clases,
+        "equidad": (
+            "No hay métricas de equidad disponibles "
+            "en esta fuente de datos."
+        ),
+        "acciones": [],
+        "observaciones": (
+            "Las notas y asistencias son promedios "
+            "de los resúmenes por asignatura. "
+            "Las alertas son la suma de los "
+            "registros disponibles y podrían "
+            "repetirse entre asignaturas."
+        )
+    }

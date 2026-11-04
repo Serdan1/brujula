@@ -34,10 +34,11 @@ def subir_informe(ruta_pdf, ruta_storage):
 
     ruta_storage = ruta_storage.lstrip("/")
 
-    if not ruta_storage.startswith("clases/"):
+    if not ruta_storage.startswith(("clases/", "centros/")):
         raise ValueError(
-            "Los informes deben guardarse dentro de clases/"
-        )
+            "Los informes deben guardarse dentro "
+            "de clases/ o centros/"
+    )
 
     endpoint = (
         f"{url_supabase}/storage/v1/object/"
