@@ -2,21 +2,19 @@
 # Brújula — Pipeline ML e informes PDF
 #
 # EJECUCIÓN MANUAL:
-# 1. Sin opciones:
-#    Ejecuta el pipeline de inteligencia artificial sin publicar.
+# - solo_pipeline: ejecuta la IA sin publicar.
+# - publicar_todo: ejecuta la IA, publica resultados
+#   y genera informes PDF de clases y centro.
+# - solo_centro: genera y sube únicamente el informe
+#   del centro, sin ejecutar los modelos de IA.
 #
-# 2. Publicar resultados e informes:
-#    Ejecuta el pipeline completo y publica los resultados
-#    de IA y los informes PDF de clases y centro.
-#
-# 3. Publicar solo el informe del centro:
-#    Genera y sube únicamente el informe del centro.
-#    No ejecuta los modelos de inteligencia artificial.
+# PERIODO:
+# Se selecciona desde GitHub Actions: 1, 2 o 3.
 #
 # EJECUCIÓN AUTOMÁTICA EN DEVELOP:
-# Ejecuta el pipeline sin publicar en Supabase.
+# Ejecuta el pipeline ML sin publicar en Supabase.
 #
-# SECRETOS NECESARIOS:
+# SECRETOS NECESARIOS PARA PUBLICAR:
 # SUPABASE_URL
 # SUPABASE_SERVICE_KEY
 
@@ -25,15 +23,25 @@ name: Pipeline ML
 on:
   workflow_dispatch:
     inputs:
-      publicar:
-        description: "Publicar los resultados e informes en Supabase"
-        type: boolean
-        default: false
+      modo:
+        description: "Tipo de ejecución"
+        type: choice
+        required: true
+        default: solo_pipeline
+        options:
+          - solo_pipeline
+          - publicar_todo
+          - solo_centro
 
-      publicar_solo_centro:
-        description: "Generar y subir únicamente el informe del centro"
-        type: boolean
-        default: false
+      periodo:
+        description: "Periodo académico"
+        type: choice
+        required: true
+        default: "1"
+        options:
+          - "1"
+          - "2"
+          - "3"
 
   push:
     branches: [develop]
@@ -56,7 +64,7 @@ jobs:
   pipeline:
     if: >-
       github.event_name != 'workflow_dispatch' ||
-      !inputs.publicar_solo_centro
+      inputs.modo != 'solo_centro'
 
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -139,7 +147,7 @@ jobs:
       - name: Publicar en Supabase
         if: >-
           github.event_name == 'workflow_dispatch' &&
-          inputs.publicar
+          inputs.modo == 'publicar_todo'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -149,16 +157,18 @@ jobs:
       - name: Generar y subir informes PDF
         if: >-
           github.event_name == 'workflow_dispatch' &&
-          inputs.publicar
+          inputs.modo == 'publicar_todo'
         working-directory: .
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           PUBLICAR_INFORMES: "true"
+          PERIODO: ${{ inputs.periodo }}
         run: |
           echo "Generando informes de clases y centro..."
+          echo "Periodo seleccionado: $PERIODO"
 
-          python reports/main.py --periodo 1
+          python reports/main.py --periodo "$PERIODO"
 
           echo "Generación y subida de informes finalizada."
 
@@ -181,8 +191,7 @@ jobs:
   informe_centro:
     if: >-
       github.event_name == 'workflow_dispatch' &&
-      inputs.publicar_solo_centro &&
-      !inputs.publicar
+      inputs.modo == 'solo_centro'
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -220,9 +229,11 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           PUBLICAR_INFORMES: "true"
+          PERIODO: ${{ inputs.periodo }}
         run: |
           echo "Iniciando informe del centro..."
+          echo "Periodo seleccionado: $PERIODO"
 
-          python reports/main.py --solo-centro --periodo 1
+          python reports/main.py --solo-centro --periodo "$PERIODO"
 
           echo "Informe del centro generado y subido."
