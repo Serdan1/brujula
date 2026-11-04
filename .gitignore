@@ -18,3 +18,7 @@ ml/data/raw/*_old
 
 *.pkl
 data/processed/
+
+.venv/
+reports/.env
+reports/output/
