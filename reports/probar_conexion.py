@@ -7,14 +7,24 @@ from supabase_client import SupabaseClient
 
 
 BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / ".env", override=True)
 
 
 def probar_conexion():
-    token = os.getenv("SUPABASE_ACCESS_TOKEN")
+
+    # Obtener el token guardado tras iniciar sesión
+    ruta_token = BASE_DIR / ".token"
+
+    if ruta_token.exists():
+        token = ruta_token.read_text(
+            encoding="utf-8"
+        ).strip()
+    else:
+        token = os.getenv("SUPABASE_ACCESS_TOKEN")
 
     if not token:
-        print("Falta SUPABASE_ACCESS_TOKEN en reports/.env")
+        print("No se encontró el token de autenticación.")
+        print("Ejecuta primero: python reports/obtener_token.py")
         return
 
     cliente = SupabaseClient(access_token=token)

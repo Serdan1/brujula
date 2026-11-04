@@ -98,3 +98,63 @@ def obtener_datos_centro(modo="demo"):
             {"tipo": "Seguimiento de asistencia", "cantidad": 1}
         ]
     }
+
+def obtener_datos_clase_reales(
+    cliente,
+    clase_id,
+    asignatura_id,
+    periodo
+):
+    """
+    Consulta el resumen académico real de una clase.
+    """
+
+    registros = cliente.consultar_resumen(
+        vista="v_clase_resumen",
+        columnas=[
+            "clase_id",
+            "curso",
+            "letra",
+            "asignatura_id",
+            "periodo",
+            "n_alumnos",
+            "media_examen",
+            "media_asistencia",
+            "alertas_activas"
+        ],
+        filtros={
+            "clase_id": f"eq.{clase_id}",
+            "asignatura_id": f"eq.{asignatura_id}",
+            "periodo": f"eq.{periodo}"
+        }
+    )
+
+    if not registros:
+        raise ValueError(
+            "No se encontraron datos accesibles "
+            "para la clase, asignatura y periodo."
+        )
+
+    registro = registros[0]
+
+    return {
+        "clase": (
+            f"{registro['curso']}º "
+            f"{registro['letra']}"
+        ),
+        "asignatura": (
+            f"Asignatura {registro['asignatura_id']}"
+        ),
+        "periodo": f"Periodo {registro['periodo']}",
+        "fecha": date.today().strftime("%d/%m/%Y"),
+        "fuente": "Supabase - datos académicos reales",
+
+        "total_alumnos": registro["n_alumnos"],
+        "nota_media": registro["media_examen"],
+        "asistencia_media": registro["media_asistencia"],
+        "total_alertas": registro["alertas_activas"],
+
+        # Todavía no hemos consultado el detalle
+        # de las alertas individuales.
+        "alertas": []
+    }

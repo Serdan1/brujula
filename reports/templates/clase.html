@@ -51,11 +51,95 @@
     <h2>{{ clase }}</h2>
     <p><strong>Asignatura:</strong> {{ asignatura }}</p>
 
-    <div class="resumen">
-        <h3>Resumen académico</h3>
-        <p>Total de alumnos: {{ total_alumnos }}</p>
-        <p>Alertas pendientes: {{ total_alertas }}</p>
-    </div>
+    
+<div class="resumen">
+    <h3>Resumen académico</h3>
+
+    <p>
+        <strong>Periodo:</strong> {{ periodo }}
+    </p>
+
+    <p>
+        <strong>Total de alumnos:</strong>
+        {{ total_alumnos }}
+    </p>
+
+    <p>
+        <strong>Nota media:</strong>
+        {{ nota_media }}
+    </p>
+
+    <p>
+        <strong>Asistencia media:</strong>
+        {{ asistencia_media }} %
+    </p>
+
+    <p>
+        <strong>Alertas activas:</strong>
+        {{ total_alertas }}
+    </p>
+</div>
+```
+
+Debajo de la tabla de alertas, añade:
+
+```html
+{% if not alertas %}
+<p>
+    No se incluye el detalle de alertas
+    en esta primera versión del informe.
+</p>
+{% endif %}
+
+<p>
+    <strong>Fecha:</strong> {{ fecha }}
+</p>
+
+<p>
+    <strong>Fuente:</strong> {{ fuente }}
+</p>
+```
+
+## 3. Genera tu primer PDF con datos reales
+
+En la terminal ejecuta:
+
+```powershell
+python reports/main.py
+```
+
+Si todo funciona, el archivo se generará en:
+
+`reports/output/informe_clase.pdf`
+
+Con los datos que acabas de consultar, el informe debería contener aproximadamente estos valores:
+
+<box border radius="xl" padding={3} gap={3}>
+  <row align="center" justify="between">
+    <box gap={1}>
+      <text color="secondary" weight="medium" size="xs">BRÚJULA · INFORME DE CLASE</text>
+      <title size="xl">10.º A</title>
+      <text color="secondary" size="sm">Asignatura 1 · Periodo 1</text>
+    </box>
+    <icon name="file-text" color="secondary" size="2xl"/>
+  </row>
+  <divider/>
+  <grid columns={2} gap={3}>
+    {#each [{v:"28",l:"Alumnos"},{v:"12,11",l:"Nota media"},{v:"97,05 %",l:"Asistencia media"},{v:"0",l:"Alertas activas"}] as x}
+      <grid-item>
+        <box background="surface-secondary" padding={3} radius="lg" gap={1}>
+          <title size="xl" color="default" tabularNums>{x.v}</title>
+          <text size="xs" color="secondary">{x.l}</text>
+        </box>
+      </grid-item>
+    {/each}
+  </grid>
+  <caption>Vista previa orientativa basada en la fila real de Supabase que has mostrado, no una representación del PDF generado.</caption>
+</box>
+
+Una vez que funcione, seguiremos con el detalle de las alertas y, después, con el informe del director. Para este último necesitaremos una sesión autorizada de director, no reutilizar el acceso del profesor para consultar información de todo el centro.
+
+**Haz estos tres cambios y ejecuta `python reports/main.py`. Envíame lo que aparece en la terminal y continuamos.**
 
     <h3>Alertas detectadas</h3>
 
