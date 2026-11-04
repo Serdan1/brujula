@@ -89,6 +89,46 @@
             margin-top: 15px;
         }
 
+        .alta td:first-child {
+            border-left: 4px solid #E9B45C;
+        }
+
+        .etiqueta-alta {
+            background-color: #E9B45C;
+            color: #174A55;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .aviso-grupo {
+            background-color: #FDF3E1;
+            border-left: 4px solid #E9B45C;
+            padding: 10px 15px;
+            margin-top: 10px;
+        }
+
+        .motivos {
+            margin: 0;
+            padding-left: 16px;
+        }
+
+        .barra-fondo {
+            background-color: #EEEAE0;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .barra {
+            background-color: #174A55;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
         .nota {
             font-size: 10px;
             color: #666666;
@@ -148,35 +188,67 @@
         </div>
 
         <div class="indicador">
-            <strong>Alertas activas:</strong>
-            {{ total_alertas }}
+            <strong>Alumnos con alguna alerta:</strong>
+            {{ alumnos_con_alerta }} de {{ total_alumnos }}
         </div>
+
+        {% if nota_estimada_media is not none %}
+        <div class="indicador">
+            <strong>Nota final estimada media:</strong>
+            {{ nota_estimada_media }} / 20
+            <span style="color:#666666">(red neuronal; error medio ±{{ error_nota }} puntos)</span>
+        </div>
+        {% endif %}
 
     </div>
 
     <h2>2. Alertas educativas</h2>
 
     <p>
-        Esta sección presenta las alertas educativas
-        disponibles para la clase y el periodo seleccionado.
+        Alumnos que podrían necesitar apoyo y por qué, según los datos del primer periodo.
+        Ordenados por prioridad y motivo, no por nota. Cada alerta la revisa el profesor:
+        Brújula propone, el docente decide.
     </p>
+
+    {% for aviso in avisos_grupo %}
+    <div class="aviso-grupo">
+        <strong>{{ aviso.titulo }}</strong><br>
+        {{ aviso.descripcion }}
+    </div>
+    {% endfor %}
 
     {% if alertas %}
 
     <table>
         <thead>
             <tr>
+                <th>Alumno</th>
+                <th>Prioridad</th>
                 <th>Motivo</th>
-                <th>Severidad</th>
+                <th>Por qué</th>
                 <th>Estado</th>
             </tr>
         </thead>
 
         <tbody>
             {% for alerta in alertas %}
-            <tr>
+            <tr class="{{ 'alta' if alerta.alta else '' }}">
+                <td>{{ alerta.alumno }}</td>
+                <td>
+                    {% if alerta.alta %}
+                    <span class="etiqueta-alta">Alta</span>
+                    {% else %}
+                    Media
+                    {% endif %}
+                </td>
                 <td>{{ alerta.motivo }}</td>
-                <td>{{ alerta.severidad }}</td>
+                <td>
+                    <ul class="motivos">
+                        {% for m in alerta.detalle %}
+                        <li>{{ m }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
                 <td>{{ alerta.estado }}</td>
             </tr>
             {% endfor %}
@@ -186,14 +258,41 @@
     {% else %}
 
     <div class="sin-alertas">
-        <p>
-            El detalle de las alertas individuales
-            todavía no está integrado en esta versión
-            del informe.
-        </p>
+        <p>No hay alertas activas para esta clase y asignatura.</p>
     </div>
 
     {% endif %}
+
+    {% if analisis_disponible and importancia %}
+
+    <h3>Qué pesa más en las alertas de esta clase</h3>
+
+    <p>
+        Contribución media de cada variable al modelo (SHAP). Indica en qué se fija
+        el modelo, no qué causa el resultado.
+    </p>
+
+    <table>
+        <tbody>
+            {% for v in importancia %}
+            <tr>
+                <td style="width:40%">{{ v.nombre }}</td>
+                <td>
+                    <div class="barra-fondo">
+                        <div class="barra" style="width: {{ v.porcentaje_barra }}%"></div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% endif %}
+
+    <p class="nota">
+        * Variable sintética en esta demo, generada a partir de las notas reales:
+        su peso no es un hallazgo sobre el aprendizaje.
+    </p>
 
     <h2>3. Interpretación de los resultados</h2>
 
@@ -214,7 +313,8 @@
 
     <p>
         <strong>Fuente de datos:</strong>
-        {{ fuente }}
+        {{ fuente }}, alerta y analisis_clase (modelo de alertas logística + LightGBM;
+        nota estimada con red neuronal)
     </p>
 
     <p>

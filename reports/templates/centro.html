@@ -81,7 +81,7 @@
         <p>Total de clases: {{ total_clases }}</p>
         <p>Total de alumnos: {{ total_alumnos }}</p>
         <p>Total de asignaturas: {{ total_asignaturas }}</p>
-        <p>Alertas activas: {{ total_alertas }}</p>
+        <p>Alumnos con alguna alerta: {{ total_alertas }}</p>
     </div>
 
     <!-- 2. COMPARACIÓN ENTRE CLASES -->
@@ -94,7 +94,7 @@
                 <th>Alumnos</th>
                 <th>Nota media</th>
                 <th>Asistencia</th>
-                <th>Alertas</th>
+                <th>Alumnos con alerta</th>
             </tr>
         </thead>
 
@@ -129,11 +129,41 @@
     <!-- 3. EQUIDAD DEL MODELO -->
     <!-- Solo se muestra si existen métricas reales -->
 
-    {% if equidad and "No hay métricas" not in equidad %}
+    {% if equidad %}
 
     <h2>3. Equidad del modelo</h2>
 
-    <p>{{ equidad }}</p>
+    <p>
+        Calculada con los alumnos de los dos centros. Sexo, zona y escuela no entran
+        al modelo: solo se usan para auditarlo.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Grupo</th>
+                <th>Alumnos</th>
+                <th>Detectados</th>
+                <th>Falsas alarmas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for g in equidad %}
+            <tr>
+                <td>{{ g.grupo }}</td>
+                <td>{{ g.n }}</td>
+                <td>{{ g.detectados }} %</td>
+                <td>{{ g.falsas_alarmas }} %</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p>
+        El modelo detecta por igual a todos los grupos, pero da más falsas alarmas en
+        zona rural. Por eso ninguna alerta decide nada: el profesorado la revisa y puede
+        descartarla.
+    </p>
 
     {% endif %}
 
@@ -143,7 +173,7 @@
     {% if acciones %}
 
     <h2>
-        {% if equidad and "No hay métricas" not in equidad %}
+        {% if equidad %}
             4. Acciones de seguimiento
         {% else %}
             3. Acciones de seguimiento
