@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe de clase - Brújula</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #174A55;
+        }
+
+        h1 {
+            border-bottom: 3px solid #E9B45C;
+            padding-bottom: 12px;
+        }
+
+        .resumen {
+            background: #F7F4ED;
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #174A55;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Brújula | Informe de clase</h1>
+
+    <h2>{{ clase }}</h2>
+    <p><strong>Asignatura:</strong> {{ asignatura }}</p>
+
+    <div class="resumen">
+        <h3>Resumen académico</h3>
+        <p>Total de alumnos: {{ total_alumnos }}</p>
+        <p>Alertas pendientes: {{ total_alertas }}</p>
+    </div>
+
+    <h3>Alertas detectadas</h3>
+
+    <table>
+        <tr>
+            <th>Motivo</th>
+            <th>Severidad</th>
+            <th>Estado</th>
+        </tr>
+
+        {% for alerta in alertas %}
+        <tr>
+            <td>{{ alerta.motivo }}</td>
+            <td>{{ alerta.severidad }}</td>
+            <td>{{ alerta.estado }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p>Informe generado por Brújula.</p>
+
+</body>
+</html>
