@@ -80,12 +80,3 @@ Los informes deben convertir alertas educativas explicables en información úti
 - **Iván:** botón «Descargar informe» y acceso desde el frontend con permisos apropiados.
 - **Alex:** plantillas, generación PDF, pruebas de contenido y subida a Storage sin exponer informes privados públicamente.
 
-## Siguiente implementación
-
-1. Confirmar estructura y datos de ejemplo con el equipo.
-2. Crear plantillas HTML/CSS separadas para clase y centro en `reports/templates/`.
-3. Crear script Python en `reports/` que consulte datos permitidos de Supabase y renderice con Jinja2 + WeasyPrint.
-4. Probar con datos ficticios; validar RLS, ausencia de rankings, privacidad y tratamiento de grupos pequeños.
-5. Subir PDF a Supabase Storage privado y acordar con Iván una descarga autenticada.
-
-**Nota:** Los nombres de vistas y campos aquí utilizados proceden del reparto de tareas. Confirmar su implementación efectiva antes de programar consultas.
