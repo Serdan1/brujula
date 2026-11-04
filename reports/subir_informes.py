@@ -48,15 +48,19 @@ def subir_informe(ruta_pdf, ruta_storage):
     )
 
     headers = {
-        "apikey": clave_servicio,
-        "Authorization": f"Bearer {clave_servicio}",
-        "Content-Type": "application/pdf",
-        "x-upsert": "true",
-        "Cache-Control": "no-cache"
-    }
+    "apikey": clave_servicio,
+    "Content-Type": "application/pdf",
+    "x-upsert": "true",
+    "Cache-Control": "no-cache"
+}
 
-    with ruta_pdf.open("rb") as archivo:
-        respuesta = requests.post(
+# Las claves antiguas service_role son JWT.
+# Las claves modernas sb_secret_ se envían como apikey.
+    if not clave_servicio.startswith("sb_secret_"):
+        headers["Authorization"] = f"Bearer {clave_servicio}"
+
+        with ruta_pdf.open("rb") as archivo:
+            respuesta = requests.post(
             endpoint,
             headers=headers,
             data=archivo,
