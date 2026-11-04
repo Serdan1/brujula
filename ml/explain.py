@@ -64,7 +64,7 @@ MIN_SHAP = 0.01  # peso mínimo (1 punto porcentual de probabilidad) para mostra
 # Una explicación solo se muestra si su efecto es coherente con este sentido (evita artefactos
 # como "0 faltas aumenta la necesidad de apoyo", causado por los abandonos sin faltas registradas).
 SENTIDO = {"G1": -1, "failures": 1, "faltas_log": 1, "studytime": -1, "age": 1,
-           "nota_practicas": -1, "participacion": -1, "asistencia": -1}
+           "nota_practicas": -1, "participacion": -1, "asistencia": -1, "traveltime": 1, "activities": -1, "higher": -1, "internet": -1}
 
 
 def coherente(col: str, valor: float, referencia: float, shap_v: float) -> bool:
