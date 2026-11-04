@@ -2,12 +2,12 @@
 # Brújula — Pipeline ML e informes PDF
 #
 # Ejecución manual:
-# - Pipeline normal: ejecuta los modelos de IA.
-# - Publicar: publica resultados e informes en Supabase.
-# - Probar Storage: genera y sube únicamente un PDF ficticio.
+# - Ejecuta el pipeline de inteligencia artificial.
+# - Si publicar está activado, publica resultados
+#   e informes PDF en Supabase.
 #
 # Ejecución automática en develop:
-# - Ejecuta los modelos sin publicar en Supabase.
+# - Ejecuta el pipeline sin publicar.
 #
 # Secretos necesarios:
 # SUPABASE_URL
@@ -20,11 +20,6 @@ on:
     inputs:
       publicar:
         description: "Publicar los resultados e informes en Supabase"
-        type: boolean
-        default: false
-
-      probar_storage:
-        description: "Probar solo la subida de un PDF ficticio"
         type: boolean
         default: false
 
@@ -41,13 +36,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-
-  # =====================================================
-  # TRABAJO 1: PIPELINE COMPLETO DE INTELIGENCIA ARTIFICIAL
-  # =====================================================
-
   pipeline:
-    if: github.event_name != 'workflow_dispatch' || (!inputs.probar_storage && !inputs.publicar || !inputs.probar_storage && inputs.publicar)
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -56,7 +45,6 @@ jobs:
         working-directory: ml
 
     steps:
-
       # 1. Descargar el repositorio
       - name: Descargar repositorio
         uses: actions/checkout@v4
@@ -69,18 +57,17 @@ jobs:
           cache: pip
           cache-dependency-path: ml/requirements-ci.txt
 
-      # 3. Instalar dependencias de inteligencia artificial
+      # 3. Instalar dependencias de IA
       - name: Instalar dependencias
         run: |
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements-ci.txt
 
-      # 4. Instalar dependencias para generar PDF
+      # 4. Instalar dependencias PDF
       - name: Instalar dependencias de informes PDF
         working-directory: .
         run: |
           sudo apt-get update
-
           sudo apt-get install -y \
             libpango-1.0-0 \
             libpangocairo-1.0-0 \
@@ -91,13 +78,12 @@ jobs:
 
           pip install -r reports/requirements.txt
 
-      # 5. Preparar datos UCI y ampliación sintética
+      # 5. Preparar datos
       - name: Generar las tablas (UCI + ampliación sintética)
         working-directory: .
         run: |
           mkdir -p data/raw
           cp ml/data/raw/student-*.csv data/raw/
-
           python data/prepare_uci.py
           python data/extend.py
 
@@ -117,15 +103,15 @@ jobs:
       - name: Comparar combinaciones
         run: python combinar.py
 
-      # 10. Generar explicabilidad SHAP
+      # 10. Explicabilidad
       - name: Explicabilidad SHAP
         run: python explain.py
 
-      # 11. Generar alertas educativas
+      # 11. Generar alertas
       - name: Alertas
         run: python alerts.py
 
-      # 12. Publicar resultados en Supabase
+      # 12. Publicar resultados
       - name: Publicar en Supabase
         if: github.event_name == 'workflow_dispatch' && inputs.publicar
         env:
@@ -143,12 +129,10 @@ jobs:
           PUBLICAR_INFORMES: "true"
         run: |
           echo "Generando informes de clase del periodo 1..."
-
           python reports/main.py --periodo 1
-
           echo "Generación y subida de informes finalizada."
 
-      # 14. Guardar resultados del pipeline
+      # 14. Guardar resultados
       - name: Guardar resultados
         if: always()
         uses: actions/upload-artifact@v4
@@ -159,52 +143,3 @@ jobs:
             ml/results/figures/
             ml/results/publicar/
           retention-days: 14
-
-  # =====================================================
-  # TRABAJO 2: PRUEBA AISLADA DE SUPABASE STORAGE
-  # =====================================================
-
-  prueba_storage:
-    if: github.event_name == 'workflow_dispatch' && inputs.probar_storage
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-
-      # 1. Descargar el repositorio
-      - name: Descargar repositorio
-        uses: actions/checkout@v4
-
-      # 2. Configurar Python
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      # 3. Instalar dependencias para generar PDF
-      - name: Instalar dependencias PDF
-        run: |
-          sudo apt-get update
-
-          sudo apt-get install -y \
-            libpango-1.0-0 \
-            libpangocairo-1.0-0 \
-            libcairo2 \
-            libgdk-pixbuf-2.0-0 \
-            libffi-dev \
-            fonts-dejavu-core
-
-          pip install -r reports/requirements.txt
-
-      # 4. Generar y subir PDF ficticio a Supabase
-      - name: Generar y subir PDF ficticio
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          CONFIRMAR_PRUEBA_STORAGE: "true"
-        run: |
-          echo "Iniciando prueba de Supabase Storage..."
-
-          python reports/probar_storage_ci.py
-
-          echo "Prueba de Storage finalizada."
