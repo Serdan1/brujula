@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe de centro - Brújula</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #24343A;
+            font-size: 12px;
+        }
+
+        h1 {
+            color: #174A55;
+            border-bottom: 3px solid #E9B45C;
+            padding-bottom: 12px;
+        }
+
+        h2 {
+            color: #174A55;
+            margin-top: 28px;
+        }
+
+        .resumen {
+            background: #F7F4ED;
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #174A55;
+            color: white;
+        }
+
+        .nota {
+            font-size: 10px;
+            color: #666;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Brújula | Informe de centro</h1>
+
+    <p><strong>Centro:</strong> {{ centro }}</p>
+    <p><strong>Periodo:</strong> {{ periodo }}</p>
+    <p><strong>Fecha:</strong> {{ fecha }}</p>
+
+    <h2>1. Resumen general</h2>
+
+    <div class="resumen">
+        <p>Total de clases: {{ total_clases }}</p>
+        <p>Total de alumnos: {{ total_alumnos }}</p>
+        <p>Total de asignaturas: {{ total_asignaturas }}</p>
+        <p>Alertas activas: {{ total_alertas }}</p>
+    </div>
+
+    <h2>2. Comparación entre clases</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Clase</th>
+                <th>Alumnos</th>
+                <th>Nota media</th>
+                <th>Asistencia</th>
+                <th>Alertas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for clase in clases %}
+            <tr>
+                <td>{{ clase.nombre }}</td>
+                <td>{{ clase.alumnos }}</td>
+                <td>{{ clase.nota_media }}</td>
+                <td>{{ clase.asistencia }}%</td>
+                <td>{{ clase.alertas }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>3. Equidad del modelo</h2>
+
+    <p>{{ equidad }}</p>
+
+    <h2>4. Acciones de seguimiento</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tipo de acción</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for accion in acciones %}
+            <tr>
+                <td>{{ accion.tipo }}</td>
+                <td>{{ accion.cantidad }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="nota">
+        Informe de demostración generado con datos ficticios.
+        Las predicciones son herramientas de apoyo, no diagnósticos.
+        No se muestran datos individuales de alumnos.
+    </p>
+
+</body>
+</html>
