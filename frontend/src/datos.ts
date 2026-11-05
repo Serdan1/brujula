@@ -70,64 +70,178 @@ export function motivosDe(alerta: any): { variable: string; nombre: string; valo
     }));
 }
 
-const ORDEN_SEVERIDAD: Record<string, number> = { alta: 0, media: 1 };
-const ORDEN_NIVEL: Record<string, number> = { asignatura: 0, clase: 1, alumno: 2 };
 
-// Alertas visibles para el usuario (las reglas de Supabase ya filtran por profesor)
-export async function cargarAlertas(filtros: { asignaturaId?: string | number; claseId?: string | number; soloNuevas?: boolean } = {}) {
+const ORDEN_SEVERIDAD: Record<string, number> = {
+  alta: 0,
+  media: 1
+};
+
+const ORDEN_NIVEL: Record<string, number> = {
+  asignatura: 0,
+  clase: 1,
+  alumno: 2
+};
+
+const ORDEN_ESTADO: Record<string, number> = {
+  nueva: 0,
+  revisada: 1
+};
+
+// Obtener alertas visibles para el profesor
+export async function cargarAlertas(
+  filtros: {
+    asignaturaId?: string | number;
+    claseId?: string | number;
+    soloNuevas?: boolean;
+  } = {}
+) {
   let q = supabase
     .from('alerta')
-    .select('*, alumno ( nombre ), clase ( curso, letra ), asignatura ( nombre )')
+    .select(
+      '*, alumno ( nombre ), clase ( curso, letra ), asignatura ( nombre )'
+    )
     .neq('estado', 'descartada');
-  if (filtros.asignaturaId) q = q.eq('asignatura_id', filtros.asignaturaId);
-  if (filtros.claseId) q = q.eq('clase_id', filtros.claseId);
-  if (filtros.soloNuevas) q = q.eq('estado', 'nueva');
+
+  if (filtros.asignaturaId) {
+    q = q.eq('asignatura_id', filtros.asignaturaId);
+  }
+
+  if (filtros.claseId) {
+    q = q.eq('clase_id', filtros.claseId);
+  }
+
+  if (filtros.soloNuevas) {
+    q = q.eq('estado', 'nueva');
+  }
+
   const { data, error } = await q;
-  if (error) console.error('Error al cargar alertas:', error.message);
-  // Orden: severidad, nivel (asignatura y clase antes que alumno) y motivo. Nunca por probabilidad ni por nota.
-  return (data ?? []).sort(
-    (a: any, b: any) =>
-      (ORDEN_SEVERIDAD[a.severidad] ?? 9) - (ORDEN_SEVERIDAD[b.severidad] ?? 9) ||
-      (ORDEN_NIVEL[a.nivel] ?? 9) - (ORDEN_NIVEL[b.nivel] ?? 9) ||
-      Number(b.motivo === 'riesgo_de_suspenso') - Number(a.motivo === 'riesgo_de_suspenso') || // el aviso del modelo, primero
-      String(a.motivo).localeCompare(String(b.motivo)),
+
+  if (error) {
+    console.error('Error al cargar alertas:', error.message);
+  }
+
+  // Orden de las alertas:
+  // 1. Nuevas antes que revisadas.
+  // 2. Prioridad alta antes que media.
+  // 3. Asignatura, clase y alumno.
+  // 4. Motivo alfabético.
+
+  
+return (data ?? []).sort((a: any, b: any) => {
+  // 1. Nuevas antes que revisadas
+  const estado =
+    (ORDEN_ESTADO[a.estado] ?? 9) -
+    (ORDEN_ESTADO[b.estado] ?? 9);
+
+  if (estado !== 0) return estado;
+
+  // 2. Prioridad alta antes que media
+  const severidad =
+    (ORDEN_SEVERIDAD[a.severidad] ?? 9) -
+    (ORDEN_SEVERIDAD[b.severidad] ?? 9);
+
+  if (severidad !== 0) return severidad;
+
+  // 3. Ordenar por nivel de alerta
+  const nivel =
+    (ORDEN_NIVEL[a.nivel] ?? 9) -
+    (ORDEN_NIVEL[b.nivel] ?? 9);
+
+  if (nivel !== 0) return nivel;
+
+  // 4. Alertas del modelo primero
+  const modelo =
+    Number(b.motivo === 'riesgo_de_suspenso') -
+    Number(a.motivo === 'riesgo_de_suspenso');
+
+  if (modelo !== 0) return modelo;
+
+  // 5. Orden alfabético por motivo
+  return String(a.motivo).localeCompare(
+    String(b.motivo)
   );
+});
+
 }
 
 export async function marcarRevisada(alertaId: number) {
-  const { error } = await supabase.from('alerta').update({ estado: 'revisada' }).eq('id', alertaId);
-  if (error) alert('No se ha podido marcar como revisada: ' + error.message);
-  return !error;
-}
-
-export async function descartarAlerta(alertaId: number, motivo: string) {
   const { error } = await supabase
     .from('alerta')
-    .update({ estado: 'descartada', motivo_descarte: motivo })
+    .update({ estado: 'revisada' })
     .eq('id', alertaId);
-  if (error) alert('No se ha podido descartar: ' + error.message);
+
+  if (error) {
+    alert(
+      'No se ha podido marcar como revisada: ' +
+      error.message
+    );
+  }
+
   return !error;
 }
 
-export async function registrarAccion(alertaId: number, tipo: string, descripcion: string, fechaRevision: string) {
+export async function descartarAlerta(
+  alertaId: number,
+  motivo: string
+) {
+  const { error } = await supabase
+    .from('alerta')
+    .update({
+      estado: 'descartada',
+      motivo_descarte: motivo
+    })
+    .eq('id', alertaId);
+
+  if (error) {
+    alert(
+      'No se ha podido descartar: ' +
+      error.message
+    );
+  }
+
+  return !error;
+}
+
+export async function registrarAccion(
+  alertaId: number,
+  tipo: string,
+  descripcion: string,
+  fechaRevision: string
+) {
   const prof = await miProfesor();
+
   if (!prof) {
     alert('No se encuentra tu perfil de profesor.');
     return false;
   }
-  const { error } = await supabase.from('accion').insert({
-    alerta_id: alertaId,
-    profesor_id: prof.id,
-    tipo,
-    descripcion,
-    fecha_inicio: new Date().toISOString().split('T')[0],
-    fecha_revision: fechaRevision || null,
-  });
+
+  const { error } = await supabase
+    .from('accion')
+    .insert({
+      alerta_id: alertaId,
+      profesor_id: prof.id,
+      tipo,
+      descripcion,
+      fecha_inicio: new Date()
+        .toISOString()
+        .split('T')[0],
+      fecha_revision: fechaRevision || null
+    });
+
   if (error) {
-    alert('Error al guardar la acción: ' + error.message);
+    alert(
+      'Error al guardar la acción: ' +
+      error.message
+    );
     return false;
   }
-  // Registrar una acción implica que la alerta se ha revisado
-  await supabase.from('alerta').update({ estado: 'revisada' }).eq('id', alertaId).eq('estado', 'nueva');
+
+  // Registrar una acción implica revisar la alerta
+  await supabase
+    .from('alerta')
+    .update({ estado: 'revisada' })
+    .eq('id', alertaId)
+    .eq('estado', 'nueva');
+
   return true;
 }

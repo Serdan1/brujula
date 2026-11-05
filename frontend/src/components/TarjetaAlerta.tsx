@@ -27,9 +27,25 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
   }
 
   return (
-    <div className={`rounded-lg border p-4 ${alta ? 'bg-amber-50 border-amber-400' : 'bg-white border-gray-200'} ${compacta ? 'p-3' : ''}`}>
+    
+<div
+  className={`rounded-2xl border bg-white shadow-sm transition-all duration-200 ${
+    alta
+      ? 'border-amber-200 border-l-4 border-l-[#E9B45C]'
+      : 'border-gray-200 border-l-4 border-l-[#174A55]'
+  } ${compacta ? 'p-4 sm:p-5' : 'p-5'}`}
+>
+
       <div className="flex flex-wrap items-center gap-2 mb-1">
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded ${alta ? 'bg-amber-400 text-[#0f3d4c]' : 'bg-gray-100 text-gray-700'}`}>
+        
+<span
+  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+    alta
+      ? 'bg-amber-100 text-amber-800'
+      : 'bg-[#EAF2F0] text-[#174A55]'
+  }`}
+>
+
           {alta ? 'Prioridad alta' : 'Prioridad media'}
         </span>
         <span className="text-xs text-gray-500">{MOTIVOS[alerta.motivo]?.corto ?? alerta.motivo}</span>
@@ -38,8 +54,16 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
         )}
       </div>
 
-      <h3 className="font-semibold text-[#0f3d4c]">{alerta.titulo}</h3>
-      {mostrarContexto && contexto && <p className="text-sm text-gray-600">{contexto}</p>}
+      
+<h3 className="font-semibold text-[#0f3d4c]">
+  {alerta.titulo}
+</h3>
+
+{mostrarContexto && contexto && alerta.nivel === 'alumno' && (
+  <p className="text-sm text-gray-600">
+    {contexto}
+  </p>
+)}
 
       {motivos.length > 0 ? (
         <ul className="mt-2 text-sm text-gray-700 list-disc pl-5">
