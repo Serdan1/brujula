@@ -75,7 +75,7 @@ Todo está en `data/extend.py`, con **semilla 42** (NumPy y Faker).
 
 ### Clases
 
-- El curso se deduce de la edad: 15 años o menos → 10.º; 16 → 11.º; 17 o más → 12.º
+- El curso se deduce de la edad: 15 años o menos → 4.º; 16 → 5.º; 17 o más → 6.º de Primaria (en el dataset original son 10.º, 11.º y 12.º de secundaria portuguesa; se renombran para la demo)
   (secundaria portuguesa).
 - Cada escuela y curso se divide en grupos de unos 25 alumnos (número de grupos = alumnos / 25,
   redondeado), con letras A, B, C… El reparto es aleatorio.

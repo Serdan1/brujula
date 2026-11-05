@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { MOTIVOS, SINTETICAS, descartarAlerta, marcarRevisada, motivosDe, nombreClase } from '../datos';
+import { Link } from 'react-router-dom';
+import { SINTETICAS, descartarAlerta, descripcionAlerta, marcarRevisada, motivoCorto, motivosDe, nombreClase, tituloAlerta } from '../datos';
+import { useIdioma } from '../i18n';
 import FormularioAccion from './FormularioAccion';
 
 type Props = {
@@ -11,6 +13,7 @@ type Props = {
 };
 
 export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAcciones = true, compacta = false, onCambio }: Props) {
+  const { t } = useIdioma();
   const [abierto, setAbierto] = useState(false);
   const alta = alerta.severidad === 'alta';
   const motivos = alerta.nivel === 'alumno' ? motivosDe(alerta) : [];
@@ -21,25 +24,57 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
   }
 
   async function descartar() {
-    const motivo = window.prompt('¿Por qué descartas esta alerta? (queda registrado)');
+    const motivo = window.prompt(t.tarjeta.preguntaDescarte);
     if (!motivo || !motivo.trim()) return;
     if (await descartarAlerta(alerta.id, motivo.trim())) onCambio?.();
   }
 
   return (
-    <div className={`rounded-lg border p-4 ${alta ? 'bg-amber-50 border-amber-400' : 'bg-white border-gray-200'} ${compacta ? 'p-3' : ''}`}>
+    
+<div
+  className={`rounded-2xl border bg-white shadow-sm transition-all duration-200 ${
+    alta
+      ? 'border-amber-200 border-l-4 border-l-[#E9B45C]'
+      : 'border-gray-200 border-l-4 border-l-[#174A55]'
+  } ${compacta ? 'p-4 sm:p-5' : 'p-5'}`}
+>
+
       <div className="flex flex-wrap items-center gap-2 mb-1">
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded ${alta ? 'bg-amber-400 text-[#0f3d4c]' : 'bg-gray-100 text-gray-700'}`}>
-          {alta ? 'Prioridad alta' : 'Prioridad media'}
+        
+<span
+  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+    alta
+      ? 'bg-amber-100 text-amber-800'
+      : 'bg-[#EAF2F0] text-[#174A55]'
+  }`}
+>
+
+          {alta ? t.app.prioridadAlta : t.app.prioridadMedia}
         </span>
-        <span className="text-xs text-gray-500">{MOTIVOS[alerta.motivo]?.corto ?? alerta.motivo}</span>
+        <span className="text-xs text-gray-500">{motivoCorto(alerta.motivo)}</span>
         {alerta.estado === 'revisada' && (
-          <span className="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Revisada</span>
+          <span className="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">{t.tarjeta.revisada}</span>
         )}
       </div>
 
-      <h3 className="font-semibold text-[#0f3d4c]">{alerta.titulo}</h3>
-      {mostrarContexto && contexto && <p className="text-sm text-gray-600">{contexto}</p>}
+      
+<h3 className="font-semibold text-[#0f3d4c]">
+  {tituloAlerta(alerta)}
+</h3>
+
+{mostrarContexto && contexto && alerta.nivel === 'alumno' && (
+  <p className="text-sm text-gray-600">
+    {contexto}
+    {conAcciones && alerta.clase_id && alerta.alumno_id && (
+      <Link
+        to={`/asignatura/${alerta.asignatura_id}/clase/${alerta.clase_id}?alumno=${alerta.alumno_id}`}
+        className="ml-2 text-[#174A55] underline hover:no-underline"
+      >
+        {t.tarjeta.verEnClase}
+      </Link>
+    )}
+  </p>
+)}
 
       {motivos.length > 0 ? (
         <ul className="mt-2 text-sm text-gray-700 list-disc pl-5">
@@ -50,21 +85,21 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
           ))}
         </ul>
       ) : (
-        <p className="mt-1 text-sm text-gray-700">{alerta.descripcion}</p>
+        <p className="mt-1 text-sm text-gray-700">{descripcionAlerta(alerta)}</p>
       )}
 
       {conAcciones && alerta.nivel === 'alumno' && (
         <div className="mt-3 flex flex-wrap gap-2">
           {alerta.estado === 'nueva' && (
             <button onClick={revisar} className="text-xs px-3 py-1 rounded border border-[#0f3d4c] text-[#0f3d4c] hover:bg-gray-50">
-              Lo reviso
+              {t.tarjeta.loReviso}
             </button>
           )}
           <button onClick={() => setAbierto(true)} className="text-xs px-3 py-1 rounded bg-[#0f3d4c] text-white">
-            Registrar acción
+            {t.tarjeta.registrar}
           </button>
           <button onClick={descartar} className="text-xs px-3 py-1 rounded text-gray-600 hover:underline">
-            Descartar con motivo
+            {t.tarjeta.descartar}
           </button>
         </div>
       )}

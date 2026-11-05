@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe de centro - Brújula</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #24343A;
+            font-size: 12px;
+        }
+
+        h1 {
+            color: #174A55;
+            border-bottom: 3px solid #E9B45C;
+            padding-bottom: 12px;
+        }
+
+        h2 {
+            color: #174A55;
+            margin-top: 28px;
+        }
+
+        .resumen {
+            background: #F7F4ED;
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #174A55;
+            color: white;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        .nota {
+            font-size: 10px;
+            color: #666;
+            margin-top: 25px;
+            line-height: 1.5;
+        }
+        table { page-break-inside: avoid; }
+        h2, h2 + p { page-break-after: avoid; break-after: avoid; }
+    </style>
+</head>
+
+<body>
+
+    <!-- TÍTULO -->
+    <h1>Brújula | Informe de centro</h1>
+
+    <!-- INFORMACIÓN GENERAL -->
+    <p><strong>Centro:</strong> {{ centro }}</p>
+    <p><strong>Periodo:</strong> {{ periodo }}</p>
+    <p><strong>Fecha:</strong> {{ fecha }}</p>
+
+    <!-- 1. RESUMEN GENERAL -->
+    <h2>1. Resumen general</h2>
+
+    <div class="resumen">
+        <p>Total de clases: {{ total_clases }}</p>
+        <p>Total de alumnos: {{ total_alumnos }}</p>
+        <p>Total de asignaturas: {{ total_asignaturas }}</p>
+        <p>Alumnos con alguna alerta: {{ total_alertas }}</p>
+    </div>
+
+    <!-- 2. COMPARACIÓN ENTRE CLASES -->
+    <h2>2. Comparación entre clases</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Clase</th>
+                <th>Alumnos</th>
+                <th>Nota media</th>
+                <th>Asistencia</th>
+                <th>Alumnos con alerta</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for clase in clases %}
+            <tr>
+                <td>{{ clase.nombre }}</td>
+                <td>{{ clase.alumnos }}</td>
+
+                <td>
+                    {% if clase.nota_media is not none %}
+                        {{ clase.nota_media }}
+                    {% else %}
+                        Sin datos
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if clase.asistencia is not none %}
+                        {{ clase.asistencia }}%
+                    {% else %}
+                        Sin datos
+                    {% endif %}
+                </td>
+
+                <td>{{ clase.alertas }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 3. DÓNDE PONER EL FOCO -->
+    <h2>3. Dónde poner el foco</h2>
+
+    {% if foco_clases %}
+    <h3>Clases con más alumnos con alerta</h3>
+    <table>
+        <thead>
+            <tr><th>Clase</th><th>Alumnos</th><th>Alumnos con alerta</th></tr>
+        </thead>
+        <tbody>
+            {% for c in foco_clases %}
+            <tr>
+                <td>{{ c.nombre }}</td>
+                <td>{{ c.alumnos }}</td>
+                <td>{{ c.alertas }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if foco_asignaturas %}
+    <h3>Alumnos con alerta por asignatura</h3>
+    <table>
+        <thead>
+            <tr><th>Asignatura</th><th>Alumnos con alerta</th></tr>
+        </thead>
+        <tbody>
+            {% for a in foco_asignaturas %}
+            <tr><td>{{ a.asignatura }}</td><td>{{ a.alumnos }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if avisos_grupo %}
+    <h3>Avisos de grupo</h3>
+    {% for g in avisos_grupo %}
+    <p>
+        <strong>{{ g.titulo }}</strong>{% if g.alta %} (prioridad alta){% endif %}<br>
+        {{ g.descripcion }}
+    </p>
+    {% endfor %}
+    {% if avisos_mas %}<p class="nota">Y {{ avisos_mas }} avisos de grupo más: se pueden consultar en la web.</p>{% endif %}
+    {% endif %}
+
+    <!-- 4. SEGUIMIENTO DEL PROFESORADO -->
+    <h2>4. Seguimiento del profesorado</h2>
+
+    <div class="resumen">
+        <p>Alertas de alumnos: {{ seguimiento.total }}</p>
+        <p>Pendientes de revisar: {{ seguimiento.pendientes }}</p>
+        <p>Revisadas: {{ seguimiento.revisadas }} · Descartadas con motivo: {{ seguimiento.descartadas }}</p>
+        <p>Atendidas: {{ seguimiento.pct_atendidas }} %</p>
+        <p>Acciones registradas: {{ seguimiento.acciones }} ({{ seguimiento.resueltas }} resueltas)</p>
+        <p>Revisiones con la fecha ya pasada: {{ seguimiento.vencidas }}</p>
+    </div>
+
+    {% if acciones %}
+    <h3>Acciones por tipo</h3>
+    <table>
+        <thead>
+            <tr><th>Tipo de acción</th><th>Cantidad</th></tr>
+        </thead>
+        <tbody>
+            {% for accion in acciones %}
+            <tr><td>{{ accion.tipo }}</td><td>{{ accion.cantidad }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- INFORMACIÓN DE LA FUENTE -->
+    <p class="nota">
+        <strong>Fuente:</strong> {{ fuente }}.
+        {{ observaciones }}
+
+        Las predicciones son herramientas de apoyo,
+        no diagnósticos.
+
+        No se muestran datos individuales de alumnos.
+    </p>
+
+</body>
+</html>

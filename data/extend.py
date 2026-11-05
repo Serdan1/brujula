@@ -45,12 +45,12 @@ Faker.seed(SEMILLA)
 
 
 def curso_por_edad(edad: int) -> int:
-    """Secundaria portuguesa: 10.º, 11.º y 12.º curso."""
+    """Primaria: 4.º, 5.º y 6.º curso (en el dataset original, 10.º, 11.º y 12.º de secundaria portuguesa)."""
     if edad <= 15:
-        return 10
+        return 4
     if edad == 16:
-        return 11
-    return 12
+        return 5
+    return 6
 
 
 # ----------------------------------------------------------------------

@@ -2,173 +2,141 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../supabase';
-import { SINTETICAS, nombreClase } from '../datos';
+import { NOTA_MAX, SINTETICAS, cargarAlertas, nombreAsignatura, nombreClase, nombreVariable, num, sobre10, valorLegible } from '../datos';
+import { useIdioma } from '../i18n';
 
-const GRUPOS: Record<string, string> = {
-  'sex=F': 'Chicas', 'sex=M': 'Chicos',
-  'address=R': 'Zona rural', 'address=U': 'Zona urbana',
-  'school=GP': 'Escuela GP', 'school=MS': 'Escuela MS',
-};
-
+// Análisis de UNA clase: solo información propia de esa clase.
+// Cómo se eligió el modelo y su equidad están en el apartado «Cómo funciona Brújula».
 export default function AnalisisCompleto() {
+  const { t, locale } = useIdioma();
+  const n = t.analisis;
   const { asig, id } = useParams();
   const [resumen, setResumen] = useState<any>(null);
   const [clase, setClase] = useState<any>(null);
   const [asignatura, setAsignatura] = useState('');
   const [nombres, setNombres] = useState<Record<number, string>>({});
+  const [altas, setAltas] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       if (!id || !asig) return;
-      const [{ data: a }, { data: c }, { data: s }, { data: al }] = await Promise.all([
-        supabase.from('analisis_clase').select('resumen, actualizado_en').eq('clase_id', id).eq('asignatura_id', asig).maybeSingle(),
+      const [{ data: a }, { data: c }, { data: s }, { data: al }, alertas] = await Promise.all([
+        supabase.from('analisis_clase').select('resumen').eq('clase_id', id).eq('asignatura_id', asig).maybeSingle(),
         supabase.from('clase').select('curso, letra').eq('id', id).single(),
         supabase.from('asignatura').select('nombre').eq('id', asig).single(),
         supabase.from('alumno').select('id, nombre').eq('clase_id', id),
+        cargarAlertas({ asignaturaId: asig, claseId: id }),
       ]);
       setResumen(a?.resumen ?? null);
       setClase(c);
-      setAsignatura(s?.nombre ?? '');
+      setAsignatura(nombreAsignatura(s?.nombre));
       setNombres(Object.fromEntries((al ?? []).map((x: any) => [x.id, x.nombre])));
+      setAltas(new Set(alertas.filter((x: any) => x.nivel === 'alumno' && x.severidad === 'alta').map((x: any) => x.alumno_id)).size);
       setLoading(false);
     })();
   }, [id, asig]);
 
   const volver = (
     <Link to={`/asignatura/${asig}/clase/${id}`} className="text-sm text-gray-500 hover:text-[#0f3d4c] underline mb-4 inline-block">
-      ← Volver a la clase
+      {t.app.volverClase}
     </Link>
   );
 
-  if (loading) return <div className="p-8">{volver}<p className="text-gray-500">Cargando análisis...</p></div>;
-  if (!resumen) return <div className="p-8">{volver}<p className="text-gray-600">Análisis no disponible para esta clase.</p></div>;
+  if (loading) return <div className="p-8">{volver}<p className="text-gray-500">{n.cargando}</p></div>;
+  if (!resumen) return <div className="p-8">{volver}<p className="text-gray-600">{n.noDisponible}</p></div>;
 
   const importancia = (resumen.importancia ?? []).map((v: any) => ({
-    nombre: v.nombre + (SINTETICAS.has(v.variable) ? '*' : ''),
+    nombre: nombreVariable(v.variable, v.nombre) + (SINTETICAS.has(v.variable) ? '*' : ''),
     valor: Number(v.valor),
   }));
-  const comparacion = (resumen.comparacion_modelos ?? []) as any[];
-  const elegido = comparacion.find((m) => m.modelos === 'logistica + lightgbm');
-  const red = resumen.nota_red_neuronal ?? {};
+  const error = resumen.nota_red_neuronal?.mae ?? 1.05;
   const pct = resumen.n_alumnos ? Math.round((100 * resumen.n_con_alerta) / resumen.n_alumnos) : 0;
+  const apoyo = (resumen.alumnos_apoyo ?? []) as any[];
 
   return (
     <div className="p-8 bg-[#fdfbf7] min-h-screen max-w-5xl mx-auto">
       {volver}
-      <h1 className="text-2xl font-bold text-[#0f3d4c]">Análisis completo · {nombreClase(clase)} · {asignatura}</h1>
-      <p className="text-sm text-gray-600 mb-6">Resultados del modelo al final del primer periodo. Son estimaciones para orientar, no diagnósticos.</p>
+      <h1 className="text-2xl font-bold text-[#0f3d4c]">{n.titulo(nombreClase(clase), asignatura)}</h1>
+      <p className="text-sm text-gray-600 mb-6">{n.intro}</p>
 
-      {/* Cifras clave */}
+      {/* Cifras de la clase */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600">Podrían necesitar apoyo</p>
-          <p className="text-3xl font-bold text-[#0f3d4c]">{resumen.n_con_alerta} <span className="text-base font-normal text-gray-500">de {resumen.n_alumnos} ({pct} %)</span></p>
+          <p className="text-sm text-gray-600">{n.podrianApoyo}</p>
+          <p className="text-3xl font-bold text-[#0f3d4c]">
+            {resumen.n_con_alerta} <span className="text-base font-normal text-gray-500">{n.deTotal(resumen.n_alumnos, (pct / 100).toLocaleString(locale, { style: 'percent' }))}</span>
+          </p>
+        </div>
+        <div className={`border rounded-lg p-4 ${altas > 0 ? 'bg-amber-50 border-amber-400' : 'bg-white border-gray-200'}`}>
+          <p className="text-sm text-gray-600">{n.conAlta}</p>
+          <p className="text-3xl font-bold text-[#0f3d4c]">
+            {altas} <span className="text-base font-normal text-gray-500">{t.app.alumnos(altas).replace(/^\d+ /, '')}</span>
+          </p>
+          <p className="text-xs text-gray-500">{n.revisarPrimero}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600">Nota final estimada media</p>
-          <p className="text-3xl font-bold text-[#0f3d4c]">{resumen.nota_estimada_media != null ? Number(resumen.nota_estimada_media).toFixed(1) : '—'} <span className="text-base font-normal text-gray-500">/ 20</span></p>
-          <p className="text-xs text-gray-500">Red neuronal · error medio ±{red.mae ? Number(red.mae).toFixed(1) : '1'} punto</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600">Calidad de las alertas</p>
-          <p className="text-3xl font-bold text-[#0f3d4c]">{elegido ? `${Math.round(elegido.precision * 100)} %` : '—'}</p>
-          <p className="text-xs text-gray-500">de las alertas son acertadas, detectando al 84 % de quienes necesitarán apoyo</p>
+          <p className="text-sm text-gray-600">{n.notaMedia}</p>
+          <p className="text-3xl font-bold text-[#0f3d4c]">
+            {num(sobre10(resumen.nota_estimada_media))} <span className="text-base font-normal text-gray-500">/ {NOTA_MAX}</span>
+          </p>
+          <p className="text-xs text-gray-500">{n.errorMedio(num(sobre10(error), 2))}</p>
         </div>
       </div>
 
-      {/* Importancia de variables */}
+      {/* Qué pesa más en esta clase */}
       <section className="bg-white border border-gray-200 rounded-lg p-4 mb-8">
-        <h2 className="text-lg font-semibold text-[#0f3d4c]">Qué pesa más en las alertas de esta clase</h2>
-        <p className="text-sm text-gray-600 mb-3">Contribución media de cada variable al modelo (SHAP). Indica en qué se fija el modelo, no qué causa el resultado.</p>
+        <h2 className="text-lg font-semibold text-[#0f3d4c]">{n.pesa}</h2>
+        <p className="text-sm text-gray-600 mb-3">{n.pesaNota}</p>
         <div style={{ width: '100%', height: Math.max(220, importancia.length * 34) }}>
           <ResponsiveContainer>
             <BarChart data={importancia} layout="vertical" margin={{ left: 20, right: 20 }}>
               <XAxis type="number" hide />
-              <YAxis type="category" dataKey="nombre" width={230} tick={{ fontSize: 13 }} />
-              <Tooltip formatter={(v: any) => Number(v).toFixed(3)} />
+
+<YAxis
+  type="category"
+  dataKey="nombre"
+  width={120}
+  tick={{ fontSize: 13 }}
+/>
+
+<Tooltip
+  formatter={(v: any) => num(v, 3)}
+/>
+
               <Bar dataKey="valor" fill="#0f3d4c" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <p className="text-xs text-gray-500 mt-2">* Variable sintética en esta demo: su peso refleja cómo se generó a partir de las notas, no es un hallazgo.</p>
+        <p className="text-xs text-gray-500 mt-2">{n.pesaSintetica}</p>
       </section>
 
       {/* Alumnos que podrían necesitar apoyo */}
       <section className="bg-white border border-gray-200 rounded-lg p-4 mb-8">
-        <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">Alumnos que podrían necesitar apoyo y por qué</h2>
-        {(resumen.alumnos_apoyo ?? []).length === 0 ? (
-          <p className="text-gray-600">Ningún alumno de esta clase tiene alerta del modelo.</p>
+        <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">{n.porQue}</h2>
+        {apoyo.length === 0 ? (
+          <p className="text-gray-600">{n.ninguno}</p>
         ) : (
           <ul className="divide-y divide-gray-100">
-            {(resumen.alumnos_apoyo ?? []).map((a: any) => (
+            {apoyo.map((a: any) => (
               <li key={a.alumno_id} className="py-2">
-                <p className="font-medium text-[#0f3d4c]">{nombres[a.alumno_id] ?? `Alumno ${a.alumno_id}`}</p>
+                <p className="font-medium text-[#0f3d4c]">{nombres[a.alumno_id] ?? n.alumnoN(a.alumno_id)}</p>
                 <p className="text-sm text-gray-700">
                   {(a.motivos ?? []).length
-                    ? a.motivos.map((m: any) => `${m.nombre}${SINTETICAS.has(m.variable) ? '*' : ''}: ${m.valor}`).join(' · ')
-                    : 'Combinación de varios factores pequeños'}
+                    ? a.motivos.map((m: any) => `${nombreVariable(m.variable, m.nombre)}${SINTETICAS.has(m.variable) ? '*' : ''}: ${valorLegible(m.variable, m.valor)}`).join(' · ')
+                    : n.combinacion}
                 </p>
               </li>
             ))}
           </ul>
         )}
-        <p className="text-xs text-gray-500 mt-2">Ordenados por número de alumno, no por gravedad. La decisión es siempre del profesor.</p>
+        <p className="text-xs text-gray-500 mt-2">{n.orden}</p>
       </section>
 
-      {/* Comparación de modelos */}
-      <section className="bg-white border border-gray-200 rounded-lg p-4 mb-8">
-        <h2 className="text-lg font-semibold text-[#0f3d4c]">Cómo elegimos el modelo</h2>
-        <p className="text-sm text-gray-600 mb-3">7 combinaciones comparadas detectando a los mismos alumnos que la regla «suspende el primer periodo» (299 alertas).</p>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-600 border-b">
-                <th className="py-2">Modelo</th><th>Calidad (PR-AUC)</th><th>Acertadas</th><th>Alertas</th><th>Alumnos que la regla no ve</th>
-              </tr>
-            </thead>
-            <tbody>
-              {comparacion.map((m) => (
-                <tr key={m.modelos} className={`border-b border-gray-100 ${m.modelos === 'logistica + lightgbm' ? 'bg-amber-50 font-semibold' : ''}`}>
-                  <td className="py-2">{m.modelos}{m.modelos === 'logistica + lightgbm' ? ' (elegido)' : ''}</td>
-                  <td>{Number(m.pr_auc).toFixed(3)}</td>
-                  <td>{Math.round(m.precision * 100)} %</td>
-                  <td>{m.alertas}</td>
-                  <td>{m.g1_no_ve}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-sm text-gray-700 mt-3">
-          La <strong>red neuronal</strong> se usa para la nota final estimada, donde es el mejor modelo: error medio de {red.mae ?? '1,05'} puntos,
-          con un intervalo que acierta el {red.cobertura_intervalo_80 ? Math.round(red.cobertura_intervalo_80 * 100) : 80} % de las veces.
-        </p>
-      </section>
-
-      {/* Equidad */}
-      <section className="bg-white border border-gray-200 rounded-lg p-4 mb-8">
-        <h2 className="text-lg font-semibold text-[#0f3d4c]">Equidad del modelo</h2>
-        <p className="text-sm text-gray-600 mb-3">Calculada con los alumnos de los dos centros. Sexo, zona y escuela no entran al modelo: solo se usan para auditarlo.</p>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-gray-600 border-b"><th className="py-2">Grupo</th><th>Alumnos</th><th>Detectados</th><th>Falsas alarmas</th></tr>
-          </thead>
-          <tbody>
-            {Object.entries(resumen.equidad ?? {}).map(([g, v]: [string, any]) => (
-              <tr key={g} className="border-b border-gray-100">
-                <td className="py-2">{GRUPOS[g] ?? g}</td>
-                <td>{v.n}</td>
-                <td>{Math.round(v.recall * 100)} %</td>
-                <td className={v.falsas_alarmas >= 0.14 ? 'text-amber-800 font-semibold' : ''}>{Math.round(v.falsas_alarmas * 100)} %</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className="text-xs text-gray-600 mt-2">
-          El modelo detecta igual a todos los grupos, pero da más falsas alarmas en zona rural. Por eso ninguna alerta decide nada: el profesor la revisa y puede descartarla.
-        </p>
-      </section>
+      <p className="text-sm text-gray-600">
+        {t.app.comoFuncionaPregunta}{' '}
+        <Link to="/como-funciona" className="text-[#0f3d4c] underline font-medium">{t.app.comoFuncionaEnlace}</Link>
+      </p>
     </div>
   );
 }

@@ -1,16 +1,30 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { cargarAlertas, nombreClase } from '../datos';
+import { cargarAlertas, miProfesor, motivoCorto, nombreClase, num, sobre10 } from '../datos';
+import { useIdioma } from '../i18n';
 import TarjetaAlerta from '../components/TarjetaAlerta';
+import BotonInforme from '../components/BotonInforme';
+import EvolucionClase from '../components/EvolucionClase';
+import ImportarTrimestre from '../components/ImportarTrimestre';
 
 export default function Clase() {
+  const { t } = useIdioma();
+  const k = t.clase;
   const { asig, id } = useParams();
+  const [params] = useSearchParams();
+  const resaltado = params.get('alumno');
   const [clase, setClase] = useState<any>(null);
   const [alumnos, setAlumnos] = useState<any[]>([]);
   const [alertas, setAlertas] = useState<any[]>([]);
   const [abierto, setAbierto] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState(0); // al importar un trimestre, vuelve a cargar la gráfica de evolución
+  const [esDirector, setEsDirector] = useState(false); // la dirección ve la clase en solo lectura
+
+  useEffect(() => {
+    miProfesor().then((p) => setEsDirector(p?.rol === 'director'));
+  }, []);
 
   async function cargar() {
     if (!id || !asig) return;
@@ -34,23 +48,38 @@ export default function Clase() {
     cargar();
   }, [id, asig]);
 
+  // Si se llega desde una alerta (?alumno=), se abre y se resalta ese alumno
+  useEffect(() => {
+    if (loading || !resaltado) return;
+    setAbierto(Number(resaltado));
+    document.getElementById(`alumno-${resaltado}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [loading, resaltado]);
+
   const alertasDe = (alumnoId: number) => alertas.filter((a) => a.nivel === 'alumno' && a.alumno_id === alumnoId);
   const deGrupo = alertas.filter((a) => a.nivel === 'clase');
   const conAlerta = alumnos.filter((a) => alertasDe(a.id).length > 0).length;
 
   return (
     <div className="p-8 bg-[#fdfbf7] min-h-screen max-w-6xl mx-auto">
-      <Link to={`/asignatura/${asig}`} className="text-sm text-gray-500 hover:text-[#0f3d4c] underline mb-4 inline-block">← Volver a la asignatura</Link>
+      <Link to={`/asignatura/${asig}`} className="text-sm text-gray-500 hover:text-[#0f3d4c] underline mb-4 inline-block">{t.app.volverAsignatura}</Link>
+      {esDirector && (
+        <p className="bg-blue-50 text-blue-800 p-3 rounded mb-4 text-sm border border-blue-200">
+          {k.soloLectura}
+        </p>
+      )}
       <div className="flex flex-wrap justify-between items-end gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#0f3d4c]">{nombreClase(clase)}</h1>
           <p className="text-sm text-gray-600">
-            {alumnos.length} alumnos · {conAlerta} con alguna alerta · datos del primer periodo
+            {k.resumen(alumnos.length, conAlerta)}
           </p>
         </div>
-        <Link to={`/asignatura/${asig}/clase/${id}/analisis`} className="px-4 py-2 bg-[#0f3d4c] text-white rounded">
-          Análisis completo de la clase →
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <BotonInforme ruta={`clases/${id}/asignatura_${asig}/periodo_1.pdf`} />
+          <Link to={`/asignatura/${asig}/clase/${id}/analisis`} className="px-4 py-2 bg-[#0f3d4c] text-white rounded">
+            {k.analisis}
+          </Link>
+        </div>
       </div>
 
       {deGrupo.map((a) => (
@@ -63,17 +92,12 @@ export default function Clase() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-[#0f3d4c] text-white text-sm">
-              <th className="p-3 font-semibold">Alumno (ficticio)</th>
-              <th className="p-3 font-semibold">Examen</th>
-              <th className="p-3 font-semibold">Prácticas*</th>
-              <th className="p-3 font-semibold">Participación*</th>
-              <th className="p-3 font-semibold">Asistencia*</th>
-              <th className="p-3 font-semibold">Alertas</th>
+              {k.columnas.map((col, i) => <th key={i} className="p-3 font-semibold">{col}</th>)}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="p-4 text-center text-gray-500">Cargando alumnos...</td></tr>
+              <tr><td colSpan={6} className="p-4 text-center text-gray-500">{k.cargandoAlumnos}</td></tr>
             ) : (
               alumnos.map((alumno) => {
                 const r = alumno.rendimiento[0];
@@ -81,19 +105,19 @@ export default function Clase() {
                 const alta = suyas.some((a) => a.severidad === 'alta');
                 return (
                   <Fragment key={alumno.id}>
-                    <tr className={`border-b border-gray-100 ${suyas.length ? (alta ? 'bg-amber-50' : 'bg-amber-50/40') : ''}`}>
-                      <td className="p-3 font-medium text-[#0f3d4c]">{alumno.nombre}</td>
-                      <td className="p-3">{r.nota_examen ?? '-'}</td>
-                      <td className="p-3">{r.nota_practicas ?? '-'}</td>
-                      <td className="p-3">{r.participacion ?? '-'}/10</td>
-                      <td className="p-3">{r.asistencia != null ? `${r.asistencia}%` : '-'}</td>
+                    <tr id={`alumno-${alumno.id}`} className={`border-b border-gray-100 ${resaltado === String(alumno.id) ? 'bg-yellow-50 ring-2 ring-inset ring-yellow-400' : suyas.length ? (alta ? 'bg-amber-50' : 'bg-amber-50/40') : ''}`}>
+                      <td className="p-3 font-medium"><Link to={`/asignatura/${asig}/clase/${id}/alumno/${alumno.id}`} className="text-[#0f3d4c] hover:underline">{alumno.nombre}</Link></td>
+                      <td className="p-3">{num(sobre10(r.nota_examen), 2)}</td>
+                      <td className="p-3">{num(sobre10(r.nota_practicas), 2)}</td>
+                      <td className="p-3">{num(r.participacion)}/10</td>
+                      <td className="p-3">{r.asistencia != null ? `${num(r.asistencia)} %` : '-'}</td>
                       <td className="p-3">
                         {suyas.length > 0 ? (
                           <button
                             onClick={() => setAbierto(abierto === alumno.id ? null : alumno.id)}
                             className={`text-xs font-semibold px-2 py-1 rounded ${alta ? 'bg-amber-400 text-[#0f3d4c]' : 'bg-amber-100 text-amber-900'}`}
                           >
-                            {suyas[0].motivo === 'riesgo_de_suspenso' ? 'Podría necesitar apoyo' : suyas[0].titulo.split(' en ')[0]}
+                            {motivoCorto(suyas[0].motivo)}
                             {suyas.length > 1 ? ` (+${suyas.length - 1})` : ''} {abierto === alumno.id ? '▲' : '▼'}
                           </button>
                         ) : (
@@ -106,7 +130,7 @@ export default function Clase() {
                         <td colSpan={6} className="p-3 bg-[#fdfbf7]">
                           <div className="flex flex-col gap-2">
                             {suyas.map((a) => (
-                              <TarjetaAlerta key={a.id} alerta={a} mostrarContexto={false} onCambio={cargar} />
+                              <TarjetaAlerta key={a.id} alerta={a} mostrarContexto={false} conAcciones={!esDirector} onCambio={cargar} />
                             ))}
                           </div>
                         </td>
@@ -119,7 +143,10 @@ export default function Clase() {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-gray-500 mt-2">* Variables sintéticas en esta demo. La tabla no está ordenada por rendimiento.</p>
+      <p className="text-xs text-gray-500 mt-2">{k.nota}</p>
+
+      {id && asig && <ImportarTrimestre claseId={id} asignaturaId={asig} onGuardado={() => { cargar(); setVersion((v) => v + 1); }} />}
+      {id && asig && <EvolucionClase key={version} claseId={id} asignaturaId={asig} />}
     </div>
   );
 }

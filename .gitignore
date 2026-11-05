@@ -18,3 +18,11 @@ ml/data/raw/*_old
 
 *.pkl
 data/processed/
+
+
+reports/.env
+reports/.token
+
+# Informes PDF generados
+reports/output/*.pdf
+!.env.example

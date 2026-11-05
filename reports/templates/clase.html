@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Brújula - Informe de clase</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #24343A;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #174A55;
+            font-size: 24px;
+            border-bottom: 3px solid #E9B45C;
+            padding-bottom: 12px;
+        }
+
+        h2 {
+            color: #174A55;
+            font-size: 19px;
+            margin-top: 25px;
+        }
+
+        h3 {
+            color: #174A55;
+            font-size: 15px;
+            margin-top: 20px;
+        }
+
+        .cabecera {
+            margin-bottom: 25px;
+        }
+
+        .resumen {
+            background-color: #F7F4ED;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+
+        .indicador {
+            margin-bottom: 12px;
+        }
+
+        .indicador strong {
+            color: #174A55;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        th {
+            background-color: #174A55;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #DDDDDD;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F7F4ED;
+        }
+
+        .sin-alertas {
+            background-color: #F7F4ED;
+            padding: 15px;
+            border-left: 4px solid #E9B45C;
+            margin-top: 15px;
+        }
+
+        .alta td:first-child {
+            border-left: 4px solid #E9B45C;
+        }
+
+        .etiqueta-alta {
+            background-color: #E9B45C;
+            color: #174A55;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .aviso-grupo {
+            background-color: #FDF3E1;
+            border-left: 4px solid #E9B45C;
+            padding: 10px 15px;
+            margin-top: 10px;
+        }
+
+        .motivos {
+            margin: 0;
+            padding-left: 16px;
+        }
+
+        .barra-fondo {
+            background-color: #EEEAE0;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .barra {
+            background-color: #174A55;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        .nota {
+            font-size: 10px;
+            color: #666666;
+            margin-top: 25px;
+        }
+
+        .pie {
+            margin-top: 35px;
+            padding-top: 10px;
+            border-top: 1px solid #DDDDDD;
+            font-size: 10px;
+            color: #666666;
+        }
+        h2, h3, h2 + p, h3 + p { page-break-after: avoid; break-after: avoid; }
+    </style>
+</head>
+
+<body>
+
+    <div class="cabecera">
+        <h1>Brújula | Informe de clase</h1>
+
+        <h2>{{ clase }}</h2>
+
+        <p>
+            <strong>Asignatura:</strong>
+            {{ asignatura }}
+        </p>
+
+        <p>
+            <strong>Periodo académico:</strong>
+            {{ periodo }}
+        </p>
+
+        <p>
+            <strong>Fecha de generación:</strong>
+            {{ fecha }}
+        </p>
+    </div>
+
+    <h2>1. Resumen académico</h2>
+
+    <div class="resumen">
+
+        <div class="indicador">
+            <strong>Total de alumnos:</strong>
+            {{ total_alumnos }}
+        </div>
+
+        <div class="indicador">
+            <strong>Nota media de examen:</strong>
+            {{ nota_media }}
+        </div>
+
+        <div class="indicador">
+            <strong>Asistencia media:</strong>
+            {{ asistencia_media }} %
+        </div>
+
+        <div class="indicador">
+            <strong>Alumnos con alguna alerta:</strong>
+            {{ alumnos_con_alerta }} de {{ total_alumnos }}
+        </div>
+
+        {% if nota_estimada_media is not none %}
+        <div class="indicador">
+            <strong>Nota final estimada media:</strong>
+            {{ nota_estimada_media }} / 10
+            <span style="color:#666666">(red neuronal; error medio ±{{ error_nota }} puntos)</span>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <h2>2. Alertas educativas</h2>
+
+    <p>
+        Alumnos que podrían necesitar apoyo y por qué, según los datos del primer periodo.
+        Ordenados por prioridad y motivo, no por nota. Cada alerta la revisa el profesor:
+        Brújula propone, el docente decide.
+    </p>
+
+    {% for aviso in avisos_grupo %}
+    <div class="aviso-grupo">
+        <strong>{{ aviso.titulo }}</strong><br>
+        {{ aviso.descripcion }}
+    </div>
+    {% endfor %}
+
+    {% if alertas %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Alumno</th>
+                <th>Prioridad</th>
+                <th>Motivo</th>
+                <th>Por qué</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for alerta in alertas %}
+            <tr class="{{ 'alta' if alerta.alta else '' }}">
+                <td>{{ alerta.alumno }}</td>
+                <td>
+                    {% if alerta.alta %}
+                    <span class="etiqueta-alta">Alta</span>
+                    {% else %}
+                    Media
+                    {% endif %}
+                </td>
+                <td>{{ alerta.motivo }}</td>
+                <td>
+                    <ul class="motivos">
+                        {% for m in alerta.detalle %}
+                        <li>{{ m }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>{{ alerta.estado }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+
+    <div class="sin-alertas">
+        <p>No hay alertas activas para esta clase y asignatura.</p>
+    </div>
+
+    {% endif %}
+
+    {% if analisis_disponible and importancia %}
+
+    <h3>Qué pesa más en las alertas de esta clase</h3>
+
+    <p>
+        Contribución media de cada variable al modelo (SHAP). Indica en qué se fija
+        el modelo, no qué causa el resultado.
+    </p>
+
+    <table>
+        <tbody>
+            {% for v in importancia %}
+            <tr>
+                <td style="width:40%">{{ v.nombre }}</td>
+                <td>
+                    <div class="barra-fondo">
+                        <div class="barra" style="width: {{ v.porcentaje_barra }}%"></div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% endif %}
+
+    <p class="nota">
+        * Variable sintética en esta demo, generada a partir de las notas reales:
+        su peso no es un hallazgo sobre el aprendizaje.
+    </p>
+
+    <h2>3. Por dónde empezar</h2>
+
+    {% if sin_accion %}
+    <p>
+        Alumnos con <strong>prioridad alta</strong> que todavía no tienen ninguna acción registrada.
+        Conviene revisarlos primero.
+    </p>
+    <table>
+        <thead>
+            <tr><th>Alumno</th><th>Motivo</th><th>Por qué</th></tr>
+        </thead>
+        <tbody>
+            {% for a in sin_accion %}
+            <tr class="alta">
+                <td>{{ a.alumno }}</td>
+                <td>{{ a.motivo }}</td>
+                <td>
+                    <ul class="motivos">
+                        {% for m in a.detalle %}<li>{{ m }}</li>{% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="sin-alertas">
+        <p>Todos los alumnos con prioridad alta tienen ya alguna acción registrada, o no hay ninguno.</p>
+    </div>
+    {% endif %}
+
+    {% if acciones_clase %}
+    <h3>Acciones registradas en esta clase</h3>
+    <table>
+        <thead>
+            <tr><th>Alumno</th><th>Acción</th><th>Revisar el</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+            {% for a in acciones_clase %}
+            <tr>
+                <td>{{ a.alumno }}</td>
+                <td>{{ a.tipo }}</td>
+                <td>{{ a.revision or '—' }}</td>
+                <td>{{ a.estado }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <h2>4. Qué vigilar en la clase</h2>
+
+    {% if vigilar %}
+    <p>
+        Cuántos alumnos tienen cada tipo de alerta y una idea que suele ayudar.
+        Son orientaciones: la decisión es siempre del profesor.
+    </p>
+    <table>
+        <thead>
+            <tr><th>Motivo</th><th>Alumnos</th><th>Idea de actuación</th></tr>
+        </thead>
+        <tbody>
+            {% for v in vigilar %}
+            <tr>
+                <td>{{ v.motivo }}</td>
+                <td>{{ v.alumnos }}</td>
+                <td>{{ v.idea }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="sin-alertas">
+        <p>No hay alertas activas en esta clase y asignatura.</p>
+    </div>
+    {% endif %}
+
+    <p class="nota">
+        Las alertas y las estimaciones son herramientas de apoyo para el profesorado:
+        no son diagnósticos ni sustituyen su valoración.
+        Fuente: {{ fuente }}, alertas y análisis del modelo (alertas con logística + LightGBM;
+        nota estimada con red neuronal). Periodo analizado: {{ periodo }}.
+    </p>
+
+    <div class="pie">
+        <p>
+            Brújula - Hack4Edu 2026
+        </p>
+
+        <p>
+            Informe académico generado automáticamente.
+            Documento destinado al personal autorizado.
+        </p>
+    </div>
+
+</body>
+</html>
