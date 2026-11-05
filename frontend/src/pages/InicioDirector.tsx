@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { cargarAlertas, miProfesor, nombreClase, num, olvidarProfesor, sobre10 } from '../datos';
+import { cargarAlertas, miProfesor, nombreAsignatura, nombreClase, num, olvidarProfesor, sobre10 } from '../datos';
+import { useIdioma } from '../i18n';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 import BotonInforme from '../components/BotonInforme';
 
@@ -14,6 +15,8 @@ const NOMBRES_ESCUELA: Record<string, string> = {
 const ASIG_REALES = new Set(['Portugués', 'Matemáticas']);
 
 export default function InicioDirector() {
+  const { t } = useIdioma();
+  const d = t.director;
   const [prof, setProf] = useState<any>(null);
   const [escuela, setEscuela] = useState('');
   const [asignaturas, setAsignaturas] = useState<Record<number, string>>({});
@@ -57,7 +60,7 @@ export default function InicioDirector() {
     })();
   }, []);
 
-  if (loading) return <div className="p-8 text-gray-500">Cargando...</div>;
+  if (loading) return <div className="p-8 text-gray-500">{t.app.cargando}</div>;
 
   const deAlumnos = alertas.filter((a) => a.nivel === 'alumno');
   const conAlerta = new Set(deAlumnos.map((a) => a.alumno_id)).size;
@@ -71,13 +74,13 @@ export default function InicioDirector() {
     <div className="p-8 bg-[#fdfbf7] min-h-screen max-w-6xl mx-auto">
       <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#0f3d4c]">Hola{prof?.nombre ? `, ${prof.nombre}` : ''}</h1>
-          <p className="text-sm text-gray-600">Dirección · {escuela} · datos del primer periodo</p>
+          <h1 className="text-2xl font-bold text-[#0f3d4c]">{t.inicio.hola(prof?.nombre ?? '')}</h1>
+          <p className="text-sm text-gray-600">{d.cabecera(escuela)}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <BotonInforme ruta={`centros/${prof.escuela_id}/periodo_1.pdf`} texto="Informe del centro (PDF)" />
+          <BotonInforme ruta={`centros/${prof.escuela_id}/periodo_1.pdf`} texto={t.informe.centro} />
           <button onClick={() => { olvidarProfesor(); supabase.auth.signOut(); }} className="text-sm text-gray-500 hover:text-[#0f3d4c] underline">
-            Cerrar sesión
+            {t.app.cerrarSesion}
           </button>
         </div>
       </div>
@@ -85,26 +88,26 @@ export default function InicioDirector() {
       {/* Cifras del centro */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600">Alumnos con alguna alerta</p>
-          <p className="text-3xl font-bold text-[#0f3d4c]">{conAlerta} <span className="text-base font-normal text-gray-500">de {totalAlumnos}</span></p>
-          <p className="text-xs text-gray-500">En cualquier asignatura, sin contar dos veces al mismo alumno</p>
+          <p className="text-sm text-gray-600">{d.conAlerta}</p>
+          <p className="text-3xl font-bold text-[#0f3d4c]">{conAlerta} <span className="text-base font-normal text-gray-500">{d.de(totalAlumnos)}</span></p>
+          <p className="text-xs text-gray-500">{d.conAlertaNota}</p>
         </div>
         <div className={`border rounded-lg p-4 ${altas ? 'bg-amber-50 border-amber-400' : 'bg-white border-gray-200'}`}>
-          <p className="text-sm text-gray-600">Con prioridad alta</p>
-          <p className="text-3xl font-bold text-[#0f3d4c]">{altas} <span className="text-base font-normal text-gray-500">alumnos</span></p>
-          <p className="text-xs text-gray-500">Conviene que su profesorado los revise primero</p>
+          <p className="text-sm text-gray-600">{d.conAlta}</p>
+          <p className="text-3xl font-bold text-[#0f3d4c]">{altas} <span className="text-base font-normal text-gray-500">{d.alumnos}</span></p>
+          <p className="text-xs text-gray-500">{d.conAltaNota}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600">Acciones de seguimiento registradas</p>
+          <p className="text-sm text-gray-600">{d.acciones}</p>
           <p className="text-3xl font-bold text-[#0f3d4c]">{acciones}</p>
-          <p className="text-xs text-gray-500">Tutorías, reuniones con familias, refuerzos y seguimientos decididos por el profesorado</p>
+          <p className="text-xs text-gray-500">{d.accionesNota}</p>
         </div>
       </div>
 
       {/* Avisos de grupo */}
       {deGrupo.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">Avisos de grupo</h2>
+          <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">{d.avisosGrupo}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {deGrupo.map((a) =>
               a.nivel === 'clase' ? (
@@ -121,17 +124,17 @@ export default function InicioDirector() {
 
       {/* Por asignatura */}
       <section className="bg-white border border-gray-200 rounded-lg p-4 mb-8 overflow-x-auto">
-        <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">Por asignatura</h2>
+        <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">{d.porAsignatura}</h2>
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-gray-600 border-b">
-              <th className="py-2">Asignatura</th><th>Clases</th><th>Alumnos</th><th>Nota media</th><th>Asistencia*</th><th>Alumnos con alerta</th>
+              {d.columnas.map((col, i) => <th key={i} className={i === 0 ? 'py-2' : ''}>{col}</th>)}
             </tr>
           </thead>
           <tbody>
             {porAsignatura.map((f) => (
               <tr key={f.asignatura_id} className="border-b border-gray-100">
-                <td className="py-2 font-medium text-[#0f3d4c]">{asignaturas[f.asignatura_id]}{ASIG_REALES.has(asignaturas[f.asignatura_id]) ? '' : '*'}</td>
+                <td className="py-2 font-medium text-[#0f3d4c]">{nombreAsignatura(asignaturas[f.asignatura_id])}{ASIG_REALES.has(asignaturas[f.asignatura_id]) ? '' : '*'}</td>
                 <td>{f.n_clases}</td>
                 <td>{f.n_alumnos}</td>
                 <td>{num(sobre10(f.media_examen), 2)}</td>
@@ -141,12 +144,12 @@ export default function InicioDirector() {
             ))}
           </tbody>
         </table>
-        <p className="text-xs text-gray-500 mt-2">* Datos sintéticos en esta demo. Solo se muestran grupos de 5 alumnos o más.</p>
+        <p className="text-xs text-gray-500 mt-2">{d.notaTabla}</p>
       </section>
 
       {/* Clases */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">Clases</h2>
+        <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">{d.clases}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {clases.map((c) => (
             <div key={c.id} className="bg-white border border-gray-200 rounded-lg p-4">
@@ -157,8 +160,8 @@ export default function InicioDirector() {
                   return (
                     <li key={aid}>
                       <Link to={`/asignatura/${aid}/clase/${c.id}`} className="flex justify-between hover:underline">
-                        <span className="text-[#0f3d4c]">{asignaturas[aid]}</span>
-                        <span className={n ? 'text-amber-800 font-medium' : 'text-gray-400'}>{n ? `${n} pendientes` : '—'}</span>
+                        <span className="text-[#0f3d4c]">{nombreAsignatura(asignaturas[aid])}</span>
+                        <span className={n ? 'text-amber-800 font-medium' : 'text-gray-400'}>{n ? d.pendientes(n) : '—'}</span>
                       </Link>
                     </li>
                   );
@@ -170,8 +173,8 @@ export default function InicioDirector() {
       </section>
 
       <p className="text-sm text-gray-600">
-        ¿Cómo se eligió el modelo, qué datos usa y es justo con todos los alumnos?{' '}
-        <Link to="/como-funciona" className="text-[#0f3d4c] underline font-medium">Cómo funciona Brújula →</Link>
+        {t.app.comoFuncionaPregunta}{' '}
+        <Link to="/como-funciona" className="text-[#0f3d4c] underline font-medium">{t.app.comoFuncionaEnlace}</Link>
       </p>
     </div>
   );

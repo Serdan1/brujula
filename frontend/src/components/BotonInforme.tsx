@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { supabase } from '../supabase';
+import { useIdioma } from '../i18n';
 
 // Abre un informe PDF del bucket privado «informes» con un enlace temporal (5 minutos).
 // Las reglas de Supabase Storage solo permiten abrir los informes que el usuario puede ver.
-export default function BotonInforme({ ruta, texto = 'Descargar informe (PDF)' }: { ruta: string; texto?: string }) {
+// Los PDF están en español.
+export default function BotonInforme({ ruta, texto }: { ruta: string; texto?: string }) {
+  const { t } = useIdioma();
   const [cargando, setCargando] = useState(false);
 
   async function abrir() {
@@ -14,7 +17,7 @@ export default function BotonInforme({ ruta, texto = 'Descargar informe (PDF)' }
     setCargando(false);
     if (error || !data?.signedUrl) {
       ventana?.close();
-      alert('El informe todavía no está disponible. Se genera al publicar los resultados del modelo.');
+      alert(t.errores.informe);
       return;
     }
     if (ventana) ventana.location.href = data.signedUrl;
@@ -27,7 +30,7 @@ export default function BotonInforme({ ruta, texto = 'Descargar informe (PDF)' }
       disabled={cargando}
       className="px-4 py-2 rounded border border-[#0f3d4c] text-[#0f3d4c] bg-white hover:bg-gray-50 disabled:opacity-60"
     >
-      {cargando ? 'Abriendo...' : texto}
+      {cargando ? t.informe.abriendo : texto ?? t.informe.descargar}
     </button>
   );
 }

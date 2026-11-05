@@ -2,10 +2,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { MOTIVOS, cargarAlertas, miProfesor, olvidarProfesor } from '../datos';
+import { cargarAlertas, miProfesor, motivoGrupo, nombreAsignatura, olvidarProfesor } from '../datos';
+import { useIdioma } from '../i18n';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 
 export default function Inicio() {
+  const { t } = useIdioma();
+  const i = t.inicio;
   const [asignaturas, setAsignaturas] = useState<any[]>([]);
   const [alertas, setAlertas] = useState<any[]>([]);
   const [nombre, setNombre] = useState('');
@@ -120,16 +123,16 @@ export default function Inicio() {
                 brújula
               </span>
               <span className="ml-2 rounded-full bg-white px-3 py-1 text-xs text-gray-500">
-                Panel docente
+                {i.panel}
               </span>
             </div>
 
             <h1 className="text-2xl font-bold tracking-tight text-[#174A55] sm:text-3xl">
-              Hola{nombre ? `, ${nombre}` : ''}
+              {i.hola(nombre)}
             </h1>
 
             <p className="mt-2 text-sm text-gray-600 sm:text-base">
-              Consulta las alertas educativas y realiza el seguimiento de tus alumnos.
+              {i.intro}
             </p>
           </div>
 
@@ -138,7 +141,7 @@ export default function Inicio() {
               to="/intervenciones?tipo=intervencion"
               className="rounded-xl bg-[#174A55] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#123b44]"
             >
-              Próximas revisiones
+              {t.app.proximasRevisiones}
             </Link>
           <button
             onClick={() => {
@@ -147,7 +150,7 @@ export default function Inicio() {
             }}
             className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-[#174A55] transition hover:border-[#174A55] hover:bg-gray-50"
           >
-            Cerrar sesión
+            {t.app.cerrarSesion}
           </button>
           </div>
         </header>
@@ -164,7 +167,7 @@ export default function Inicio() {
                 {loading ? '—' : totalPendientes}
               </p>
               <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-                Alertas de alumnos pendientes
+                {i.indPendientes}
               </p>
             </div>
 
@@ -176,7 +179,7 @@ export default function Inicio() {
                 {loading ? '—' : totalAltas}
               </p>
               <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-                Alertas de prioridad alta
+                {i.indAltas}
               </p>
             </div>
 
@@ -188,7 +191,7 @@ export default function Inicio() {
                 {loading ? '—' : asignaturas.length}
               </p>
               <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-                Mis asignaturas
+                {i.indAsignaturas}
               </p>
             </div>
 
@@ -200,25 +203,25 @@ export default function Inicio() {
           <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-xl font-bold text-[#174A55] sm:text-2xl">
-                Lo más importante
+                {i.importante}
               </h2>
               <p className="mt-1 text-sm text-gray-500">
-                Situaciones que conviene revisar primero
+                {i.importanteSub}
               </p>
             </div>
 
             <span className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-500">
-              Alertas pendientes
+              {i.etiquetaPendientes}
             </span>
           </div>
 
           {loading ? (
             <div className="rounded-2xl bg-white p-6 text-gray-500 shadow-sm">
-              Cargando alertas...
+              {i.cargandoAlertas}
             </div>
           ) : resumen.length === 0 && deGrupo.length === 0 ? (
             <div className="rounded-2xl border border-gray-100 bg-white p-6 text-gray-600 shadow-sm">
-              No hay alertas pendientes.
+              {i.sinAlertas}
             </div>
           ) : (
             <div className="flex flex-col gap-4">
@@ -258,20 +261,17 @@ export default function Inicio() {
                     <div className="min-w-0 flex-1">
                       {g.altas > 0 && (
                         <span className="mb-2 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
-                          Prioridad alta
+                          {t.app.prioridadAlta}
                         </span>
                       )}
 
                       <h3 className="font-semibold leading-relaxed text-[#174A55]">
-                        {g.total}{' '}
-                        {g.total === 1 ? 'alumno' : 'alumnos'}{' '}
-                        {MOTIVOS[g.motivo]?.grupo ?? g.motivo} en{' '}
-                        {g.asignatura}
+                        {i.frase(g.total, motivoGrupo(g.motivo, g.total), nombreAsignatura(g.asignatura))}
                       </h3>
 
                       {g.altas > 0 && (
                         <p className="mt-1 text-sm text-gray-500">
-                          {g.altas} con prioridad alta
+                          {i.conAlta(g.altas)}
                         </p>
                       )}
                     </div>
@@ -292,10 +292,10 @@ export default function Inicio() {
         <section>
           <div className="mb-5">
             <h2 className="text-xl font-bold text-[#174A55] sm:text-2xl">
-              Mis asignaturas
+              {i.asignaturas}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Accede a tus clases y consulta su seguimiento
+              {i.asignaturasSub}
             </p>
           </div>
 
@@ -319,11 +319,11 @@ export default function Inicio() {
 
                   <div className="min-w-0 flex-1">
                     <h3 className="text-lg font-bold text-[#174A55]">
-                      {asig.nombre}
+                      {nombreAsignatura(asig.nombre)}
                     </h3>
 
                     <p className="mt-1 text-sm text-gray-500">
-                      {pendientes} alertas pendientes
+                      {t.app.alertasPendientes(pendientes)}
                     </p>
                   </div>
 

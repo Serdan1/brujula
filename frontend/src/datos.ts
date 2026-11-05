@@ -1,5 +1,6 @@
 // Funciones compartidas para leer y actualizar datos de Supabase
 import { supabase } from './supabase';
+import { localeActual, tActual } from './i18n';
 
 export type Profesor = { id: number; escuela_id: number; rol: string; nombre: string };
 
@@ -25,16 +26,24 @@ export function olvidarProfesor() {
   profesorCache = null;
 }
 
-export const nombreClase = (c: any) => (c ? `${c.curso}.º Primaria ${c.letra}` : '');
+// Nombre de una clase en el idioma actual («4.º Primaria A», «4.º ano A», «Grade 4A», «CM1 A»)
+export const nombreClase = (c: any) => (c ? tActual().comun.clase(c.curso, c.letra) : '');
 
-// Números con formato español: coma decimal (12,6 en vez de 12.6)
+// Nombre de una asignatura (en la base de datos está en español)
+export const nombreAsignatura = (n: string | null | undefined) => (n ? tActual().comun.asignaturas[n] ?? n : '');
+
+// Números con el formato del idioma actual (12,6 en español; 12.6 en inglés)
 export function num(v: any, decimales = 1): string {
   if (v === null || v === undefined || v === '' || isNaN(Number(v))) return '-';
-  return Number(v).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: decimales });
+  return Number(v).toLocaleString(localeActual(), { minimumFractionDigits: 0, maximumFractionDigits: decimales });
 }
 
-// Convierte los decimales con punto de un texto ("10.6", "68 %") a coma
-export const comaDecimal = (t: string) => t.replace(/(\d)\.(\d)/g, '$1,$2');
+// Fecha «2026-11-05» con el formato del idioma actual
+export const fecha = (f?: string | null) => (f ? new Date(f).toLocaleDateString(localeActual()) : '');
+
+// Escribe con el separador decimal del idioma los números de un texto ("10.6", "68 %")
+export const comaDecimal = (t: string) =>
+  (1.5).toLocaleString(localeActual()).includes(',') ? t.replace(/(\d)\.(\d)/g, '$1,$2') : t.replace(/(\d),(\d)/g, '$1.$2');
 
 // ---------- Escala de notas ----------
 // Supabase y el modelo guardan las notas sobre 20 (como el dataset original).
@@ -71,15 +80,9 @@ export function textoSobre10(t: string | null | undefined): string {
     .replace(/sobre 20/g, 'sobre 10');
 }
 
-// Textos para cada motivo de alerta
-export const MOTIVOS: Record<string, { corto: string; grupo: string }> = {
-  riesgo_de_suspenso: { corto: 'Podría necesitar apoyo', grupo: 'podrían necesitar apoyo' },
-  faltas_en_aumento: { corto: 'Asistencia baja', grupo: 'con asistencia baja' },
-  practicas_por_debajo: { corto: 'Prácticas por debajo del aprobado', grupo: 'con prácticas por debajo del aprobado' },
-  baja_participacion: { corto: 'Participación baja', grupo: 'con participación baja' },
-  bajada_de_notas: { corto: 'Bajada de notas', grupo: 'con bajada de notas' },
-  grupo_por_debajo_de_la_media: { corto: 'Grupo por encima de la media de alertas', grupo: 'grupos por encima de la media' },
-};
+// Textos de cada motivo de alerta (src/i18n, motivos.*): nombre corto y frase para un grupo de n alumnos
+export const motivoCorto = (m: string) => tActual().motivos[m]?.corto ?? m;
+export const motivoGrupo = (m: string, n: number) => tActual().motivos[m]?.grupo(n) ?? m;
 
 // Nombres legibles para las alertas de reglas, que no traen "nombre"
 const NOMBRES_VARIABLES: Record<string, string> = {
@@ -206,10 +209,7 @@ export async function marcarRevisada(alertaId: number) {
     .eq('id', alertaId);
 
   if (error) {
-    alert(
-      'No se ha podido marcar como revisada: ' +
-      error.message
-    );
+    alert(tActual().errores.revisar + error.message);
   }
 
   return !error;
@@ -228,10 +228,7 @@ export async function descartarAlerta(
     .eq('id', alertaId);
 
   if (error) {
-    alert(
-      'No se ha podido descartar: ' +
-      error.message
-    );
+    alert(tActual().errores.descartar + error.message);
   }
 
   return !error;
@@ -246,7 +243,7 @@ export async function registrarAccion(
   const prof = await miProfesor();
 
   if (!prof) {
-    alert('No se encuentra tu perfil de profesor.');
+    alert(tActual().errores.sinPerfil);
     return false;
   }
 
@@ -264,10 +261,7 @@ export async function registrarAccion(
     });
 
   if (error) {
-    alert(
-      'Error al guardar la acción: ' +
-      error.message
-    );
+    alert(tActual().errores.guardarAccion + error.message);
     return false;
   }
 

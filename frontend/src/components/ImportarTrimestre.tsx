@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { ESCALA, MOTIVOS, NOTA_MAX, miProfesor, num } from '../datos';
+import { ESCALA, NOTA_MAX, miProfesor, motivoCorto, num } from '../datos';
+import { tActual, useIdioma } from '../i18n';
 
 // Importar desde un CSV (exportado de Excel) las notas y la asistencia del 2.º o 3.º trimestre de una clase.
 // Solo lo ve el profesor que imparte esta asignatura en esta clase; nunca un director.
@@ -12,13 +13,8 @@ const CAMPOS = ['nota_examen', 'nota_practicas', 'participacion', 'asistencia', 
 type Campo = (typeof CAMPOS)[number];
 const COLUMNAS = ['alumno_id', 'nombre', 'periodo', ...CAMPOS];
 
-const NOMBRE: Record<Campo, string> = {
-  nota_examen: 'la nota de examen',
-  nota_practicas: 'la nota de prácticas',
-  participacion: 'la participación',
-  asistencia: 'la asistencia',
-  faltas: 'el número de faltas',
-};
+// Nombre de cada campo en los mensajes de error (src/i18n, importar.campos)
+const nombreCampo = (c: Campo) => tActual().importar.campos[c];
 // Las notas se escriben sobre 10 (como se ven en la web); Supabase las guarda sobre 20
 const MAXIMO: Record<Campo, number> = { nota_examen: NOTA_MAX, nota_practicas: NOTA_MAX, participacion: 10, asistencia: 100, faltas: Infinity };
 const aGuardar = (v: Record<Campo, number | null>) => ({
@@ -63,14 +59,14 @@ function numero(texto: string | undefined): number | null {
 }
 
 function leerCsv(texto: string, periodo: number, alumnos: Map<number, string>): { filas: Fila[]; general: string[] } {
+  const m = tActual().importar;
   const lineas = texto.replace(/^﻿/, '').split(/\r?\n/);
   const cabecera = lineas[0] ?? '';
   const sep = cabecera.includes(';') ? ';' : ',';
   const columnas = partir(cabecera, sep).map((c) => c.toLowerCase());
   const faltan = ['alumno_id', ...CAMPOS].filter((c) => !columnas.includes(c));
   if (faltan.length) {
-    const que = faltan.length === 1 ? `Falta la columna ${faltan[0]}` : `Faltan las columnas ${faltan.join(', ')}`;
-    return { filas: [], general: [`${que}. Usa la plantilla para no equivocarte con las columnas.`] };
+    return { filas: [], general: [m.faltaColumna(faltan) + m.usaPlantilla] };
   }
   const pos = (c: string) => columnas.indexOf(c);
 
@@ -83,27 +79,27 @@ function leerCsv(texto: string, periodo: number, alumnos: Map<number, string>): 
 
     const id = numero(celdas[pos('alumno_id')]);
     const alumnoId = id !== null && Number.isInteger(id) ? id : null;
-    if (alumnoId === null) errores.push('Falta el número de alumno (alumno_id) o no es válido.');
-    else if (!alumnos.has(alumnoId)) errores.push('Este alumno no pertenece a la clase.');
-    else if (vistos.has(alumnoId)) errores.push('El alumno aparece más de una vez en el archivo.');
+    if (alumnoId === null) errores.push(m.sinId);
+    else if (!alumnos.has(alumnoId)) errores.push(m.noEsDeLaClase);
+    else if (vistos.has(alumnoId)) errores.push(m.repetido);
     if (alumnoId !== null) vistos.add(alumnoId);
 
     if (pos('periodo') >= 0) {
       const p = numero(celdas[pos('periodo')]);
-      if (p !== null && p !== periodo) errores.push(`Esta fila es del ${p}.º trimestre, pero estás importando el ${periodo}.º.`);
+      if (p !== null && p !== periodo) errores.push(m.otroTrimestre(p, periodo));
     }
 
     const valores = {} as Record<Campo, number | null>;
     const vacios = CAMPOS.filter((c) => numero(celdas[pos(c)]) === null);
-    if (vacios.length === CAMPOS.length) errores.push('Faltan todos los datos de este alumno.');
+    if (vacios.length === CAMPOS.length) errores.push(m.todoVacio);
     for (const c of CAMPOS) {
       const v = numero(celdas[pos(c)]);
       valores[c] = v;
       if (vacios.length === CAMPOS.length) continue;
-      if (v === null) errores.push(`Falta ${NOMBRE[c]}.`);
-      else if (Number.isNaN(v)) errores.push(`${mayus(NOMBRE[c])} no es un número.`);
-      else if (c === 'faltas' && (v < 0 || !Number.isInteger(v))) errores.push('Las faltas deben ser un número entero, 0 o más.');
-      else if (c !== 'faltas' && (v < 0 || v > MAXIMO[c])) errores.push(`${mayus(NOMBRE[c])} debe estar entre 0 y ${MAXIMO[c]}.`);
+      if (v === null) errores.push(m.falta(nombreCampo(c)));
+      else if (Number.isNaN(v)) errores.push(m.noNumero(mayus(nombreCampo(c))));
+      else if (c === 'faltas' && (v < 0 || !Number.isInteger(v))) errores.push(m.faltasEnteras);
+      else if (c !== 'faltas' && (v < 0 || v > MAXIMO[c])) errores.push(m.rango(mayus(nombreCampo(c)), MAXIMO[c]));
     }
 
     filas.push({
@@ -115,7 +111,7 @@ function leerCsv(texto: string, periodo: number, alumnos: Map<number, string>): 
     });
   });
 
-  if (filas.length === 0) return { filas, general: ['El archivo no tiene alumnos.'] };
+  if (filas.length === 0) return { filas, general: [m.vacio] };
   return { filas, general: [] };
 }
 
@@ -129,9 +125,9 @@ function descargarPlantilla(alumnos: Map<number, string>, claseId: string, perio
   URL.revokeObjectURL(url);
 }
 
-const plural = (n: number, uno: string, varios: string) => `${n} ${n === 1 ? uno : varios}`;
-
 export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }: Props) {
+  const { t } = useIdioma();
+  const m = t.importar;
   const [puede, setPuede] = useState(false);
   const [periodos, setPeriodos] = useState<number[]>([]);
   const [alumnos, setAlumnos] = useState<Map<number, string>>(new Map());
@@ -195,7 +191,7 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
       p_filas: filas.map((f) => ({ alumno_id: f.alumnoId, ...aGuardar(f.valores) })),
     });
     setGuardando(false);
-    if (error) return setGeneral([`No se ha podido guardar: ${error.message}`]);
+    if (error) return setGeneral([t.errores.guardar + error.message]);
 
     const res = data as { guardadas: number; alertas: Record<string, number>; errores: any[] };
     if (res.errores?.length) {
@@ -206,10 +202,8 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
       return;
     }
     const total = Object.values(res.alertas ?? {}).reduce((s, n) => s + n, 0);
-    const detalle = Object.entries(res.alertas ?? {}).map(([m, n]) => `${MOTIVOS[m]?.corto ?? m}: ${n}`).join(' · ');
-    setResumen(`${plural(res.guardadas, 'alumno guardado', 'alumnos guardados')}, `
-      + `${total === 0 ? 'ninguna alerta nueva' : plural(total, 'alerta nueva', 'alertas nuevas')}`
-      + `${detalle ? ` (${detalle})` : ''}.`);
+    const detalle = Object.entries(res.alertas ?? {}).map(([mot, n]) => `${motivoCorto(mot)}: ${n}`).join(' · ');
+    setResumen(m.resumen(res.guardadas, total, detalle));
     limpiar();
     await cargar();
     onGuardado?.();
@@ -220,19 +214,19 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-[#0f3d4c]">
-            {falta ? `Añadir datos del ${falta}.º trimestre` : 'Actualizar datos de un trimestre'}
+            {m.titulo(falta)}
           </h2>
           <p className="text-sm text-gray-600">
-            Descarga la plantilla, rellénala en Excel y súbela. Brújula revisa los datos antes de guardar nada.
+            {m.intro}
           </p>
         </div>
         {!falta && (
           <label className="text-sm text-gray-700 flex items-center gap-2">
-            Trimestre
+            {m.trimestre}
             <select value={periodo} onChange={(e) => { setPeriodo(Number(e.target.value)); limpiar(); }}
               className="border border-gray-300 rounded px-2 py-1">
-              <option value={2}>2.º trimestre</option>
-              <option value={3}>3.º trimestre</option>
+              <option value={2}>{t.app.trimestre(2)}</option>
+              <option value={3}>{t.app.trimestre(3)}</option>
             </select>
           </label>
         )}
@@ -241,10 +235,10 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
       <div className="mt-3 flex flex-wrap gap-2">
         <button onClick={() => descargarPlantilla(alumnos, claseId, periodo)}
           className="text-sm px-3 py-1.5 rounded border border-[#0f3d4c] text-[#0f3d4c] hover:bg-gray-50">
-          Descargar plantilla
+          {m.plantilla}
         </button>
         <label className="text-sm px-3 py-1.5 rounded bg-[#0f3d4c] text-white cursor-pointer hover:opacity-90">
-          Importar .csv
+          {m.importar}
           <input type="file" accept=".csv,text/csv" onChange={leer} className="sr-only" />
         </label>
       </div>
@@ -260,21 +254,14 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
       {filas.length > 0 && (
         <div className="mt-4">
           <p className="text-sm text-gray-700 mb-2">
-            <strong>{archivo}</strong> · {plural(filas.length, 'alumno', 'alumnos')} del {periodo}.º trimestre
-            {conErrores > 0 ? ` · ${plural(conErrores, 'fila con problemas', 'filas con problemas')}: corrígelas en el archivo y vuelve a importarlo.` : ' · sin problemas.'}
+            <strong>{archivo}</strong>{m.archivo(filas.length, periodo)}
+            {conErrores > 0 ? m.conProblemas(conErrores) : m.sinProblemas}
           </p>
           <div className="overflow-x-auto border border-gray-200 rounded">
             <table className="w-full min-w-[720px] text-left text-sm border-collapse">
               <thead>
                 <tr className="bg-gray-50 text-gray-700">
-                  <th className="p-2 font-semibold">Línea</th>
-                  <th className="p-2 font-semibold">Alumno</th>
-                  <th className="p-2 font-semibold">Examen</th>
-                  <th className="p-2 font-semibold">Prácticas</th>
-                  <th className="p-2 font-semibold">Participación</th>
-                  <th className="p-2 font-semibold">Asistencia</th>
-                  <th className="p-2 font-semibold">Faltas</th>
-                  <th className="p-2 font-semibold">Revisión</th>
+                  {m.columnas.map((col, i) => <th key={i} className="p-2 font-semibold">{col}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -286,7 +273,7 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
                       <td key={c} className="p-2">{f.valores[c] === null || Number.isNaN(f.valores[c]) ? '—' : num(f.valores[c], 2)}</td>
                     ))}
                     <td className="p-2">
-                      {f.errores.length === 0 ? <span className="text-emerald-700">Correcta</span> : (
+                      {f.errores.length === 0 ? <span className="text-emerald-700">{m.correcta}</span> : (
                         <ul className="text-amber-900 list-disc pl-4">
                           {f.errores.map((e) => <li key={e}>{e}</li>)}
                         </ul>
@@ -300,9 +287,9 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
           <div className="mt-3 flex flex-wrap gap-2">
             <button onClick={guardar} disabled={!listo || guardando}
               className="text-sm px-4 py-1.5 rounded bg-[#0f3d4c] text-white disabled:opacity-40 disabled:cursor-not-allowed">
-              {guardando ? 'Guardando…' : 'Guardar'}
+              {guardando ? m.guardando : m.guardar}
             </button>
-            <button onClick={limpiar} className="text-sm px-3 py-1.5 rounded text-gray-600 hover:underline">Cancelar</button>
+            <button onClick={limpiar} className="text-sm px-3 py-1.5 rounded text-gray-600 hover:underline">{m.cancelar}</button>
           </div>
         </div>
       )}

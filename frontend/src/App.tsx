@@ -13,10 +13,12 @@ import ComoLlega from './pages/publico/ComoLlega';
 import ComoFuncionaPagina from './pages/ComoFuncionaPagina';
 import Alumno from './pages/Alumno';
 import MisAcciones from './pages/MisAcciones';
+import { SelectorIdioma, useIdioma } from './i18n';
 
 // Modo oscuro de la web con sesión (las páginas públicas mantienen su diseño).
 // Se recuerda en este navegador; los colores están en index.css (html.dark).
 function BotonTema() {
+  const { t } = useIdioma();
   const [oscuro, setOscuro] = useState(() => {
     try { return localStorage.getItem('brujula-tema') === 'oscuro'; } catch { return false; }
   });
@@ -31,11 +33,23 @@ function BotonTema() {
     <button
       type="button"
       onClick={() => setOscuro((v) => !v)}
-      aria-label={oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-      className="fixed bottom-4 right-4 z-50 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm hover:bg-gray-50"
+      aria-label={oscuro ? t.app.modoClaroAria : t.app.modoOscuroAria}
+      className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm hover:bg-gray-50"
     >
-      {oscuro ? '☀️ Modo claro' : '🌙 Modo oscuro'}
+      {oscuro ? t.app.modoClaro : t.app.modoOscuro}
     </button>
+  );
+}
+
+// Esquina inferior derecha de la web con sesión: idioma y tema
+function Ajustes() {
+  return (
+    <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2">
+      <span className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-gray-700 shadow-sm">
+        <SelectorIdioma />
+      </span>
+      <BotonTema />
+    </div>
   );
 }
 
@@ -66,7 +80,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <BotonTema />
+      <Ajustes />
       <Routes>
         <Route path="/" element={<InicioSegunRol />} />
         <Route path="/asignatura/:id" element={<Asignatura />} />
