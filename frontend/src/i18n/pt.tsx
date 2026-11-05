@@ -429,6 +429,36 @@ const pt: Diccionario = {
     rango: (campo: string, max: number) => `${campo} deve estar entre 0 e ${max}.`,
     vacio: 'O ficheiro não tem alunos.',
   },
+
+  alertas: {
+    riesgo: (asig: string) => `Pode precisar de apoio a ${asig}`,
+    faltas: (asig: string) => `Assiduidade baixa a ${asig}`,
+    practicas: (asig: string) => `Trabalhos práticos abaixo da positiva a ${asig}`,
+    participacion: (asig: string) => `Participação baixa a ${asig}`,
+    bajada: (asig: string) => `Descida das notas a ${asig}`,
+    enTrimestre: (p: number) => ` no ${p}.º período`,
+    clase: (clase: string, pct: string, asig: string) => `${clase}: ${pct} pode precisar de apoio a ${asig}`,
+    asignatura: (asig: string) => `${asig}: mais alunos com alertas do que a média da escola`,
+    descClase: (con: number, n: number, pctCentro: string) => `${con} de ${n} alunos com alerta; a média da escola é de ${pctCentro}.`,
+    descAsignatura: (pct: string, pctCentro: string) => `${pct} dos alunos, contra ${pctCentro} na escola.`,
+    combinacion: 'Combinação de vários fatores (ver a Análise completa).',
+  },
+
+  variables: {
+    G1: 'Nota do 1.º período', failures: 'Retenções anteriores', studytime: 'Tempo de estudo semanal',
+    traveltime: 'Tempo de deslocação', age: 'Idade', faltas_log: 'Faltas', schoolsup: 'Apoio educativo da escola',
+    famsup: 'Apoio educativo familiar', paid: 'Explicações', activities: 'Atividades extracurriculares',
+    higher: 'Quer prosseguir estudos superiores', internet: 'Internet em casa', es_matematicas: 'Disciplina (Matemática)',
+    nota_practicas: 'Nota dos trabalhos práticos', participacion: 'Participação na aula', asistencia: 'Assiduidade',
+    nota_examen: 'Nota de exame', faltas: 'Faltas',
+  },
+
+  valores: {
+    deA: (a: string, b: string) => `de ${a} para ${b}`,
+    faltasPeriodo1: (n: number) => `${n} faltas no 1.º período`,
+    si: 'sim',
+    no: 'não',
+  },
 };
 
 export default pt;

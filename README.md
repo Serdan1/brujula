@@ -22,6 +22,8 @@ npm run dev
 
 Abre **http://localhost:5173** en el navegador.
 
+La web está en **español, portugués, inglés y francés**. Puedes cambiar el idioma con el selector 🌐: en la cabecera antes de entrar, y abajo a la derecha una vez dentro. Los informes PDF están en español.
+
 ## Usuarios de prueba
 
 La contraseña es la misma para todos: **`Brujula-2026!`**

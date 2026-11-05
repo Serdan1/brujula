@@ -428,6 +428,36 @@ const en: Diccionario = {
     rango: (campo: string, max: number) => `${campo} must be between 0 and ${max}.`,
     vacio: 'The file has no students.',
   },
+
+  alertas: {
+    riesgo: (asig: string) => `May need support in ${asig}`,
+    faltas: (asig: string) => `Low attendance in ${asig}`,
+    practicas: (asig: string) => `Practical work below the pass mark in ${asig}`,
+    participacion: (asig: string) => `Low participation in ${asig}`,
+    bajada: (asig: string) => `Falling grades in ${asig}`,
+    enTrimestre: (p: number) => ` in term ${p}`,
+    clase: (clase: string, pct: string, asig: string) => `${clase}: ${pct} may need support in ${asig}`,
+    asignatura: (asig: string) => `${asig}: more students with alerts than the school average`,
+    descClase: (con: number, n: number, pctCentro: string) => `${con} of ${n} students have an alert; the school average is ${pctCentro}.`,
+    descAsignatura: (pct: string, pctCentro: string) => `${pct} of students, versus ${pctCentro} across the school.`,
+    combinacion: 'A combination of several factors (see the full analysis).',
+  },
+
+  variables: {
+    G1: 'First-term grade', failures: 'Previous failed years', studytime: 'Weekly study time',
+    traveltime: 'Travel time to school', age: 'Age', faltas_log: 'Absences', schoolsup: 'Extra support at school',
+    famsup: 'Family educational support', paid: 'Private tutoring', activities: 'Extracurricular activities',
+    higher: 'Wants to go on to higher education', internet: 'Internet at home', es_matematicas: 'Subject (Maths)',
+    nota_practicas: 'Practical-work grade', participacion: 'Class participation', asistencia: 'Attendance',
+    nota_examen: 'Exam grade', faltas: 'Absences',
+  },
+
+  valores: {
+    deA: (a: string, b: string) => `from ${a} to ${b}`,
+    faltasPeriodo1: (n: number) => `${n} absences in term 1`,
+    si: 'yes',
+    no: 'no',
+  },
 };
 
 export default en;

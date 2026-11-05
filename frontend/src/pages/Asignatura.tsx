@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { cargarAlertas, miProfesor, nombreAsignatura, nombreClase } from '../datos';
+import { cargarAlertas, miProfesor, nombreAsignatura, nombreClase, tituloAlerta } from '../datos';
 import { useIdioma } from '../i18n';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 
@@ -86,7 +86,7 @@ export default function Asignatura() {
               <details key={a.id} className="rounded-lg border border-gray-200 bg-white">
                 <summary className="cursor-pointer p-4 text-sm font-medium text-[#0f3d4c]">
                   {etiqueta(a.severidad)}
-                  {a.titulo}
+                  {tituloAlerta(a)}
                 </summary>
                 <div className="border-t border-gray-100 p-3">
                   <TarjetaAlerta alerta={a} conAcciones={false} />
@@ -116,7 +116,7 @@ export default function Asignatura() {
                 {g.alertas.map((a) => (
                   <details key={a.id} className="rounded-md border border-gray-200">
                     <summary className="cursor-pointer p-3 text-sm font-medium text-[#0f3d4c]">
-                      {a.alumno?.nombre ?? s.alumno}: {a.titulo}
+                      {a.alumno?.nombre ?? s.alumno}: {tituloAlerta(a)}
                       <span className="ml-2 text-xs font-normal text-gray-500">{a.estado === 'nueva' ? s.pendiente : s.revisada}</span>
                     </summary>
                     <div className="px-3 pb-3">

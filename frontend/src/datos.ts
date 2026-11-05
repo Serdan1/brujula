@@ -84,28 +84,90 @@ export function textoSobre10(t: string | null | undefined): string {
 export const motivoCorto = (m: string) => tActual().motivos[m]?.corto ?? m;
 export const motivoGrupo = (m: string, n: number) => tActual().motivos[m]?.grupo(n) ?? m;
 
-// Nombres legibles para las alertas de reglas, que no traen "nombre"
-const NOMBRES_VARIABLES: Record<string, string> = {
-  asistencia: 'Asistencia',
-  nota_practicas: 'Nota de prácticas',
-  participacion: 'Participación en clase',
-  nota_examen: 'Nota de examen',
-  faltas: 'Faltas',
-};
-
 // Variables sintéticas en esta demo (se marcan con un asterisco)
 export const SINTETICAS = new Set(['nota_practicas', 'participacion', 'asistencia']);
 
-// Motivos de una alerta, normalizados a { variable, nombre, valor }
+// ---------- Textos de las alertas en el idioma actual ----------
+// El modelo (ml/alerts.py) y Supabase (importar_trimestre) guardan el título, la descripción y los
+// valores en español. La web los vuelve a montar en el idioma elegido a partir de los datos de la
+// alerta (motivo, nivel, periodo, asignatura, clase y variables). Si algo no encaja con lo esperado,
+// se muestra el texto original de la base de datos: nunca un texto a medias.
+
+// Nombre de una variable del modelo o de las reglas (G1, faltas_log, asistencia...)
+export const nombreVariable = (variable: string, original?: string) =>
+  tActual().variables[variable] ?? original ?? variable;
+
+// Valor de una variable tal como lo guardó el modelo o Supabase, en el idioma actual
+export function valorLegible(variable: string, valor: unknown): string {
+  const v = tActual().valores;
+  const texto = String(valor ?? '').trim();
+  const nota = (n: string) => (VARIABLES_NOTA.has(variable) ? num(Number(n.replace(',', '.')) / ESCALA, 2) : comaDecimal(n));
+  const deA = /^de (\d+(?:[.,]\d+)?) a (\d+(?:[.,]\d+)?)$/.exec(texto);     // «de 12.0 a 9.0» (importar trimestre)
+  if (deA) return v.deA(nota(deA[1]), nota(deA[2]));
+  const faltas = /^(\d+) faltas en el periodo 1$/.exec(texto);                // faltas_log del modelo
+  if (faltas) return v.faltasPeriodo1(Number(faltas[1]));
+  if (texto === 'sí') return v.si;
+  if (texto === 'no') return v.no;
+  const pct = /^(\d+(?:[.,]\d+)?) ?%$/.exec(texto);                           // «68 %» → «68%» en inglés y portugués
+  if (pct) return porcentaje(Number(pct[1].replace(',', '.')) / 100);
+  return comaDecimal(valorNota(variable, texto));                             // números, «< 2 h»
+}
+
+// Motivos de una alerta, normalizados a { variable, nombre, valor } en el idioma actual
 export function motivosDe(alerta: any): { variable: string; nombre: string; valor: string }[] {
   const vars = Array.isArray(alerta?.variables) ? alerta.variables : [];
   return vars
     .filter((v: any) => v && v.variable)
     .map((v: any) => ({
       variable: v.variable,
-      nombre: v.nombre ?? NOMBRES_VARIABLES[v.variable] ?? v.variable,
-      valor: comaDecimal(valorNota(v.variable, String(v.valor ?? ''))),
+      nombre: nombreVariable(v.variable, v.nombre),
+      valor: valorLegible(v.variable, v.valor),
     }));
+}
+
+const porcentaje = (v: number) => v.toLocaleString(localeActual(), { style: 'percent', maximumFractionDigits: 0 });
+const primeraVariable = (a: any) => (Array.isArray(a?.variables) ? a.variables[0] : null) ?? {};
+
+// Título de una alerta en el idioma actual
+export function tituloAlerta(a: any): string {
+  const original = a?.titulo ?? '';
+  const asig = nombreAsignatura(a?.asignatura?.nombre);
+  if (!a || !asig) return original;
+  const t = tActual().alertas;
+  const trimestre = Number(a.periodo) > 1 ? t.enTrimestre(Number(a.periodo)) : '';
+  if (a.nivel === 'clase') {
+    const v = primeraVariable(a);
+    return v.pct_clase != null && a.clase ? t.clase(nombreClase(a.clase), porcentaje(Number(v.pct_clase)), asig) : original;
+  }
+  if (a.nivel === 'asignatura') return t.asignatura(asig);
+  switch (a.motivo) {
+    case 'riesgo_de_suspenso': return t.riesgo(asig) + trimestre;
+    case 'faltas_en_aumento': return t.faltas(asig) + trimestre;
+    case 'practicas_por_debajo': return t.practicas(asig) + trimestre;
+    case 'baja_participacion': return t.participacion(asig) + trimestre;
+    case 'bajada_de_notas': return t.bajada(asig) + trimestre;
+    default: return original;
+  }
+}
+
+// Descripción de una alerta en el idioma actual (se muestra cuando la alerta no trae motivos)
+export function descripcionAlerta(a: any): string {
+  const original = textoSobre10(a?.descripcion);
+  if (!a) return original;
+  const t = tActual().alertas;
+  const v = primeraVariable(a);
+  if (a.nivel === 'clase') {
+    const m = /^(\d+) de (\d+) alumnos/.exec(a.descripcion ?? '');     // «4 de 8 alumnos con alerta; ...»
+    return m && v.pct_centro != null ? t.descClase(Number(m[1]), Number(m[2]), porcentaje(Number(v.pct_centro))) : original;
+  }
+  if (a.nivel === 'asignatura') {
+    return v.pct_asignatura != null && v.pct_centro != null
+      ? t.descAsignatura(porcentaje(Number(v.pct_asignatura)), porcentaje(Number(v.pct_centro)))
+      : original;
+  }
+  const motivos = motivosDe(a);
+  if (motivos.length) return motivos.map((m) => `${m.nombre}: ${m.valor}`).join('; ') + '.';
+  return a.motivo === 'riesgo_de_suspenso' ? t.combinacion : original;
 }
 
 

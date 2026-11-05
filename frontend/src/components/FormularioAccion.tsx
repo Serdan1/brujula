@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { registrarAccion } from '../datos';
+import { registrarAccion, tituloAlerta } from '../datos';
 import { useIdioma } from '../i18n';
 
 // Los valores de «tipo» se guardan en español en la base de datos; solo se traduce lo que se ve.
@@ -26,7 +26,7 @@ export default function FormularioAccion({ alerta, onClose, onGuardado }: { aler
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
         <h2 className="text-lg font-bold text-[#0f3d4c]">{f.titulo}</h2>
         <p className="text-sm text-gray-600 mb-4">
-          {alerta.alumno?.nombre ? `${alerta.alumno.nombre} · ` : ''}{alerta.titulo}
+          {alerta.alumno?.nombre ? `${alerta.alumno.nombre} · ` : ''}{tituloAlerta(alerta)}
         </p>
         <form onSubmit={guardar} className="flex flex-col gap-3">
           <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="border p-2 rounded">
