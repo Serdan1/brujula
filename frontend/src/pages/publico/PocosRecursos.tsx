@@ -14,7 +14,7 @@ function MovilEjemplo() {
     <div aria-hidden="true" className="mx-auto w-56 rounded-[2rem] border-[6px] border-[#174A55] bg-[#F7F4ED] p-3 pt-5 shadow-sm">
       <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#174A55]/30" />
       <p className="text-xs font-bold text-[#174A55]">Brújula</p>
-      <p className="mt-2 text-[11px] text-[#64777A]">Portugués · 10.º C</p>
+      <p className="mt-2 text-[11px] text-[#64777A]">Portugués · 4.º Primaria C</p>
       <div className="mt-2 rounded-lg border border-[#E9B45C] bg-[#F9E9C9] p-2">
         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[#E9B45C] text-[#24343A]">Prioridad alta</span>
         <p className="mt-1 text-xs font-semibold text-[#174A55]">Podría necesitar apoyo</p>
@@ -23,7 +23,7 @@ function MovilEjemplo() {
       <div className="mt-2 rounded-lg border border-[#CBD5D4] bg-white p-2">
         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[#EDEFEC] text-[#24343A]">Prioridad media</span>
         <p className="mt-1 text-xs font-semibold text-[#174A55]">Baja la participación</p>
-        <p className="text-[11px]">Grupo de 10.º C</p>
+        <p className="text-[11px]">Grupo de 4.º Primaria C</p>
       </div>
       <div className="mt-3 h-8 rounded-lg bg-[#174A55]/10" />
     </div>
