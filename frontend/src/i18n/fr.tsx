@@ -262,6 +262,11 @@ const fr: Diccionario = {
     notaTabla: '* Données synthétiques dans cette démo. Seuls les groupes de 5 élèves ou plus sont affichés.',
     clases: 'Classes',
     pendientes: (n: number) => `${n} en attente`,
+    filtros: 'Filtres',
+    filtroCurso: 'Niveau',
+    todos: 'Tous',
+    filtroPrioridad: 'Priorité',
+    todas: 'Toutes',
   },
 
   asignatura: {
@@ -413,7 +418,7 @@ const fr: Diccionario = {
     intro: 'Téléchargez le modèle, remplissez-le dans Excel et importez-le. Brújula vérifie les données avant de les enregistrer.',
     trimestre: 'Trimestre',
     plantilla: 'Télécharger le modèle',
-    importar: 'Importer un .csv',
+    importar: 'Importer un Excel',
     resumen: (guardadas: number, total: number, detalle: string) =>
       `${guardadas} ${guardadas === 1 ? 'élève enregistré' : 'élèves enregistrés'}, `
       + `${total === 0 ? 'aucune nouvelle alerte' : `${total} ${total === 1 ? 'nouvelle alerte' : 'nouvelles alertes'}`}`

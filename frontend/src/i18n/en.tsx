@@ -259,6 +259,11 @@ const en: Diccionario = {
     notaTabla: '* Synthetic data in this demo. Only groups of 5 or more students are shown.',
     clases: 'Classes',
     pendientes: (n: number) => `${n} pending`,
+    filtros: 'Filters',
+    filtroCurso: 'Year',
+    todos: 'All',
+    filtroPrioridad: 'Priority',
+    todas: 'All',
   },
 
   asignatura: {
@@ -409,7 +414,7 @@ const en: Diccionario = {
     intro: 'Download the template, fill it in with Excel and upload it. Brújula checks the data before saving anything.',
     trimestre: 'Term',
     plantilla: 'Download template',
-    importar: 'Import .csv',
+    importar: 'Import Excel',
     resumen: (guardadas: number, total: number, detalle: string) =>
       `${guardadas} ${guardadas === 1 ? 'student saved' : 'students saved'}, `
       + `${total === 0 ? 'no new alerts' : `${total} new ${total === 1 ? 'alert' : 'alerts'}`}`

@@ -264,6 +264,11 @@ const es = {
     notaTabla: '* Datos sintéticos en esta demo. Solo se muestran grupos de 5 alumnos o más.',
     clases: 'Clases',
     pendientes: (n: number) => `${n} ${n === 1 ? 'pendiente' : 'pendientes'}`,
+    filtros: 'Filtros',
+    filtroCurso: 'Curso',
+    todos: 'Todos',
+    filtroPrioridad: 'Prioridad',
+    todas: 'Todas',
   },
 
   asignatura: {
@@ -416,7 +421,7 @@ const es = {
     intro: 'Descarga la plantilla, rellénala en Excel y súbela. Brújula revisa los datos antes de guardar nada.',
     trimestre: 'Trimestre',
     plantilla: 'Descargar plantilla',
-    importar: 'Importar .csv',
+    importar: 'Importar Excel',
     resumen: (guardadas: number, total: number, detalle: string) =>
       `${guardadas} ${guardadas === 1 ? 'alumno guardado' : 'alumnos guardados'}, `
       + `${total === 0 ? 'ninguna alerta nueva' : `${total} ${total === 1 ? 'alerta nueva' : 'alertas nuevas'}`}`

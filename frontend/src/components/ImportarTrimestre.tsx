@@ -3,7 +3,7 @@ import { supabase } from '../supabase';
 import { ESCALA, NOTA_MAX, miProfesor, motivoCorto, num } from '../datos';
 import { tActual, useIdioma } from '../i18n';
 
-// Importar desde un CSV (exportado de Excel) las notas y la asistencia del 2.º o 3.º trimestre de una clase.
+// Importar desde un archivo de Excel (.xlsx) o CSV las notas y la asistencia del 2.º o 3.º trimestre de una clase.
 // Solo lo ve el profesor que imparte esta asignatura en esta clase; nunca un director.
 // La validación definitiva la hace Supabase (importar_trimestre); aquí se adelanta para la vista previa.
 
@@ -115,14 +115,24 @@ function leerCsv(texto: string, periodo: number, alumnos: Map<number, string>): 
   return { filas, general: [] };
 }
 
-function descargarPlantilla(alumnos: Map<number, string>, claseId: string, periodo: number) {
-  const csv = [COLUMNAS.join(';'), ...[...alumnos].map(([id, nombre]) => [id, nombre, '', '', '', '', '', ''].join(';'))].join('\r\n');
-  const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `plantilla-clase-${claseId}-trimestre-${periodo}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+// Plantilla en Excel (.xlsx). SheetJS se carga solo cuando hace falta, para no hacer la web más pesada.
+async function descargarPlantilla(alumnos: Map<number, string>, claseId: string, periodo: number) {
+  const XLSX = await import('xlsx');
+  const hoja = XLSX.utils.aoa_to_sheet([COLUMNAS, ...[...alumnos].map(([id, nombre]) => [id, nombre, '', '', '', '', '', ''])]);
+  hoja['!cols'] = COLUMNAS.map((c) => ({ wch: Math.max(12, c.length + 2) }));
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hoja, `Trimestre ${periodo}`);
+  XLSX.writeFile(libro, `plantilla-clase-${claseId}-trimestre-${periodo}.xlsx`);
+}
+
+// Lee un Excel (.xlsx o .xls, primera hoja) o un CSV y lo devuelve como texto separado por «;»
+async function textoDelArchivo(f: File): Promise<string> {
+  if (/\.(xlsx|xls)$/i.test(f.name)) {
+    const XLSX = await import('xlsx');
+    const libro = XLSX.read(await f.arrayBuffer());
+    return XLSX.utils.sheet_to_csv(libro.Sheets[libro.SheetNames[0]], { FS: ';', blankrows: false });
+  }
+  return f.text();
 }
 
 export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }: Props) {
@@ -178,7 +188,7 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
     e.target.value = '';                 // permite volver a elegir el mismo archivo tras corregirlo
     if (!f) return;
     setResumen('');
-    const { filas, general } = leerCsv(await f.text(), periodo, alumnos);
+    const { filas, general } = leerCsv(await textoDelArchivo(f), periodo, alumnos);
     setArchivo(f.name); setFilas(filas); setGeneral(general);
   }
 
@@ -239,7 +249,7 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
         </button>
         <label className="text-sm px-3 py-1.5 rounded bg-[#0f3d4c] text-white cursor-pointer hover:opacity-90">
           {m.importar}
-          <input type="file" accept=".csv,text/csv" onChange={leer} className="sr-only" />
+          <input type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" onChange={leer} className="sr-only" />
         </label>
       </div>
 

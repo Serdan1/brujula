@@ -26,6 +26,9 @@ export default function InicioDirector() {
   const [acciones, setAcciones] = useState(0);
   const [totalAlumnos, setTotalAlumnos] = useState(0);
   const [loading, setLoading] = useState(true);
+  // Filtros: curso (grupo) y prioridad, para no ver todas las alertas a la vez
+  const [cursoSel, setCursoSel] = useState<number | 'todos'>('todos');
+  const [prioridad, setPrioridad] = useState<'todas' | 'alta' | 'media'>('todas');
 
   useEffect(() => {
     (async () => {
@@ -65,9 +68,16 @@ export default function InicioDirector() {
   const deAlumnos = alertas.filter((a) => a.nivel === 'alumno');
   const conAlerta = new Set(deAlumnos.map((a) => a.alumno_id)).size;
   const altas = new Set(deAlumnos.filter((a) => a.severidad === 'alta').map((a) => a.alumno_id)).size;
-  const deGrupo = alertas.filter((a) => a.nivel !== 'alumno');
+  const cursos = [...new Set(clases.map((c) => c.curso))].sort((x, y) => x - y);
+  const pasaPrioridad = (a: any) => prioridad === 'todas' || a.severidad === prioridad;
+  const deGrupo = alertas.filter((a) =>
+    a.nivel !== 'alumno' && pasaPrioridad(a) &&
+    (cursoSel === 'todos' || (a.nivel === 'clase' && a.clase?.curso === cursoSel)));
+  const clasesVisibles = clases.filter((c) => cursoSel === 'todos' || c.curso === cursoSel);
   const pendientes = (claseId: number, asigId: number) =>
-    new Set(deAlumnos.filter((a) => a.clase_id === claseId && a.asignatura_id === asigId && a.estado === 'nueva').map((a) => a.alumno_id)).size;
+    new Set(deAlumnos.filter((a) => a.clase_id === claseId && a.asignatura_id === asigId && a.estado === 'nueva' && pasaPrioridad(a)).map((a) => a.alumno_id)).size;
+  const boton = (activo: boolean) =>
+    `px-3 py-1 rounded-full text-sm border ${activo ? 'bg-[#174A55] text-white border-[#174A55]' : 'bg-white text-[#174A55] border-gray-300 hover:border-[#174A55]'}`;
   const alumnosConAlertaEn = (asigId: number) => new Set(deAlumnos.filter((a) => a.asignatura_id === asigId).map((a) => a.alumno_id)).size;
 
   return (
@@ -103,6 +113,25 @@ export default function InicioDirector() {
           <p className="text-xs text-gray-500">{d.accionesNota}</p>
         </div>
       </div>
+
+      {/* Filtros por curso y prioridad */}
+      <section className="mb-6 flex flex-col gap-3" aria-label={d.filtros}>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-600 mr-1">{d.filtroCurso}</span>
+          <button onClick={() => setCursoSel('todos')} className={boton(cursoSel === 'todos')}>{d.todos}</button>
+          {cursos.map((c) => (
+            <button key={c} onClick={() => setCursoSel(c)} className={boton(cursoSel === c)}>
+              {nombreClase({ curso: c, letra: '' }).trim()}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-600 mr-1">{d.filtroPrioridad}</span>
+          <button onClick={() => setPrioridad('todas')} className={boton(prioridad === 'todas')}>{d.todas}</button>
+          <button onClick={() => setPrioridad('alta')} className={boton(prioridad === 'alta')}>{t.app.prioridadAlta}</button>
+          <button onClick={() => setPrioridad('media')} className={boton(prioridad === 'media')}>{t.app.prioridadMedia}</button>
+        </div>
+      </section>
 
       {/* Avisos de grupo */}
       {deGrupo.length > 0 && (
@@ -151,7 +180,7 @@ export default function InicioDirector() {
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">{d.clases}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {clases.map((c) => (
+          {clasesVisibles.map((c) => (
             <div key={c.id} className="bg-white border border-gray-200 rounded-lg p-4">
               <h3 className="font-bold text-lg text-[#0f3d4c] mb-2">{nombreClase(c)}</h3>
               <ul className="text-sm space-y-1">
