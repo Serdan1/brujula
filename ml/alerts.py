@@ -55,6 +55,32 @@ def nota_estimada(X: np.ndarray):
     return nota, inf, sup
 
 
+def aplicar_fuera_de_muestra(df, p, nota, inf, sup):
+    """Sustituye las predicciones de las filas reales por las de validación cruzada."""
+    oof_base = pd.read_csv(RESULTS / "oof_baselines.csv")
+    claves = list(zip(oof_base["alumno_id"], oof_base["asignatura"]))
+    prob_oof = dict(zip(claves, (oof_base["prob_logistica"] + oof_base["prob_lightgbm"]) / 2))
+    nota_oof = {}
+    ruta_red = RESULTS / "oof_red.csv"
+    if ruta_red.exists() and nota[0] is not None:
+        oof_red = pd.read_csv(ruta_red)
+        nota_oof = dict(zip(zip(oof_red["alumno_id"], oof_red["asignatura"]),
+                            zip(oof_red["nota_estimada"], oof_red["ic_inf"], oof_red["ic_sup"])))
+
+    p = np.array(p, dtype=float)
+    if nota[0] is not None:
+        nota, inf, sup = (np.array(v, dtype=float) for v in (nota, inf, sup))
+    sustituidas = 0
+    for i, clave in enumerate(zip(df["alumno_id"], df["asignatura"])):
+        if clave in prob_oof:
+            p[i] = prob_oof[clave]
+            sustituidas += 1
+            if clave in nota_oof:
+                nota[i], inf[i], sup[i] = nota_oof[clave]
+    print(f"Predicciones fuera de muestra en {sustituidas} filas de asignaturas reales")
+    return p, nota, inf, sup
+
+
 def motivos_del_modelo(sv_fila, x_fila, columnas, medias):
     """Variables que explican una alerta del modelo: accionables, coherentes y que la provocan."""
     out = []
@@ -94,6 +120,12 @@ def main():
     u = umbral_combinado()
     p = prob(X)
     nota, inf, sup = nota_estimada(X)
+
+    # Predicciones FUERA DE MUESTRA para las asignaturas reales: cada alumno de Portugués y
+    # Matemáticas se predice con el modelo de la validación cruzada que no lo vio al entrenar
+    # (oof_baselines.csv y oof_red.csv). Inglés y Ciencias ya son fuera de muestra: el modelo
+    # nunca se entrenó con ellas. Así, la comprobación de aciertos con las notas finales es honesta.
+    p, nota, inf, sup = aplicar_fuera_de_muestra(df, p, nota, inf, sup)
 
     print(f"Calculando SHAP para {len(X)} filas alumno-asignatura (unos minutos)...")
     explicador = shap.KernelExplainer(prob, shap.kmeans(ds_tr.X.to_numpy(dtype=np.float64), 25))
