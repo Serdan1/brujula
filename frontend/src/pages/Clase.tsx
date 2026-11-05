@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { cargarAlertas, nombreClase, num, sobre10 } from '../datos';
+import { cargarAlertas, miProfesor, nombreClase, num, sobre10 } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 import BotonInforme from '../components/BotonInforme';
 import EvolucionClase from '../components/EvolucionClase';
@@ -17,6 +17,11 @@ export default function Clase() {
   const [abierto, setAbierto] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [version, setVersion] = useState(0); // al importar un trimestre, vuelve a cargar la gráfica de evolución
+  const [esDirector, setEsDirector] = useState(false); // la dirección ve la clase en solo lectura
+
+  useEffect(() => {
+    miProfesor().then((p) => setEsDirector(p?.rol === 'director'));
+  }, []);
 
   async function cargar() {
     if (!id || !asig) return;
@@ -54,6 +59,11 @@ export default function Clase() {
   return (
     <div className="p-8 bg-[#fdfbf7] min-h-screen max-w-6xl mx-auto">
       <Link to={`/asignatura/${asig}`} className="text-sm text-gray-500 hover:text-[#0f3d4c] underline mb-4 inline-block">← Volver a la asignatura</Link>
+      {esDirector && (
+        <p className="bg-blue-50 text-blue-800 p-3 rounded mb-4 text-sm border border-blue-200">
+          Vista de dirección (solo lectura). Las acciones las registra el profesor de la asignatura.
+        </p>
+      )}
       <div className="flex flex-wrap justify-between items-end gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#0f3d4c]">{nombreClase(clase)}</h1>
@@ -122,7 +132,7 @@ export default function Clase() {
                         <td colSpan={6} className="p-3 bg-[#fdfbf7]">
                           <div className="flex flex-col gap-2">
                             {suyas.map((a) => (
-                              <TarjetaAlerta key={a.id} alerta={a} mostrarContexto={false} onCambio={cargar} />
+                              <TarjetaAlerta key={a.id} alerta={a} mostrarContexto={false} conAcciones={!esDirector} onCambio={cargar} />
                             ))}
                           </div>
                         </td>

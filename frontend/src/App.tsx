@@ -14,6 +14,31 @@ import ComoFuncionaPagina from './pages/ComoFuncionaPagina';
 import Alumno from './pages/Alumno';
 import MisAcciones from './pages/MisAcciones';
 
+// Modo oscuro de la web con sesión (las páginas públicas mantienen su diseño).
+// Se recuerda en este navegador; los colores están en index.css (html.dark).
+function BotonTema() {
+  const [oscuro, setOscuro] = useState(() => {
+    try { return localStorage.getItem('brujula-tema') === 'oscuro'; } catch { return false; }
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', oscuro);
+    try { localStorage.setItem('brujula-tema', oscuro ? 'oscuro' : 'claro'); } catch { /* sin almacenamiento */ }
+    return () => document.documentElement.classList.remove('dark');   // al cerrar sesión, vuelve el tema claro
+  }, [oscuro]);
+
+  return (
+    <button
+      type="button"
+      onClick={() => setOscuro((v) => !v)}
+      aria-label={oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+      className="fixed bottom-4 right-4 z-50 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm hover:bg-gray-50"
+    >
+      {oscuro ? '☀️ Modo claro' : '🌙 Modo oscuro'}
+    </button>
+  );
+}
+
 export default function App() {
   const [session, setSession] = useState<any>(null);
 
@@ -41,6 +66,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <BotonTema />
       <Routes>
         <Route path="/" element={<InicioSegunRol />} />
         <Route path="/asignatura/:id" element={<Asignatura />} />
