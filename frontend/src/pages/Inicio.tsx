@@ -29,18 +29,21 @@ export default function Inicio() {
     cargar();
   }, []);
 
-  // Resumen: alertas de alumno pendientes agrupadas por asignatura y motivo
-  const grupos = new Map<string, { asignaturaId: number; asignatura: string; motivo: string; total: number; altas: number }>();
+  // Resumen: alertas de alumno pendientes agrupadas por asignatura y motivo.
+  // Cuenta alumnos distintos: un alumno con la misma alerta en dos trimestres cuenta una vez.
+  const conjuntos = new Map<string, { asignaturaId: number; asignatura: string; motivo: string; alumnos: Set<number>; conAlta: Set<number> }>();
   alertas
     .filter((a) => a.nivel === 'alumno')
     .forEach((a) => {
       const clave = `${a.asignatura_id}-${a.motivo}`;
-      const g = grupos.get(clave) ?? { asignaturaId: a.asignatura_id, asignatura: a.asignatura?.nombre ?? '', motivo: a.motivo, total: 0, altas: 0 };
-      g.total += 1;
-      if (a.severidad === 'alta') g.altas += 1;
-      grupos.set(clave, g);
+      const g = conjuntos.get(clave) ?? { asignaturaId: a.asignatura_id, asignatura: a.asignatura?.nombre ?? '', motivo: a.motivo, alumnos: new Set<number>(), conAlta: new Set<number>() };
+      g.alumnos.add(a.alumno_id);
+      if (a.severidad === 'alta') g.conAlta.add(a.alumno_id);
+      conjuntos.set(clave, g);
     });
-  const resumen = [...grupos.values()].sort((a, b) => b.altas - a.altas || b.total - a.total);
+  const resumen = [...conjuntos.values()]
+    .map(({ alumnos, conAlta, ...g }) => ({ ...g, total: alumnos.size, altas: conAlta.size }))
+    .sort((a, b) => b.altas - a.altas || b.total - a.total);
   const deGrupo = alertas.filter((a) => a.nivel !== 'alumno' && a.severidad === 'alta');
 
   return (

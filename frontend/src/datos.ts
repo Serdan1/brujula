@@ -51,6 +51,8 @@ const NOMBRES_VARIABLES: Record<string, string> = {
   asistencia: 'Asistencia',
   nota_practicas: 'Nota de prácticas',
   participacion: 'Participación en clase',
+  nota_examen: 'Nota de examen',
+  faltas: 'Faltas',
 };
 
 // Variables sintéticas en esta demo (se marcan con un asterisco)
@@ -87,6 +89,7 @@ export async function cargarAlertas(filtros: { asignaturaId?: string | number; c
     (a: any, b: any) =>
       (ORDEN_SEVERIDAD[a.severidad] ?? 9) - (ORDEN_SEVERIDAD[b.severidad] ?? 9) ||
       (ORDEN_NIVEL[a.nivel] ?? 9) - (ORDEN_NIVEL[b.nivel] ?? 9) ||
+      Number(b.motivo === 'riesgo_de_suspenso') - Number(a.motivo === 'riesgo_de_suspenso') || // el aviso del modelo, primero
       String(a.motivo).localeCompare(String(b.motivo)),
   );
 }

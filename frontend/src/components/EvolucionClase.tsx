@@ -37,6 +37,7 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
   const [aciertos, setAciertos] = useState<any>(null);
   const [asignatura, setAsignatura] = useState('');
   const [loading, setLoading] = useState(true);
+  const [cursoTerminado, setCursoTerminado] = useState(false); // ¿hay datos del 3.º trimestre?
 
   useEffect(() => {
     (async () => {
@@ -56,6 +57,7 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
         'Participación*': Number(f.media_participacion),
         'Asistencia*': Number(f.media_asistencia),
       })));
+      setCursoTerminado((v ?? []).some((f: any) => Number(f.periodo) === 3));
       setAciertos(a);
       setAsignatura(s?.nombre ?? '');
       setLoading(false);
@@ -79,7 +81,9 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
     <section className="bg-white border border-gray-200 rounded-lg p-4 mt-8">
       <h2 className="text-lg font-semibold text-[#0f3d4c]">Cómo ha evolucionado la clase</h2>
       <p className="text-sm text-gray-600 mb-4">
-        Seguimiento retrospectivo: así terminó el curso. Medias de la clase en cada trimestre.
+        {cursoTerminado
+          ? 'Seguimiento retrospectivo: así terminó el curso. Medias de la clase en cada trimestre.'
+          : 'Curso en marcha: medias de la clase en cada trimestre registrado.'}
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -94,7 +98,7 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
                 <Tooltip formatter={fmt} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="Examen" stroke="#0f3d4c" strokeWidth={3} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="Prácticas*" stroke="#E9B45C" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="Prácticas*" stroke="#E9B45C" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3, strokeDasharray: 'none' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -110,8 +114,8 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
                 <YAxis yAxisId="asis" orientation="right" domain={[50, 100]} ticks={[50, 75, 100]} tick={{ fontSize: 12 }} unit="%" />
                 <Tooltip formatter={fmt} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line yAxisId="part" type="monotone" dataKey="Participación*" stroke="#0f3d4c" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3 }} />
-                <Line yAxisId="asis" type="monotone" dataKey="Asistencia*" stroke="#6b8f9a" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3 }} />
+                <Line yAxisId="part" type="monotone" dataKey="Participación*" stroke="#0f3d4c" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3, strokeDasharray: 'none' }} />
+                <Line yAxisId="asis" type="monotone" dataKey="Asistencia*" stroke="#6b8f9a" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3, strokeDasharray: 'none' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -122,7 +126,9 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
       {/* Comprobación de las alertas tempranas */}
       <div className="mt-6 rounded-lg border border-gray-200 bg-[#fdfbf7] p-4">
         <h3 className="font-semibold text-[#0f3d4c] mb-1">¿Acertaron los avisos del 1.º trimestre?</h3>
-        {!aciertos ? (
+        {!cursoTerminado ? (
+          <p className="text-sm text-gray-600">Se podrá comprobar cuando termine el curso.</p>
+        ) : !aciertos ? (
           <p className="text-sm text-gray-600">No se muestra en grupos de menos de 5 alumnos.</p>
         ) : (
           <div className="text-sm text-gray-700 space-y-1">
