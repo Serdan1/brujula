@@ -48,7 +48,7 @@ export default function Inicio() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#0f3d4c]">Hola{nombre ? `, ${nombre}` : ''}</h1>
-          <p className="text-sm text-gray-600">Esto es lo que conviene revisar primero.</p>
+          <p className="text-sm text-gray-600">Consulta las alertas educativas y realiza el seguimiento de tus alumnos.</p>
         </div>
         <button
           onClick={() => {

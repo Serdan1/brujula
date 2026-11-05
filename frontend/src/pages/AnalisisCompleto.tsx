@@ -85,7 +85,7 @@ export default function AnalisisCompleto() {
           <ResponsiveContainer>
             <BarChart data={importancia} layout="vertical" margin={{ left: 20, right: 20 }}>
               <XAxis type="number" hide />
-              <YAxis type="category" dataKey="nombre" width={230} tick={{ fontSize: 13 }} />
+              <YAxis type="category" dataKey="nombre" width={120} tick={{ fontSize: 13 }} />
               <Tooltip formatter={(v: any) => Number(v).toFixed(3)} />
               <Bar dataKey="valor" fill="#0f3d4c" radius={[0, 4, 4, 0]} />
             </BarChart>

@@ -38,8 +38,16 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
         )}
       </div>
 
-      <h3 className="font-semibold text-[#0f3d4c]">{alerta.titulo}</h3>
-      {mostrarContexto && contexto && <p className="text-sm text-gray-600">{contexto}</p>}
+      
+<h3 className="font-semibold text-[#0f3d4c]">
+  {alerta.titulo}
+</h3>
+
+{mostrarContexto && contexto && alerta.nivel === 'alumno' && (
+  <p className="text-sm text-gray-600">
+    {contexto}
+  </p>
+)}
 
       {motivos.length > 0 ? (
         <ul className="mt-2 text-sm text-gray-700 list-disc pl-5">
