@@ -26,14 +26,15 @@ begin
 
   delete from public.accion where id = p_accion_id;
 
-  update public.alerta
-    set estado = 'nueva',
-        motivo_descarte = null
-    where id = v_alerta_id;
-
-  if not found then
-    raise exception 'No se encontró la alerta asociada a la acción.'
-      using errcode = 'P0002';
+  if not exists (
+    select 1
+      from public.accion
+      where alerta_id = v_alerta_id
+  ) then
+    update public.alerta
+      set estado = 'nueva',
+          motivo_descarte = null
+      where id = v_alerta_id;
   end if;
 end;
 $$;
