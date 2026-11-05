@@ -149,11 +149,13 @@ Todo usa semilla fija. Para publicar en Supabase (`python publish.py`) hace falt
 
 ## Equipo
 
-| | Papel |
+Brújula ha sido creada por:
+
+| Nombre | Papel |
 | --- | --- |
-| **Aarón Sacristán Calvo** | Datos, base de datos y seguridad (Supabase), portada y traducciones |
-| **Daniel Serrano Martin** | Modelo de machine learning y deep learning, alertas, explicaciones y automatización |
+| **Daniel Serrano Martín** | Modelo de machine learning y deep learning, alertas, explicaciones y automatización |
 | **Iván Díaz Menshútkin** | Web (frontend) |
+| **Aarón Sacristán Calvo** | Datos, base de datos y seguridad (Supabase), portada y traducciones |
 | **Alexander Arrosquipa Mamani** | Diseño, informes PDF, diagramas y presentación |
 
 ## Licencias
@@ -161,3 +163,55 @@ Todo usa semilla fija. Para publicar en Supabase (`python publish.py`) hace falt
 - **Código:** [MIT](LICENSE).
 - **Documentación:** [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/deed.es_ES).
 - **Datos de la UCI:** [CC BY 4.0](https://archive.ics.uci.edu/dataset/320/student+performance), Cortez y Silva (2008).
+
+---
+
+## Diagrama del sistema
+
+```mermaid
+flowchart LR
+    subgraph Usuarios["👩‍🏫 Usuarios"]
+        P["Profesorado"]
+        D["Dirección"]
+    end
+
+    subgraph Web["🌐 Web · React + Vite (Vercel)"]
+        W1["Alertas explicadas<br/>Inicio · Clase · Ficha del alumno"]
+        W2["Análisis de la clase<br/>y evolución por trimestre"]
+        W3["Seguimiento<br/>acciones y descartes"]
+        W4["Importar trimestre<br/>Excel o CSV"]
+    end
+
+    subgraph Supabase["🗄️ Supabase"]
+        S1["Auth<br/>usuarios y roles"]
+        S2["PostgreSQL + RLS<br/>alumnos, rendimiento, alertas,<br/>predicciones, acciones"]
+        S3["Storage privado<br/>informes PDF"]
+    end
+
+    subgraph Pipeline["⚙️ GitHub Actions · Pipeline ML (Python)"]
+        M1["Variables<br/>sin datos sensibles"]
+        M2["Modelos<br/>logística + LightGBM<br/>y red neuronal"]
+        M3["Explicaciones SHAP<br/>motivos accionables"]
+        M4["Alertas por alumno,<br/>clase y asignatura"]
+        M5["Informes PDF<br/>clase y centro"]
+    end
+
+    UCI["📊 Dataset UCI<br/>+ datos sintéticos"]
+
+    P --> W1 & W2 & W3 & W4
+    D --> W1 & W2
+    Web <-->|"sesión de cada usuario<br/>(solo ve lo suyo)"| S1
+    Web <--> S2
+    Web -->|"enlace temporal"| S3
+    W4 -->|"notas, asistencia<br/>y participación"| S2
+
+    UCI --> M1
+    S2 -->|"datos del trimestre"| M1
+    M1 --> M2 --> M3 --> M4
+    M4 -->|"publica"| S2
+    M4 --> M5
+    M5 -->|"sube"| S3
+```
+
+Los diagramas detallados de la arquitectura, la base de datos y el flujo de una alerta están en [`docs/diagramas/`](docs/diagramas/).
+
