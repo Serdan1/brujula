@@ -30,14 +30,17 @@ function Tarjeta({ titulo, children }: { titulo: string; children: React.ReactNo
   );
 }
 
-export default function ComoFunciona() {
+// soloDetalle: muestra solo los datos, las variables excluidas, la comparación de modelos y la equidad,
+// para colocarlo debajo de una página que ya cuenta las cifras principales (como «El modelo, por dentro»).
+export default function ComoFunciona({ soloDetalle = false }: { soloDetalle?: boolean }) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold text-[#0f3d4c]">Cómo funciona Brújula</h2>
+        <h2 className="text-2xl font-bold text-[#0f3d4c]">{soloDetalle ? 'Para quien quiera el detalle' : 'Cómo funciona Brújula'}</h2>
         <p className="text-gray-600">Qué datos usa, cómo elegimos el modelo y cómo comprobamos que es justo con todos los alumnos.</p>
       </div>
 
+      {!soloDetalle && (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <p className="text-3xl font-bold text-[#0f3d4c]">84 %</p>
@@ -52,6 +55,7 @@ export default function ComoFunciona() {
           <p className="text-sm text-gray-600">alumnos que aprueban el primer periodo y aun así necesitarán apoyo: la regla no los ve</p>
         </div>
       </div>
+      )}
 
       <Tarjeta titulo="Los datos">
         <p>
@@ -127,12 +131,14 @@ export default function ComoFunciona() {
         </p>
       </Tarjeta>
 
+      {!soloDetalle && (
       <Tarjeta titulo="Lo que Brújula no hace">
         <p>
           No etiqueta a los alumnos, no muestra puntuaciones de riesgo ni rankings, y no toma decisiones automáticas.
           Las alertas orientan; la decisión es siempre del profesor.
         </p>
       </Tarjeta>
+      )}
     </div>
   );
 }

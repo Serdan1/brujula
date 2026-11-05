@@ -5,6 +5,31 @@ import { num } from '../datos';
 
 const ASIG_SINTETICAS = new Set(['Inglés', 'Ciencias']);
 
+const B = ({ n }: { n: number }) => <strong>{n}</strong>;
+
+// Frases que concuerdan en singular y plural
+function fraseAvisados(avisados: number, aciertos: number) {
+  if (avisados === 0) return <>Brújula no avisó de ningún alumno de esta clase en el 1.º trimestre.</>;
+  if (avisados === 1)
+    return <>Brújula avisó de <B n={1} /> alumno en el 1.º trimestre: {aciertos === 1 ? 'acabó necesitando apoyo.' : 'no acabó necesitando apoyo.'}</>;
+  const final = aciertos === 0 ? 'ninguno acabó necesitando apoyo.'
+    : aciertos === avisados ? 'todos acabaron necesitando apoyo.'
+    : aciertos === 1 ? <><B n={1} /> acabó necesitando apoyo.</>
+    : <><B n={aciertos} /> acabaron necesitando apoyo.</>;
+  return <>Brújula avisó de <B n={avisados} /> alumnos en el 1.º trimestre: {final}</>;
+}
+
+function fraseNecesitaron(necesitaron: number, aciertos: number) {
+  if (necesitaron === 0) return <>Ningún alumno de esta clase terminó el curso por debajo de 10.</>;
+  if (necesitaron === 1)
+    return <><B n={1} /> alumno terminó el curso necesitando apoyo: {aciertos === 1 ? 'estaba avisado a tiempo.' : 'no estaba avisado.'}</>;
+  const final = aciertos === 0 ? 'ninguno estaba avisado.'
+    : aciertos === necesitaron ? 'todos estaban avisados a tiempo.'
+    : aciertos === 1 ? <><B n={1} /> estaba avisado a tiempo.</>
+    : <><B n={aciertos} /> estaban avisados a tiempo.</>;
+  return <><B n={necesitaron} /> alumnos terminaron el curso necesitando apoyo: {final}</>;
+}
+
 // Evolución de la clase en los tres periodos y comprobación retrospectiva de las alertas.
 // Solo datos agregados de la clase: nunca alumnos individuales.
 export default function EvolucionClase({ claseId, asignaturaId }: { claseId: string; asignaturaId: string }) {
@@ -64,8 +89,8 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
             <ResponsiveContainer>
               <LineChart data={serie} margin={{ left: -10, right: 10, top: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                <XAxis dataKey="periodo" tick={{ fontSize: 12 }} />
-                <YAxis domain={[0, 20]} tick={{ fontSize: 12 }} />
+                <XAxis dataKey="periodo" tick={{ fontSize: 12 }} padding={{ left: 30, right: 30 }} />
+                <YAxis domain={[0, 20]} ticks={[0, 5, 10, 15, 20]} tick={{ fontSize: 12 }} />
                 <Tooltip formatter={fmt} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="Examen" stroke="#0f3d4c" strokeWidth={3} dot={{ r: 4 }} />
@@ -80,9 +105,9 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
             <ResponsiveContainer>
               <LineChart data={serie} margin={{ left: -10, right: 0, top: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                <XAxis dataKey="periodo" tick={{ fontSize: 12 }} />
-                <YAxis yAxisId="part" domain={[0, 10]} tick={{ fontSize: 12 }} />
-                <YAxis yAxisId="asis" orientation="right" domain={[50, 100]} tick={{ fontSize: 12 }} unit="%" />
+                <XAxis dataKey="periodo" tick={{ fontSize: 12 }} padding={{ left: 30, right: 30 }} />
+                <YAxis yAxisId="part" domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} tick={{ fontSize: 12 }} />
+                <YAxis yAxisId="asis" orientation="right" domain={[50, 100]} ticks={[50, 75, 100]} tick={{ fontSize: 12 }} unit="%" />
                 <Tooltip formatter={fmt} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Line yAxisId="part" type="monotone" dataKey="Participación*" stroke="#0f3d4c" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3 }} />
@@ -101,18 +126,8 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
           <p className="text-sm text-gray-600">No se muestra en grupos de menos de 5 alumnos.</p>
         ) : (
           <div className="text-sm text-gray-700 space-y-1">
-            <p>
-              {aciertos.avisados === 0
-                ? 'Brújula no avisó de ningún alumno de esta clase en el 1.º trimestre.'
-                : <>De los <strong>{aciertos.avisados}</strong> {aciertos.avisados === 1 ? 'alumno avisado' : 'alumnos avisados'} en el 1.º trimestre,{' '}
-                    <strong>{aciertos.aciertos}</strong> {aciertos.aciertos === 1 ? 'acabó' : 'acabaron'} necesitando apoyo.</>}
-            </p>
-            <p>
-              {aciertos.necesitaron_apoyo === 0
-                ? 'Ningún alumno de esta clase terminó el curso por debajo de 10.'
-                : <>De los <strong>{aciertos.necesitaron_apoyo}</strong> que lo necesitaron, <strong>{aciertos.aciertos}</strong>{' '}
-                    {aciertos.aciertos === 1 ? 'fue avisado' : 'fueron avisados'} a tiempo.</>}
-            </p>
+            <p>{fraseAvisados(aciertos.avisados, aciertos.aciertos)}</p>
+            <p>{fraseNecesitaron(aciertos.necesitaron_apoyo, aciertos.aciertos)}</p>
             <p className="text-xs text-gray-500 pt-1">
               «Necesitar apoyo» es terminar el curso con menos de 10 sobre 20 en el examen. Los avisos se calcularon sin que el modelo
               viera a estos alumnos al entrenar.
