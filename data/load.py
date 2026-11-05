@@ -31,9 +31,10 @@ ORDEN = ["escuela", "asignatura", "clase", "profesor", "imparte",
 
 # Usuarios de prueba: correo -> id de la tabla profesor
 # (ids que genera extend.py: GP profesores 1-5 y director 6; MS profesores 7-11 y director 12)
+# profesor.gp da Portugués y profesor.ms Matemáticas, para enseñar las dos asignaturas reales.
 USUARIOS_PRUEBA = {
     "profesor.gp@example.com": 1,
-    "profesor.ms@example.com": 7,
+    "profesor.ms@example.com": 8,    # Matemáticas en MS
     "director.gp@example.com": 6,
     "director.ms@example.com": 12,
 }
