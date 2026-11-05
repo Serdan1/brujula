@@ -54,7 +54,7 @@ export default function Portada() {
                 <p className="text-sm text-[#64777A]">Alumna de 10.º C · ejemplo ficticio</p>
                 <p className="mt-2 text-sm">Por qué salta:</p>
                 <ul className="text-sm list-disc pl-5">
-                  <li>Nota del primer periodo: <strong>9</strong></li>
+                  <li>Nota del primer periodo: <strong>4,5</strong></li>
                   <li>Asistencia: <strong>68 %</strong></li>
                 </ul>
                 <div className="mt-3 flex flex-wrap items-center gap-3" aria-hidden="true">

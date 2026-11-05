@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../supabase';
-import { num } from '../datos';
+import { num, sobre10 } from '../datos';
 
 const ASIG_SINTETICAS = new Set(['Inglés', 'Ciencias']);
 
@@ -20,7 +20,7 @@ function fraseAvisados(avisados: number, aciertos: number) {
 }
 
 function fraseNecesitaron(necesitaron: number, aciertos: number) {
-  if (necesitaron === 0) return <>Ningún alumno de esta clase terminó el curso por debajo de 10.</>;
+  if (necesitaron === 0) return <>Ningún alumno de esta clase terminó el curso por debajo de 5.</>;
   if (necesitaron === 1)
     return <><B n={1} /> alumno terminó el curso necesitando apoyo: {aciertos === 1 ? 'estaba avisado a tiempo.' : 'no estaba avisado.'}</>;
   const final = aciertos === 0 ? 'ninguno estaba avisado.'
@@ -52,8 +52,8 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
       ]);
       setSerie((v ?? []).map((f: any) => ({
         periodo: `${f.periodo}.º trimestre`,
-        Examen: Number(f.media_examen),
-        'Prácticas*': Number(f.media_practicas),
+        Examen: sobre10(Number(f.media_examen)),
+        'Prácticas*': sobre10(Number(f.media_practicas)),
         'Participación*': Number(f.media_participacion),
         'Asistencia*': Number(f.media_asistencia),
       })));
@@ -88,13 +88,13 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <p className="text-sm font-medium text-[#0f3d4c] mb-1">Notas (sobre 20)</p>
+          <p className="text-sm font-medium text-[#0f3d4c] mb-1">Notas (sobre 10)</p>
           <div style={{ width: '100%', height: 220 }}>
             <ResponsiveContainer>
               <LineChart data={serie} margin={{ left: -10, right: 10, top: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                 <XAxis dataKey="periodo" tick={{ fontSize: 12 }} padding={{ left: 30, right: 30 }} />
-                <YAxis domain={[0, 20]} ticks={[0, 5, 10, 15, 20]} tick={{ fontSize: 12 }} />
+                <YAxis domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} tick={{ fontSize: 12 }} />
                 <Tooltip formatter={fmt} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="Examen" stroke="#0f3d4c" strokeWidth={3} dot={{ r: 4 }} />
@@ -135,7 +135,7 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
             <p>{fraseAvisados(aciertos.avisados, aciertos.aciertos)}</p>
             <p>{fraseNecesitaron(aciertos.necesitaron_apoyo, aciertos.aciertos)}</p>
             <p className="text-xs text-gray-500 pt-1">
-              «Necesitar apoyo» es terminar el curso con menos de 10 sobre 20 en el examen. Los avisos se calcularon sin que el modelo
+              «Necesitar apoyo» es terminar el curso con menos de 5 sobre 10 en el examen. Los avisos se calcularon sin que el modelo
               viera a estos alumnos al entrenar.
               {ASIG_SINTETICAS.has(asignatura) ? ` En ${asignatura}, todas las notas son sintéticas: esta comprobación tiene menos valor.` : ''}
             </p>

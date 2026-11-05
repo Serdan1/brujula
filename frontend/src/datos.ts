@@ -36,6 +36,41 @@ export function num(v: any, decimales = 1): string {
 // Convierte los decimales con punto de un texto ("10.6", "68 %") a coma
 export const comaDecimal = (t: string) => t.replace(/(\d)\.(\d)/g, '$1,$2');
 
+// ---------- Escala de notas ----------
+// Supabase y el modelo guardan las notas sobre 20 (como el dataset original).
+// En toda la web se muestran sobre 10: se divide entre ESCALA al mostrar y se multiplica al importar.
+export const ESCALA = 2;
+export const NOTA_MAX = 10;
+
+// Nota guardada (sobre 20) → nota mostrada (sobre 10). Deja pasar null/vacío para que num() muestre "-".
+export function sobre10(v: any): any {
+  if (v === null || v === undefined || v === '' || isNaN(Number(v))) return v;
+  return Number(v) / ESCALA;
+}
+
+// Variables que son notas (incluida G1, la nota del primer periodo que usa el modelo)
+const VARIABLES_NOTA = new Set(['G1', 'nota_examen', 'nota_practicas']);
+
+// Divide entre 2 cada número de un texto ("8", "de 12.0 a 9.0") y lo escribe con coma
+const mitades = (t: string) =>
+  t.replace(/\d+(?:[.,]\d+)?/g, (n) => num(Number(n.replace(',', '.')) / ESCALA, 2));
+
+// Valor de un motivo de alerta, pasado a sobre 10 si es una nota
+export const valorNota = (variable: string, valor: string) =>
+  VARIABLES_NOTA.has(variable) ? mitades(valor) : valor;
+
+// Textos de alerta generados por el modelo o por Supabase con notas sobre 20, reescritos sobre 10:
+// "nota del primer periodo: 8", "Nota de prácticas de 5.2 sobre 20", "nota de examen baja de 12.0 a 9.0 sobre 20"
+export function textoSobre10(t: string | null | undefined): string {
+  if (!t) return t ?? '';
+  return t
+    .replace(
+      /(nota (?:del primer periodo|de prácticas|de examen)(?: baja)?(?::| de) )(\d+(?:[.,]\d+)?)((?: a )(\d+(?:[.,]\d+)?))?/gi,
+      (_m, pre, a, _resto, b) => pre + mitades(a) + (b ? ' a ' + mitades(b) : ''),
+    )
+    .replace(/sobre 20/g, 'sobre 10');
+}
+
 // Textos para cada motivo de alerta
 export const MOTIVOS: Record<string, { corto: string; grupo: string }> = {
   riesgo_de_suspenso: { corto: 'Podría necesitar apoyo', grupo: 'podrían necesitar apoyo' },
@@ -66,7 +101,7 @@ export function motivosDe(alerta: any): { variable: string; nombre: string; valo
     .map((v: any) => ({
       variable: v.variable,
       nombre: v.nombre ?? NOMBRES_VARIABLES[v.variable] ?? v.variable,
-      valor: comaDecimal(String(v.valor ?? '')),
+      valor: comaDecimal(valorNota(v.variable, String(v.valor ?? ''))),
     }));
 }
 

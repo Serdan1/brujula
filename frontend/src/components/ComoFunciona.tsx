@@ -102,7 +102,7 @@ export default function ComoFunciona({ soloDetalle = false }: { soloDetalle?: bo
           </table>
         </div>
         <p>
-          La <strong>red neuronal</strong> se usa donde es la mejor: estimar la nota final, con un error medio de 1,05 puntos sobre 20
+          La <strong>red neuronal</strong> se usa donde es la mejor: estimar la nota final, con un error medio de 0,53 puntos sobre 10
           (frente a 1,08 de Ridge y 1,13 de la regla «la nota final será la del primer periodo») y un intervalo que acierta el 80 % de las veces.
         </p>
       </Tarjeta>

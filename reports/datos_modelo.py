@@ -10,6 +10,8 @@ Reglas éticas (igual que en la web):
 
 from collections import Counter, defaultdict
 
+from escala import sobre10, texto_sobre10, valor_nota
+
 MOTIVOS = {
     "riesgo_de_suspenso": "Podría necesitar apoyo",
     "faltas_en_aumento": "Asistencia baja",
@@ -69,7 +71,7 @@ def _motivos(alerta):
             continue
         nombre = v.get("nombre") or NOMBRES_VARIABLES.get(v["variable"], v["variable"])
         marca = "*" if v["variable"] in SINTETICAS else ""
-        salida.append(f"{nombre}{marca}: {v.get('valor', '')}")
+        salida.append(f"{nombre}{marca}: {valor_nota(v['variable'], v.get('valor', ''))}")
     return salida
 
 
@@ -91,13 +93,13 @@ def alertas_de_clase(cliente, clase_id, asignatura_id):
                 "prioridad": "Alta" if a["severidad"] == "alta" else "Media",
                 "alta": a["severidad"] == "alta",
                 "motivo": MOTIVOS.get(a["motivo"], a["motivo"]),
-                "detalle": motivos if motivos else [a.get("descripcion") or ""],
+                "detalle": motivos if motivos else [texto_sobre10(a.get("descripcion")) or ""],
                 "estado": {"nueva": "Pendiente", "revisada": "Revisada"}.get(a["estado"], a["estado"]),
                 "_orden": (ORDEN_SEVERIDAD.get(a["severidad"], 9), a["motivo"],
                            (a.get("alumno") or {}).get("nombre", "")),
             })
         else:
-            grupo.append({"titulo": a["titulo"], "descripcion": a.get("descripcion") or ""})
+            grupo.append({"titulo": a["titulo"], "descripcion": texto_sobre10(a.get("descripcion")) or ""})
 
     alumnos.sort(key=lambda x: x["_orden"])
     for a in alumnos:
@@ -120,9 +122,8 @@ def analisis_de_clase(cliente, clase_id, asignatura_id, max_variables=6):
     return {
         "analisis_disponible": True,
         "n_con_alerta_modelo": r.get("n_con_alerta"),
-        "nota_estimada_media": (round(float(r["nota_estimada_media"]), 1)
-                                if r.get("nota_estimada_media") is not None else None),
-        "error_nota": round(float(red.get("mae", 1.05)), 1),
+        "nota_estimada_media": sobre10(r.get("nota_estimada_media"), 1),
+        "error_nota": sobre10(red.get("mae", 1.05)),
         "importancia": [{
             "nombre": v.get("nombre", v.get("variable")) + ("*" if v.get("variable") in SINTETICAS else ""),
             "porcentaje_barra": round(100 * float(v.get("valor", 0)) / maximo),

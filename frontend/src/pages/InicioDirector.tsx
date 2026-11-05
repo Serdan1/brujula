@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { cargarAlertas, miProfesor, nombreClase, num, olvidarProfesor } from '../datos';
+import { cargarAlertas, miProfesor, nombreClase, num, olvidarProfesor, sobre10 } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 import BotonInforme from '../components/BotonInforme';
 
@@ -134,7 +134,7 @@ export default function InicioDirector() {
                 <td className="py-2 font-medium text-[#0f3d4c]">{asignaturas[f.asignatura_id]}{ASIG_REALES.has(asignaturas[f.asignatura_id]) ? '' : '*'}</td>
                 <td>{f.n_clases}</td>
                 <td>{f.n_alumnos}</td>
-                <td>{num(f.media_examen)}</td>
+                <td>{num(sobre10(f.media_examen), 2)}</td>
                 <td>{num(f.media_asistencia)} %</td>
                 <td>{alumnosConAlertaEn(f.asignatura_id)}</td>
               </tr>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MOTIVOS, SINTETICAS, descartarAlerta, marcarRevisada, motivosDe, nombreClase } from '../datos';
+import { MOTIVOS, SINTETICAS, descartarAlerta, marcarRevisada, motivosDe, nombreClase, textoSobre10 } from '../datos';
 import FormularioAccion from './FormularioAccion';
 
 type Props = {
@@ -83,7 +83,7 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
           ))}
         </ul>
       ) : (
-        <p className="mt-1 text-sm text-gray-700">{alerta.descripcion}</p>
+        <p className="mt-1 text-sm text-gray-700">{textoSobre10(alerta.descripcion)}</p>
       )}
 
       {conAcciones && alerta.nivel === 'alumno' && (

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { cargarAlertas, nombreClase, num } from '../datos';
+import { NOTA_MAX, cargarAlertas, nombreClase, num, sobre10 } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 
 // Ficha de un alumno para su profesor. Las reglas de Supabase solo devuelven datos de
@@ -110,8 +110,8 @@ export default function Alumno() {
         <section className="bg-white border border-gray-200 rounded-lg p-4">
           <h2 className="font-semibold text-[#0f3d4c] mb-1">Primer periodo frente a la clase</h2>
           <p className="text-xs text-gray-500 mb-2">La línea vertical marca la media de la clase. En ámbar, lo que está por debajo.</p>
-          <Fila nombre="Examen" alumno={suyo.nota_examen} clase={medias.examen} max={20} />
-          <Fila nombre="Prácticas" alumno={suyo.nota_practicas} clase={medias.practicas} max={20} sintetica />
+          <Fila nombre="Examen" alumno={sobre10(suyo.nota_examen)} clase={sobre10(medias.examen)} max={NOTA_MAX} />
+          <Fila nombre="Prácticas" alumno={sobre10(suyo.nota_practicas)} clase={sobre10(medias.practicas)} max={NOTA_MAX} sintetica />
           <Fila nombre="Participación" alumno={suyo.participacion} clase={medias.participacion} max={10} sintetica />
           <Fila nombre="Asistencia" alumno={suyo.asistencia} clase={medias.asistencia} max={100} sufijo=" %" sintetica />
           <p className="text-xs text-gray-500 mt-2">* Variable sintética en esta demo.</p>
@@ -123,9 +123,9 @@ export default function Alumno() {
           {prediccion?.ic_inf != null ? (
             <>
               <p className="text-3xl font-bold text-[#0f3d4c] mt-2">
-                {num(prediccion.ic_inf)} – {num(prediccion.ic_sup)} <span className="text-base font-normal text-gray-500">/ 20</span>
+                {num(sobre10(prediccion.ic_inf))} – {num(sobre10(prediccion.ic_sup))} <span className="text-base font-normal text-gray-500">/ {NOTA_MAX}</span>
               </p>
-              <p className="text-sm text-gray-600 mt-1">Valor central: {num(prediccion.nota_final_estimada)}</p>
+              <p className="text-sm text-gray-600 mt-1">Valor central: {num(sobre10(prediccion.nota_final_estimada))}</p>
               <p className="text-xs text-gray-500 mt-3">
                 Estimación de la red neuronal con los datos del primer periodo. En 8 de cada 10 alumnos, la nota real queda dentro de
                 este rango. Es orientativa: no es una calificación ni un pronóstico seguro.
