@@ -153,7 +153,7 @@ Brújula ha sido creada por:
 
 | Nombre | Papel |
 | --- | --- |
-| **Daniel Serrano Martín** | Modelo de machine learning y deep learning, alertas, explicaciones y automatización |
+| **Daniel Serrano Martin** | Modelo de machine learning y deep learning, alertas, explicaciones y automatización |
 | **Iván Díaz Menshútkin** | Web (frontend) |
 | **Aarón Sacristán Calvo** | Datos, base de datos y seguridad (Supabase), portada y traducciones |
 | **Alexander Arrosquipa Mamani** | Diseño, informes PDF, diagramas y presentación |
