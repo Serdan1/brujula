@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import { supabase } from './supabase';
 import InicioSegunRol from './pages/InicioSegunRol';
 import Asignatura from './pages/Asignatura';
@@ -14,6 +14,7 @@ import ComoFuncionaPagina from './pages/ComoFuncionaPagina';
 import Alumno from './pages/Alumno';
 import MisAcciones from './pages/MisAcciones';
 import { SelectorIdioma, useIdioma } from './i18n';
+import { olvidarProfesor } from './datos';
 
 // Modo oscuro de la web con sesión (las páginas públicas mantienen su diseño).
 // Se recuerda en este navegador; los colores están en index.css (html.dark).
@@ -53,6 +54,27 @@ function Ajustes() {
   );
 }
 
+// Barra superior en todas las pantallas con sesión: ir a Inicio y cerrar sesión
+function BarraSesion() {
+  const { t } = useIdioma();
+  return (
+    <div className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200">
+      <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between">
+        <Link to="/" className="font-bold text-[#174A55]">Brújula</Link>
+        <div className="flex items-center gap-4 text-sm">
+          <Link to="/" className="font-medium text-[#174A55] hover:underline">{t.app.inicio}</Link>
+          <button
+            onClick={() => { olvidarProfesor(); supabase.auth.signOut(); }}
+            className="rounded-lg border border-gray-300 px-3 py-1 text-[#174A55] hover:border-[#174A55]"
+          >
+            {t.app.cerrarSesion}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [session, setSession] = useState<any>(null);
 
@@ -81,6 +103,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Ajustes />
+      <BarraSesion />
       <Routes>
         <Route path="/" element={<InicioSegunRol />} />
         <Route path="/asignatura/:id" element={<Asignatura />} />

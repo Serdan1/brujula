@@ -153,6 +153,7 @@ const pt: Diccionario = {
   app: {
     cargando: 'A carregar...',
     cerrarSesion: 'Terminar sessão',
+    inicio: 'Início',
     volverInicio: '← Início',
     volverAsignatura: '← Voltar à disciplina',
     volverClase: '← Voltar à turma',
@@ -355,6 +356,16 @@ const pt: Diccionario = {
     motivo: (m: string) => `Motivo: ${m}`,
     reabrir: 'Reabrir alerta',
     confirmarReabrir: 'O alerta voltará a ficar pendente e aparecerá de novo no Início. Continuar?',
+    resuelta: 'Resolvida',
+    filtroSeguimiento: 'Em acompanhamento',
+    filtroResueltas: 'Resolvidas',
+    filtroTodas: 'Todas',
+    vacioFiltro: 'Não há ações nesta secção.',
+    eliminar: 'Eliminar',
+    confirmarEliminar: 'Esta ação será eliminada. Se o alerta não tiver mais ações, voltará a ficar pendente no Início. Continuar?',
+    quitar: 'Retirar da lista',
+    confirmarQuitar: 'O descarte continua registado, mas deixa de aparecer nesta lista neste navegador. Continuar?',
+    mostrarQuitados: (n: number) => `Mostrar ${n} retirados da lista`,
   },
 
   evolucion: {

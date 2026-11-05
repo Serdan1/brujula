@@ -156,6 +156,7 @@ const fr: Diccionario = {
   app: {
     cargando: 'Chargement...',
     cerrarSesion: 'Se déconnecter',
+    inicio: 'Accueil',
     volverInicio: '← Accueil',
     volverAsignatura: '← Retour à la matière',
     volverClase: '← Retour à la classe',
@@ -358,6 +359,16 @@ const fr: Diccionario = {
     motivo: (m: string) => `Motif : ${m}`,
     reabrir: 'Rouvrir l’alerte',
     confirmarReabrir: 'L’alerte repassera en attente et réapparaîtra sur l’accueil. Continuer ?',
+    resuelta: 'Résolue',
+    filtroSeguimiento: 'En cours de suivi',
+    filtroResueltas: 'Résolues',
+    filtroTodas: 'Toutes',
+    vacioFiltro: 'Aucune action dans cette section.',
+    eliminar: 'Supprimer',
+    confirmarEliminar: 'Cette action sera supprimée. Si l’alerte n’a plus d’actions, elle redeviendra en attente sur l’accueil. Continuer ?',
+    quitar: 'Retirer de la liste',
+    confirmarQuitar: 'Le rejet reste enregistré, mais n’apparaîtra plus dans cette liste sur ce navigateur. Continuer ?',
+    mostrarQuitados: (n: number) => `Afficher ${n} retirés de la liste`,
   },
 
   evolucion: {

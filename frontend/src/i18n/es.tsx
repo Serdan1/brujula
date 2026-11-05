@@ -157,6 +157,7 @@ const es = {
   app: {
     cargando: 'Cargando...',
     cerrarSesion: 'Cerrar sesión',
+    inicio: 'Inicio',
     volverInicio: '← Inicio',
     volverAsignatura: '← Volver a la asignatura',
     volverClase: '← Volver a la clase',
@@ -360,6 +361,16 @@ const es = {
     motivo: (m: string) => `Motivo: ${m}`,
     reabrir: 'Reabrir alerta',
     confirmarReabrir: 'La alerta volverá a estar pendiente y aparecerá de nuevo en Inicio. ¿Continuar?',
+    resuelta: 'Resuelta',
+    filtroSeguimiento: 'En seguimiento',
+    filtroResueltas: 'Resueltas',
+    filtroTodas: 'Todas',
+    vacioFiltro: 'No hay acciones en este apartado.',
+    eliminar: 'Eliminar',
+    confirmarEliminar: 'Se eliminará esta acción. Si la alerta no tiene más acciones, volverá a estar pendiente en Inicio. ¿Continuar?',
+    quitar: 'Quitar de la lista',
+    confirmarQuitar: 'El descarte se mantiene registrado, pero dejará de aparecer en esta lista en este navegador. ¿Continuar?',
+    mostrarQuitados: (n: number) => `Mostrar ${n} quitados de la lista`,
   },
 
   evolucion: {
