@@ -151,10 +151,10 @@ Todo usa semilla fija. Para publicar en Supabase (`python publish.py`) hace falt
 
 | | Papel |
 | --- | --- |
-| **Aarón** | Datos, base de datos y seguridad (Supabase), portada y traducciones |
-| **Daniel Serrano** | Modelo de machine learning y deep learning, alertas, explicaciones y automatización |
-| **Iván** | Web (frontend) |
-| **Alex** | Diseño, informes PDF, diagramas y presentación |
+| **Aarón Sacristán Calvo** | Datos, base de datos y seguridad (Supabase), portada y traducciones |
+| **Daniel Serrano Martin** | Modelo de machine learning y deep learning, alertas, explicaciones y automatización |
+| **Iván Díaz Menshútkin** | Web (frontend) |
+| **Alexander Arrosquipa Mamani** | Diseño, informes PDF, diagramas y presentación |
 
 ## Licencias
 
