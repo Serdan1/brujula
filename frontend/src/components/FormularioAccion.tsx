@@ -1,47 +1,95 @@
 import { useState } from 'react';
-import { registrarAccion } from '../datos';
+import { supabase } from '../supabase';
 
-export default function FormularioAccion({ alerta, onClose, onGuardado }: { alerta: any; onClose: () => void; onGuardado: () => void }) {
-  const [tipo, setTipo] = useState('tutoría');
+interface FormularioAccionProps {
+  alertaId: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export function FormularioAccion({ alertaId, onClose, onSuccess }: FormularioAccionProps) {
   const [descripcion, setDescripcion] = useState('');
-  const [fecha, setFecha] = useState('');
-  const [guardando, setGuardando] = useState(false);
+  const [fechaRevision, setFechaRevision] = useState('');
+  const [cargando, setCargando] = useState(false);
 
-  async function guardar(e: React.FormEvent) {
-    e.preventDefault();
-    setGuardando(true);
-    const ok = await registrarAccion(alerta.id, tipo, descripcion, fecha);
-    setGuardando(false);
-    if (ok) onGuardado();
-  }
+  const registrarIntervencion = async (tipoAccion: 'intervencion' | 'descarte') => {
+    if (!descripcion || !fechaRevision) {
+      alert('Por favor, completa la descripción y la fecha de revisión.');
+      return;
+    }
+
+    setCargando(true);
+    
+    // 1. Obtener usuario actual
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // 2. Insertar acción
+    const { error: errorAccion } = await supabase.from('accion').insert({
+      alerta_id: alertaId,
+      profesor_id: user.id,
+      tipo: tipoAccion,
+      descripcion: descripcion,
+      fecha_revision: fechaRevision,
+      resultado: 'Pendiente' // o null
+    });
+
+    if (!errorAccion) {
+      // 3. Actualizar estado de la alerta
+      const nuevoEstado = tipoAccion === 'descarte' ? 'descartada' : 'revisada';
+      await supabase.from('alerta').update({ estado: nuevoEstado }).eq('id', alertaId);
+      
+      onSuccess();
+      onClose();
+    } else {
+      alert('Error al guardar la acción');
+    }
+    setCargando(false);
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h2 className="text-lg font-bold text-[#0f3d4c]">Registrar acción</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          {alerta.alumno?.nombre ? `${alerta.alumno.nombre} · ` : ''}{alerta.titulo}
-        </p>
-        <form onSubmit={guardar} className="flex flex-col gap-3">
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="border p-2 rounded">
-            <option value="tutoría">Tutoría con el alumno</option>
-            <option value="reunión_familia">Reunión con la familia</option>
-            <option value="refuerzo">Material de refuerzo</option>
-            <option value="seguimiento">Seguimiento en clase</option>
-          </select>
-          <textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} className="border p-2 rounded h-24" placeholder="Qué vas a hacer..." required />
-          <label className="text-sm text-gray-600">
-            Fecha de revisión
-            <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="border p-2 rounded w-full mt-1" required />
-          </label>
-          <p className="text-xs text-gray-500">La decisión es tuya: Brújula solo propone. La acción queda registrada.</p>
-          <div className="flex justify-end gap-2 mt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 rounded">Cancelar</button>
-            <button type="submit" disabled={guardando} className="px-4 py-2 bg-[#0f3d4c] text-white rounded disabled:opacity-60">
-              {guardando ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
-        </form>
+    <div className="p-4 border border-gray-200 rounded-md bg-gray-50 mt-4">
+      <h4 className="font-bold mb-3 text-gray-800">Registrar Acción / Descarte</h4>
+      
+      <div className="flex flex-col gap-3">
+        <label className="text-sm font-medium text-gray-700">Descripción / Motivo</label>
+        <textarea 
+          className="p-2 border rounded resize-none" 
+          rows={3}
+          value={descripcion} 
+          onChange={e => setDescripcion(e.target.value)} 
+          placeholder="¿Qué acción vas a tomar o por qué lo descartas?"
+        />
+
+        <label className="text-sm font-medium text-gray-700">Fecha prevista de revisión</label>
+        <input 
+          type="date" 
+          className="p-2 border rounded"
+          value={fechaRevision} 
+          onChange={e => setFechaRevision(e.target.value)} 
+        />
+        
+        <div className="flex gap-2 mt-2">
+          <button 
+            disabled={cargando}
+            onClick={() => registrarIntervencion('intervencion')} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+          >
+            {cargando ? 'Guardando...' : 'Lo reviso'}
+          </button>
+          
+          <button 
+            disabled={cargando}
+            onClick={() => registrarIntervencion('descarte')} 
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-sm font-medium transition-colors"
+          >
+            Descartar con motivo
+          </button>
+
+          <button onClick={onClose} className="ml-auto text-sm text-gray-500 hover:underline">
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import Inicio from './pages/Inicio';
 import Asignatura from './pages/Asignatura';
 import Clase from './pages/Clase';
 import AnalisisCompleto from './pages/AnalisisCompleto';
+import MisAcciones from './pages/MisAcciones';
 
 export default function App() {
   const [session, setSession] = useState<any>(null);
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/asignatura/:id" element={<Asignatura />} />
         <Route path="/asignatura/:asig/clase/:id" element={<Clase />} />
         <Route path="/asignatura/:asig/clase/:id/analisis" element={<AnalisisCompleto />} />
+        <Route path="/intervenciones" element={<MisAcciones />}/>
       </Routes>
     </BrowserRouter>
   );

@@ -1,16 +1,19 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { cargarAlertas, nombreClase } from '../datos';
-import TarjetaAlerta from '../components/TarjetaAlerta';
+import { TarjetaAlerta } from '../components/TarjetaAlerta';
 import BotonInforme from '../components/BotonInforme';
 
 export default function Clase() {
   const { asig, id } = useParams();
+  const location = useLocation();
   const [clase, setClase] = useState<any>(null);
   const [alumnos, setAlumnos] = useState<any[]>([]);
   const [alertas, setAlertas] = useState<any[]>([]);
   const [abierto, setAbierto] = useState<number | null>(null);
+  const [alumnoResaltado, setAlumnoResaltado] = useState<string | null>(null);
+  const [rolUsuario, setRolUsuario] = useState<'profesor' | 'director' | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function cargar() {
@@ -35,6 +38,42 @@ export default function Clase() {
     cargar();
   }, [id, asig]);
 
+  useEffect(() => {
+    setAlumnoResaltado(new URLSearchParams(location.search).get('alumno'));
+  }, [location.search]);
+
+  useEffect(() => {
+    let cancelado = false;
+
+    async function cargarRol() {
+      const { data: { user }, error: errorUsuario } = await supabase.auth.getUser();
+      if (errorUsuario) {
+        console.error('Error al obtener el usuario:', errorUsuario.message);
+        return;
+      }
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profesor')
+        .select('rol')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error al cargar el rol del usuario:', error.message);
+        return;
+      }
+      if (!cancelado && (data?.rol === 'profesor' || data?.rol === 'director')) {
+        setRolUsuario(data.rol);
+      }
+    }
+
+    cargarRol();
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
   const alertasDe = (alumnoId: number) => alertas.filter((a) => a.nivel === 'alumno' && a.alumno_id === alumnoId);
   const deGrupo = alertas.filter((a) => a.nivel === 'clase');
   const conAlerta = alumnos.filter((a) => alertasDe(a.id).length > 0).length;
@@ -42,6 +81,11 @@ export default function Clase() {
   return (
     <div className="p-8 bg-[#fdfbf7] min-h-screen max-w-6xl mx-auto">
       <Link to={`/asignatura/${asig}`} className="text-sm text-gray-500 hover:text-[#0f3d4c] underline mb-4 inline-block">← Volver a la asignatura</Link>
+      {rolUsuario === 'director' && (
+        <div className="bg-blue-50 text-blue-800 p-3 rounded mb-4 text-sm border border-blue-200">
+          Vista de director (solo lectura). Solo el profesor de la asignatura puede registrar acciones.
+        </div>
+      )}
       <div className="flex flex-wrap justify-between items-end gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#0f3d4c]">{nombreClase(clase)}</h1>
@@ -59,7 +103,7 @@ export default function Clase() {
 
       {deGrupo.map((a) => (
         <div key={a.id} className="mb-4">
-          <TarjetaAlerta alerta={a} conAcciones={false} mostrarContexto={false} />
+          <TarjetaAlerta alerta={a} />
         </div>
       ))}
 
@@ -83,9 +127,10 @@ export default function Clase() {
                 const r = alumno.rendimiento[0];
                 const suyas = alertasDe(alumno.id);
                 const alta = suyas.some((a) => a.severidad === 'alta');
+                const resaltado = alumnoResaltado === String(alumno.id);
                 return (
                   <Fragment key={alumno.id}>
-                    <tr className={`border-b border-gray-100 ${suyas.length ? (alta ? 'bg-amber-50' : 'bg-amber-50/40') : ''}`}>
+                    <tr className={`border-b border-gray-100 ${resaltado ? 'bg-yellow-50 ring-2 ring-inset ring-yellow-400' : suyas.length ? (alta ? 'bg-amber-50' : 'bg-amber-50/40') : ''}`}>
                       <td className="p-3 font-medium text-[#0f3d4c]">{alumno.nombre}</td>
                       <td className="p-3">{r.nota_examen ?? '-'}</td>
                       <td className="p-3">{r.nota_practicas ?? '-'}</td>
@@ -110,7 +155,7 @@ export default function Clase() {
                         <td colSpan={6} className="p-3 bg-[#fdfbf7]">
                           <div className="flex flex-col gap-2">
                             {suyas.map((a) => (
-                              <TarjetaAlerta key={a.id} alerta={a} mostrarContexto={false} onCambio={cargar} />
+                              <TarjetaAlerta key={a.id} alerta={a} />
                             ))}
                           </div>
                         </td>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { MOTIVOS, cargarAlertas, miProfesor, olvidarProfesor } from '../datos';
-import TarjetaAlerta from '../components/TarjetaAlerta';
+import { TarjetaAlerta } from '../components/TarjetaAlerta';
 
 export default function Inicio() {
   const [asignaturas, setAsignaturas] = useState<any[]>([]);
@@ -70,7 +70,7 @@ export default function Inicio() {
         <div className="flex flex-col gap-3 mb-8">
           {deGrupo.map((a) => (
             <Link key={a.id} to={`/asignatura/${a.asignatura_id}`} className="block">
-              <TarjetaAlerta alerta={a} conAcciones={false} compacta />
+              <TarjetaAlerta alerta={a} />
             </Link>
           ))}
           {resumen.map((g) => (

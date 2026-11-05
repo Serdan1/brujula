@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { cargarAlertas, miProfesor, nombreClase } from '../datos';
-import TarjetaAlerta from '../components/TarjetaAlerta';
+import { TarjetaAlerta } from '../components/TarjetaAlerta';
 
 export default function Asignatura() {
   const { id } = useParams();
@@ -65,7 +65,7 @@ export default function Asignatura() {
           <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">Avisos de grupo</h2>
           <div className="flex flex-col gap-3 mb-8">
             {grupo.map((a) => (
-              <TarjetaAlerta key={a.id} alerta={a} conAcciones={false} />
+              <TarjetaAlerta key={a.id} alerta={a} />
             ))}
           </div>
         </>
@@ -74,7 +74,7 @@ export default function Asignatura() {
       <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">Alertas de alumnos ({deAlumnos.length})</h2>
       <div className="flex flex-col gap-3">
         {deAlumnos.map((a) => (
-          <TarjetaAlerta key={a.id} alerta={a} onCambio={cargar} />
+          <TarjetaAlerta key={a.id} alerta={a} />
         ))}
       </div>
     </div>
