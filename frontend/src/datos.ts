@@ -51,6 +51,8 @@ const NOMBRES_VARIABLES: Record<string, string> = {
   asistencia: 'Asistencia',
   nota_practicas: 'Nota de prácticas',
   participacion: 'Participación en clase',
+  nota_examen: 'Nota de examen',
+  faltas: 'Faltas',
 };
 
 // Variables sintéticas en esta demo (se marcan con un asterisco)
@@ -124,32 +126,42 @@ export async function cargarAlertas(
   // 3. Asignatura, clase y alumno.
   // 4. Motivo alfabético.
 
-  return (data ?? []).sort(
-    (a: any, b: any) => {
+  
+return (data ?? []).sort((a: any, b: any) => {
+  // 1. Nuevas antes que revisadas
+  const estado =
+    (ORDEN_ESTADO[a.estado] ?? 9) -
+    (ORDEN_ESTADO[b.estado] ?? 9);
 
-      const estado =
-        (ORDEN_ESTADO[a.estado] ?? 9) -
-        (ORDEN_ESTADO[b.estado] ?? 9);
+  if (estado !== 0) return estado;
 
-      if (estado !== 0) return estado;
+  // 2. Prioridad alta antes que media
+  const severidad =
+    (ORDEN_SEVERIDAD[a.severidad] ?? 9) -
+    (ORDEN_SEVERIDAD[b.severidad] ?? 9);
 
-      const severidad =
-        (ORDEN_SEVERIDAD[a.severidad] ?? 9) -
-        (ORDEN_SEVERIDAD[b.severidad] ?? 9);
+  if (severidad !== 0) return severidad;
 
-      if (severidad !== 0) return severidad;
+  // 3. Ordenar por nivel de alerta
+  const nivel =
+    (ORDEN_NIVEL[a.nivel] ?? 9) -
+    (ORDEN_NIVEL[b.nivel] ?? 9);
 
-      const nivel =
-        (ORDEN_NIVEL[a.nivel] ?? 9) -
-        (ORDEN_NIVEL[b.nivel] ?? 9);
+  if (nivel !== 0) return nivel;
 
-      if (nivel !== 0) return nivel;
+  // 4. Alertas del modelo primero
+  const modelo =
+    Number(b.motivo === 'riesgo_de_suspenso') -
+    Number(a.motivo === 'riesgo_de_suspenso');
 
-      return String(a.motivo).localeCompare(
-        String(b.motivo)
-      );
-    }
+  if (modelo !== 0) return modelo;
+
+  // 5. Orden alfabético por motivo
+  return String(a.motivo).localeCompare(
+    String(b.motivo)
   );
+});
+
 }
 
 export async function marcarRevisada(alertaId: number) {

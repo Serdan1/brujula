@@ -42,15 +42,18 @@ export default function Inicio() {
     cargar();
   }, []);
 
-  // Agrupar las alertas de alumnos por asignatura y motivo
-  const grupos = new Map<
+
+  // Agrupar las alertas por asignatura y motivo.
+  // Cada alumno se cuenta una sola vez, aunque tenga
+  // la misma alerta en distintos trimestres.
+  const conjuntos = new Map<
     string,
     {
       asignaturaId: number;
       asignatura: string;
       motivo: string;
-      total: number;
-      altas: number;
+      alumnos: Set<number>;
+      conAlta: Set<number>;
     }
   >();
 
@@ -59,27 +62,33 @@ export default function Inicio() {
     .forEach((a) => {
       const clave = `${a.asignatura_id}-${a.motivo}`;
 
-      const g = grupos.get(clave) ?? {
+      const g = conjuntos.get(clave) ?? {
         asignaturaId: a.asignatura_id,
         asignatura: a.asignatura?.nombre ?? '',
         motivo: a.motivo,
-        total: 0,
-        altas: 0,
+        alumnos: new Set<number>(),
+        conAlta: new Set<number>(),
       };
 
-      g.total += 1;
+      g.alumnos.add(a.alumno_id);
 
       if (a.severidad === 'alta') {
-        g.altas += 1;
+        g.conAlta.add(a.alumno_id);
       }
 
-      grupos.set(clave, g);
+      conjuntos.set(clave, g);
     });
 
-  const resumen = [...grupos.values()].sort(
-    (a, b) => b.altas - a.altas || b.total - a.total
-  );
+  // Resumen de alumnos únicos por asignatura y motivo
+  const resumen = [...conjuntos.values()]
+    .map(({ alumnos, conAlta, ...g }) => ({
+      ...g,
+      total: alumnos.size,
+      altas: conAlta.size,
+    }))
+    .sort((a, b) => b.altas - a.altas || b.total - a.total);
 
+  // Avisos importantes de grupo
   const deGrupo = alertas.filter(
     (a) => a.nivel !== 'alumno' && a.severidad === 'alta'
   );
@@ -94,6 +103,7 @@ export default function Inicio() {
   const totalAltas = alertasAlumnos.filter(
     (a) => a.severidad === 'alta'
   ).length;
+
 
   return (
     <div className="min-h-screen bg-[#F7F4ED] px-4 py-6 sm:px-6 lg:px-8">

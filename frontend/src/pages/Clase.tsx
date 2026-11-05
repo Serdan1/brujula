@@ -5,6 +5,7 @@ import { cargarAlertas, nombreClase, num } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 import BotonInforme from '../components/BotonInforme';
 import EvolucionClase from '../components/EvolucionClase';
+import ImportarTrimestre from '../components/ImportarTrimestre';
 
 export default function Clase() {
   const { asig, id } = useParams();
@@ -13,6 +14,7 @@ export default function Clase() {
   const [alertas, setAlertas] = useState<any[]>([]);
   const [abierto, setAbierto] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState(0); // al importar un trimestre, vuelve a cargar la gráfica de evolución
 
   async function cargar() {
     if (!id || !asig) return;
@@ -126,7 +128,8 @@ export default function Clase() {
       </div>
       <p className="text-xs text-gray-500 mt-2">* Variables sintéticas en esta demo. La tabla no está ordenada por rendimiento. Pulsa en un alumno para ver su ficha.</p>
 
-      {id && asig && <EvolucionClase claseId={id} asignaturaId={asig} />}
+      {id && asig && <ImportarTrimestre claseId={id} asignaturaId={asig} onGuardado={() => { cargar(); setVersion((v) => v + 1); }} />}
+      {id && asig && <EvolucionClase key={version} claseId={id} asignaturaId={asig} />}
     </div>
   );
 }
