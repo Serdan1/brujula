@@ -153,6 +153,7 @@ const en: Diccionario = {
   app: {
     cargando: 'Loading...',
     cerrarSesion: 'Sign out',
+    inicio: 'Home',
     volverInicio: '← Home',
     volverAsignatura: '← Back to the subject',
     volverClase: '← Back to the class',
@@ -355,6 +356,16 @@ const en: Diccionario = {
     motivo: (m: string) => `Reason: ${m}`,
     reabrir: 'Reopen alert',
     confirmarReabrir: 'The alert will be pending again and will reappear on the home page. Continue?',
+    resuelta: 'Resolved',
+    filtroSeguimiento: 'In progress',
+    filtroResueltas: 'Resolved',
+    filtroTodas: 'All',
+    vacioFiltro: 'No actions in this section.',
+    eliminar: 'Delete',
+    confirmarEliminar: 'This action will be deleted. If the alert has no other actions, it will become pending again on the home page. Continue?',
+    quitar: 'Remove from list',
+    confirmarQuitar: 'The dismissal stays on record, but will no longer appear in this list in this browser. Continue?',
+    mostrarQuitados: (n: number) => `Show ${n} removed from the list`,
   },
 
   evolucion: {
