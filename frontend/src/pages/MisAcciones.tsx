@@ -5,18 +5,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { miProfesor, nombreClase } from '../datos';
-
-const TIPOS: Record<string, string> = {
-  tutoría: 'Tutoría con el alumno', reunión_familia: 'Reunión con la familia',
-  refuerzo: 'Material de refuerzo', seguimiento: 'Seguimiento en clase',
-};
+import { fecha, miProfesor, nombreClase } from '../datos';
+import { useIdioma } from '../i18n';
 
 type Pestana = 'intervencion' | 'descarte';
 
-const fecha = (f?: string | null) => (f ? new Date(f).toLocaleDateString('es-ES') : '');
-
 export default function MisAcciones() {
+  const { t } = useIdioma();
+  const m = t.misAcciones;
   const location = useLocation();
   const tipoUrl = new URLSearchParams(location.search).get('tipo');
   const [pestana, setPestana] = useState<Pestana>(tipoUrl === 'descarte' ? 'descarte' : 'intervencion');
@@ -57,17 +53,17 @@ export default function MisAcciones() {
   }, []);
 
   async function marcarHecha(id: number) {
-    const resultado = window.prompt('¿Cómo ha ido? (queda registrado)');
+    const resultado = window.prompt(m.preguntaResultado);
     if (!resultado || !resultado.trim()) return;
     const { error } = await supabase.from('accion').update({ resultado: resultado.trim() }).eq('id', id);
-    if (error) alert('No se ha podido guardar: ' + error.message);
+    if (error) alert(t.errores.guardar + error.message);
     else cargar();
   }
 
   async function reabrir(alertaId: number) {
-    if (!confirm('La alerta volverá a estar pendiente y aparecerá de nuevo en Inicio. ¿Continuar?')) return;
+    if (!confirm(m.confirmarReabrir)) return;
     const { error } = await supabase.from('alerta').update({ estado: 'nueva', motivo_descarte: null }).eq('id', alertaId);
-    if (error) alert('No se ha podido reabrir: ' + error.message);
+    if (error) alert(t.errores.reabrir + error.message);
     else cargar();
   }
 
@@ -81,23 +77,23 @@ export default function MisAcciones() {
 
   return (
     <div className="p-8 bg-[#fdfbf7] min-h-screen max-w-4xl mx-auto">
-      <Link to="/" className="text-sm text-gray-500 hover:text-[#0f3d4c] underline mb-4 inline-block">← Inicio</Link>
-      <h1 className="text-2xl font-bold text-[#0f3d4c] mb-6">Seguimiento de alertas</h1>
+      <Link to="/" className="text-sm text-gray-500 hover:text-[#0f3d4c] underline mb-4 inline-block">{t.app.volverInicio}</Link>
+      <h1 className="text-2xl font-bold text-[#0f3d4c] mb-6">{m.titulo}</h1>
 
       <div className="flex border-b border-gray-200 mb-6">
         <button onClick={() => setPestana('intervencion')} className={pestanaClase('intervencion')}>
-          Próximas revisiones ({acciones.filter((a) => !a.resultado).length})
+          {m.pestanaRevisiones(acciones.filter((a) => !a.resultado).length)}
         </button>
         <button onClick={() => setPestana('descarte')} className={pestanaClase('descarte')}>
-          Descartes ({descartes.length})
+          {m.pestanaDescartes(descartes.length)}
         </button>
       </div>
 
       {cargando ? (
-        <p className="text-gray-500">Cargando registros...</p>
+        <p className="text-gray-500">{m.cargando}</p>
       ) : pestana === 'intervencion' ? (
         acciones.length === 0 ? (
-          <p className="text-gray-500 italic">Todavía no has registrado ninguna acción.</p>
+          <p className="text-gray-500 italic">{m.sinAcciones}</p>
         ) : (
           <div className="grid gap-4">
             {acciones.map((a) => {
@@ -107,23 +103,23 @@ export default function MisAcciones() {
                 <div key={a.id} className={`p-5 border rounded-lg shadow-sm bg-white ${a.resultado ? 'border-gray-200 opacity-80' : 'border-[#174A55]/30'}`}>
                   <div className="flex flex-wrap justify-between items-start gap-2">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${a.resultado ? 'bg-gray-100 text-gray-600' : 'bg-teal-50 text-teal-700 border border-teal-200'}`}>
-                      {a.resultado ? 'Hecha' : 'En seguimiento'} · {TIPOS[a.tipo] ?? a.tipo}
+                      {a.resultado ? m.hecha : m.enSeguimiento} · {t.tiposAccion[a.tipo] ?? a.tipo}
                     </span>
                     {a.fecha_revision && !a.resultado && (
-                      <span className="text-xs text-gray-600 font-medium bg-gray-50 px-2 py-1 rounded">Revisar el {fecha(a.fecha_revision)}</span>
+                      <span className="text-xs text-gray-600 font-medium bg-gray-50 px-2 py-1 rounded">{m.revisarEl(fecha(a.fecha_revision))}</span>
                     )}
                   </div>
                   <h3 className="mt-3 font-semibold text-[#0f3d4c]">
                     {enlace ? <Link to={enlace} className="hover:underline">{al?.alumno?.nombre}</Link> : al?.alumno?.nombre}
                     {al?.clase ? <span className="text-gray-500 font-normal"> · {nombreClase(al.clase)}</span> : null}
                   </h3>
-                  <p className="text-sm text-gray-500">{al?.titulo ?? 'Alerta no disponible'}</p>
+                  <p className="text-sm text-gray-500">{al?.titulo ?? m.alertaNoDisponible}</p>
                   <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded">{a.descripcion}</p>
-                  {a.resultado && <p className="text-sm text-gray-700 mt-2"><strong>Resultado:</strong> {a.resultado}</p>}
+                  {a.resultado && <p className="text-sm text-gray-700 mt-2"><strong>{m.resultado}</strong> {a.resultado}</p>}
                   {!a.resultado && (
                     <div className="mt-4 pt-3 border-t border-gray-100">
                       <button onClick={() => marcarHecha(a.id)} className="text-sm font-medium text-[#174A55] hover:underline">
-                        Marcar como hecha y anotar el resultado
+                        {m.marcarHecha}
                       </button>
                     </div>
                   )}
@@ -133,23 +129,23 @@ export default function MisAcciones() {
           </div>
         )
       ) : descartes.length === 0 ? (
-        <p className="text-gray-500 italic">No has descartado ninguna alerta.</p>
+        <p className="text-gray-500 italic">{m.sinDescartes}</p>
       ) : (
         <div className="grid gap-4">
           {descartes.map((d) => {
             const enlace = enlaceAlumno(d);
             return (
               <div key={d.id} className="p-5 border border-gray-200 rounded-lg shadow-sm bg-white">
-                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">Descartada</span>
+                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">{m.descartada}</span>
                 <h3 className="mt-3 font-semibold text-[#0f3d4c]">
                   {enlace ? <Link to={enlace} className="hover:underline">{d.alumno?.nombre}</Link> : d.alumno?.nombre}
                   {d.clase ? <span className="text-gray-500 font-normal"> · {nombreClase(d.clase)}</span> : null}
                 </h3>
                 <p className="text-sm text-gray-500">{d.titulo}</p>
-                {d.motivo_descarte && <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded">Motivo: {d.motivo_descarte}</p>}
+                {d.motivo_descarte && <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded">{m.motivo(d.motivo_descarte)}</p>}
                 <div className="mt-4 pt-3 border-t border-gray-100">
                   <button onClick={() => reabrir(d.id)} className="text-sm font-medium text-[#174A55] hover:underline">
-                    Reabrir alerta
+                    {m.reabrir}
                   </button>
                 </div>
               </div>

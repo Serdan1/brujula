@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MOTIVOS, SINTETICAS, descartarAlerta, marcarRevisada, motivosDe, nombreClase, textoSobre10 } from '../datos';
+import { SINTETICAS, descartarAlerta, marcarRevisada, motivoCorto, motivosDe, nombreClase, textoSobre10 } from '../datos';
+import { useIdioma } from '../i18n';
 import FormularioAccion from './FormularioAccion';
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAcciones = true, compacta = false, onCambio }: Props) {
+  const { t } = useIdioma();
   const [abierto, setAbierto] = useState(false);
   const alta = alerta.severidad === 'alta';
   const motivos = alerta.nivel === 'alumno' ? motivosDe(alerta) : [];
@@ -22,7 +24,7 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
   }
 
   async function descartar() {
-    const motivo = window.prompt('¿Por qué descartas esta alerta? (queda registrado)');
+    const motivo = window.prompt(t.tarjeta.preguntaDescarte);
     if (!motivo || !motivo.trim()) return;
     if (await descartarAlerta(alerta.id, motivo.trim())) onCambio?.();
   }
@@ -47,11 +49,11 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
   }`}
 >
 
-          {alta ? 'Prioridad alta' : 'Prioridad media'}
+          {alta ? t.app.prioridadAlta : t.app.prioridadMedia}
         </span>
-        <span className="text-xs text-gray-500">{MOTIVOS[alerta.motivo]?.corto ?? alerta.motivo}</span>
+        <span className="text-xs text-gray-500">{motivoCorto(alerta.motivo)}</span>
         {alerta.estado === 'revisada' && (
-          <span className="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Revisada</span>
+          <span className="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">{t.tarjeta.revisada}</span>
         )}
       </div>
 
@@ -68,7 +70,7 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
         to={`/asignatura/${alerta.asignatura_id}/clase/${alerta.clase_id}?alumno=${alerta.alumno_id}`}
         className="ml-2 text-[#174A55] underline hover:no-underline"
       >
-        Ver en la clase →
+        {t.tarjeta.verEnClase}
       </Link>
     )}
   </p>
@@ -90,14 +92,14 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
         <div className="mt-3 flex flex-wrap gap-2">
           {alerta.estado === 'nueva' && (
             <button onClick={revisar} className="text-xs px-3 py-1 rounded border border-[#0f3d4c] text-[#0f3d4c] hover:bg-gray-50">
-              Lo reviso
+              {t.tarjeta.loReviso}
             </button>
           )}
           <button onClick={() => setAbierto(true)} className="text-xs px-3 py-1 rounded bg-[#0f3d4c] text-white">
-            Registrar acción
+            {t.tarjeta.registrar}
           </button>
           <button onClick={descartar} className="text-xs px-3 py-1 rounded text-gray-600 hover:underline">
-            Descartar con motivo
+            {t.tarjeta.descartar}
           </button>
         </div>
       )}

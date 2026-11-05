@@ -1,19 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { NOTA_MAX, cargarAlertas, nombreClase, num, sobre10 } from '../datos';
+import { NOTA_MAX, cargarAlertas, fecha, nombreAsignatura, nombreClase, num, sobre10 } from '../datos';
+import { useIdioma } from '../i18n';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 
 // Ficha de un alumno para su profesor. Las reglas de Supabase solo devuelven datos de
 // alumnos de las clases y asignaturas que imparte. Nunca se muestra la probabilidad de
 // necesitar apoyo ni variables sensibles (salud, ocio, situación familiar).
 
-const ESTUDIO: Record<number, string> = { 1: 'Menos de 2 h', 2: 'De 2 a 5 h', 3: 'De 5 a 10 h', 4: 'Más de 10 h' };
-const TRAYECTO: Record<number, string> = { 1: 'Menos de 15 min', 2: 'De 15 a 30 min', 3: 'De 30 a 60 min', 4: 'Más de 1 h' };
-const TIPOS: Record<string, string> = {
-  tutoría: 'Tutoría con el alumno', reunión_familia: 'Reunión con la familia',
-  refuerzo: 'Material de refuerzo', seguimiento: 'Seguimiento en clase',
-};
+// Los textos están en src/i18n (alumno.*)
 
 const media = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 
@@ -23,24 +19,27 @@ function Fila({ nombre, alumno, clase, max, sufijo = '', sintetica = false }: {
   const pa = alumno != null ? Math.min(100, (100 * alumno) / max) : 0;
   const pc = clase != null ? Math.min(100, (100 * clase) / max) : 0;
   const debajo = alumno != null && clase != null && alumno < clase;
+  const { t } = useIdioma();
   return (
     <div className="py-2">
       <div className="flex justify-between text-sm">
         <span className="text-gray-700">{nombre}{sintetica ? '*' : ''}</span>
         <span>
           <strong className={debajo ? 'text-amber-800' : 'text-[#0f3d4c]'}>{num(alumno)}{sufijo}</strong>
-          <span className="text-gray-500"> · media de la clase {num(clase)}{sufijo}</span>
+          <span className="text-gray-500"> · {t.alumno.mediaClase} {num(clase)}{sufijo}</span>
         </span>
       </div>
       <div className="relative h-3 bg-gray-100 rounded mt-1">
         <div className={`absolute h-3 rounded ${debajo ? 'bg-amber-400' : 'bg-[#0f3d4c]'}`} style={{ width: `${pa}%` }} />
-        <div className="absolute top-[-3px] h-[18px] w-[2px] bg-gray-500" style={{ left: `${pc}%` }} title="Media de la clase" />
+        <div className="absolute top-[-3px] h-[18px] w-[2px] bg-gray-500" style={{ left: `${pc}%` }} title={t.alumno.mediaClase} />
       </div>
     </div>
   );
 }
 
 export default function Alumno() {
+  const { t } = useIdioma();
+  const a_ = t.alumno;
   const { asig, clase: claseId, id } = useParams();
   const [alumno, setAlumno] = useState<any>(null);
   const [clase, setClase] = useState<any>(null);
@@ -72,7 +71,7 @@ export default function Alumno() {
     ]);
     setAlumno(al);
     setClase(c);
-    setAsignatura(s?.nombre ?? '');
+    setAsignatura(nombreAsignatura(s?.nombre));
     const filas = (rc ?? []).filter((x: any) => x.rendimiento?.length).map((x: any) => ({ id: x.id, ...x.rendimiento[0] }));
     setSuyo(filas.find((f: any) => String(f.id) === String(id)) ?? null);
     const col = (k: string) => media(filas.map((f: any) => Number(f[k])).filter((v: number) => !isNaN(v)));
@@ -90,58 +89,57 @@ export default function Alumno() {
 
   const volver = (
     <Link to={`/asignatura/${asig}/clase/${claseId}`} className="text-sm text-gray-500 hover:text-[#0f3d4c] underline mb-4 inline-block">
-      ← Volver a la clase
+      {t.app.volverClase}
     </Link>
   );
 
-  if (loading) return <div className="p-8">{volver}<p className="text-gray-500">Cargando...</p></div>;
-  if (!alumno || !suyo) return <div className="p-8">{volver}<p className="text-gray-600">No tienes acceso a los datos de este alumno en esta asignatura.</p></div>;
+  if (loading) return <div className="p-8">{volver}<p className="text-gray-500">{t.app.cargando}</p></div>;
+  if (!alumno || !suyo) return <div className="p-8">{volver}<p className="text-gray-600">{a_.sinAcceso}</p></div>;
 
   return (
     <div className="p-8 bg-[#fdfbf7] min-h-screen max-w-4xl mx-auto">
       {volver}
       <h1 className="text-2xl font-bold text-[#0f3d4c]">{alumno.nombre}</h1>
       <p className="text-sm text-gray-600 mb-6">
-        {nombreClase(clase)} · {asignatura}{alumno.edad ? ` · ${alumno.edad} años` : ''} · datos del primer periodo · alumno ficticio
+        {nombreClase(clase)} · {asignatura}{alumno.edad ? ` · ${a_.edad(alumno.edad)}` : ''} · {a_.subtitulo}
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* Primer periodo frente a la clase */}
         <section className="bg-white border border-gray-200 rounded-lg p-4">
-          <h2 className="font-semibold text-[#0f3d4c] mb-1">Primer periodo frente a la clase</h2>
-          <p className="text-xs text-gray-500 mb-2">La línea vertical marca la media de la clase. En ámbar, lo que está por debajo.</p>
-          <Fila nombre="Examen" alumno={sobre10(suyo.nota_examen)} clase={sobre10(medias.examen)} max={NOTA_MAX} />
-          <Fila nombre="Prácticas" alumno={sobre10(suyo.nota_practicas)} clase={sobre10(medias.practicas)} max={NOTA_MAX} sintetica />
-          <Fila nombre="Participación" alumno={suyo.participacion} clase={medias.participacion} max={10} sintetica />
-          <Fila nombre="Asistencia" alumno={suyo.asistencia} clase={medias.asistencia} max={100} sufijo=" %" sintetica />
-          <p className="text-xs text-gray-500 mt-2">* Variable sintética en esta demo.</p>
+          <h2 className="font-semibold text-[#0f3d4c] mb-1">{a_.frenteClase}</h2>
+          <p className="text-xs text-gray-500 mb-2">{a_.frenteClaseNota}</p>
+          <Fila nombre={a_.examen} alumno={sobre10(suyo.nota_examen)} clase={sobre10(medias.examen)} max={NOTA_MAX} />
+          <Fila nombre={a_.practicas} alumno={sobre10(suyo.nota_practicas)} clase={sobre10(medias.practicas)} max={NOTA_MAX} sintetica />
+          <Fila nombre={a_.participacion} alumno={suyo.participacion} clase={medias.participacion} max={10} sintetica />
+          <Fila nombre={a_.asistencia} alumno={suyo.asistencia} clase={medias.asistencia} max={100} sufijo=" %" sintetica />
+          <p className="text-xs text-gray-500 mt-2">{t.app.sinteticaUna}</p>
         </section>
 
         {/* Nota estimada */}
         <section className="bg-white border border-gray-200 rounded-lg p-4">
-          <h2 className="font-semibold text-[#0f3d4c] mb-1">Nota final estimada</h2>
+          <h2 className="font-semibold text-[#0f3d4c] mb-1">{a_.notaEstimada}</h2>
           {prediccion?.ic_inf != null ? (
             <>
               <p className="text-3xl font-bold text-[#0f3d4c] mt-2">
                 {num(sobre10(prediccion.ic_inf))} – {num(sobre10(prediccion.ic_sup))} <span className="text-base font-normal text-gray-500">/ {NOTA_MAX}</span>
               </p>
-              <p className="text-sm text-gray-600 mt-1">Valor central: {num(sobre10(prediccion.nota_final_estimada))}</p>
+              <p className="text-sm text-gray-600 mt-1">{a_.valorCentral} {num(sobre10(prediccion.nota_final_estimada))}</p>
               <p className="text-xs text-gray-500 mt-3">
-                Estimación de la red neuronal con los datos del primer periodo. En 8 de cada 10 alumnos, la nota real queda dentro de
-                este rango. Es orientativa: no es una calificación ni un pronóstico seguro.
+                {a_.estimadaNota}
               </p>
             </>
           ) : (
-            <p className="text-sm text-gray-600">No hay estimación disponible.</p>
+            <p className="text-sm text-gray-600">{a_.sinEstimacion}</p>
           )}
         </section>
       </div>
 
       {/* Alertas */}
       <section className="mb-6">
-        <h2 className="font-semibold text-[#0f3d4c] mb-2">Alertas</h2>
+        <h2 className="font-semibold text-[#0f3d4c] mb-2">{a_.alertas}</h2>
         {alertas.length === 0 ? (
-          <p className="text-sm text-gray-600 bg-white border border-gray-200 rounded-lg p-4">Este alumno no tiene alertas en {asignatura}.</p>
+          <p className="text-sm text-gray-600 bg-white border border-gray-200 rounded-lg p-4">{a_.sinAlertas(asignatura)}</p>
         ) : (
           <div className="flex flex-col gap-3">
             {alertas.map((a) => (
@@ -154,35 +152,35 @@ export default function Alumno() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Contexto */}
         <section className="bg-white border border-gray-200 rounded-lg p-4">
-          <h2 className="font-semibold text-[#0f3d4c] mb-2">Contexto</h2>
+          <h2 className="font-semibold text-[#0f3d4c] mb-2">{a_.contexto}</h2>
           {contexto ? (
             <dl className="text-sm grid grid-cols-2 gap-y-1">
-              <dt className="text-gray-600">Tiempo de estudio semanal</dt><dd>{ESTUDIO[contexto.studytime] ?? '-'}</dd>
-              <dt className="text-gray-600">Suspensos previos</dt><dd>{contexto.failures ?? '-'}</dd>
-              <dt className="text-gray-600">Tiempo de trayecto</dt><dd>{TRAYECTO[contexto.traveltime] ?? '-'}</dd>
-              <dt className="text-gray-600">Apoyo educativo del centro</dt><dd>{contexto.schoolsup ? 'Sí' : 'No'}</dd>
-              <dt className="text-gray-600">Actividades extraescolares</dt><dd>{contexto.activities ? 'Sí' : 'No'}</dd>
+              <dt className="text-gray-600">{a_.ctxEstudio}</dt><dd>{a_.estudio[contexto.studytime] ?? '-'}</dd>
+              <dt className="text-gray-600">{a_.ctxSuspensos}</dt><dd>{contexto.failures ?? '-'}</dd>
+              <dt className="text-gray-600">{a_.ctxTrayecto}</dt><dd>{a_.trayecto[contexto.traveltime] ?? '-'}</dd>
+              <dt className="text-gray-600">{a_.ctxApoyo}</dt><dd>{contexto.schoolsup ? t.app.si : t.app.no}</dd>
+              <dt className="text-gray-600">{a_.ctxActividades}</dt><dd>{contexto.activities ? t.app.si : t.app.no}</dd>
             </dl>
           ) : (
-            <p className="text-sm text-gray-600">Sin datos de contexto.</p>
+            <p className="text-sm text-gray-600">{a_.sinContexto}</p>
           )}
-          <p className="text-xs text-gray-500 mt-2">Datos reales del dataset de la UCI. No se muestran datos de salud, ocio ni familia.</p>
+          <p className="text-xs text-gray-500 mt-2">{a_.contextoNota}</p>
         </section>
 
         {/* Acciones */}
         <section className="bg-white border border-gray-200 rounded-lg p-4">
-          <h2 className="font-semibold text-[#0f3d4c] mb-2">Acciones registradas</h2>
+          <h2 className="font-semibold text-[#0f3d4c] mb-2">{a_.acciones}</h2>
           {acciones.length === 0 ? (
-            <p className="text-sm text-gray-600">Todavía no has registrado ninguna acción con este alumno.</p>
+            <p className="text-sm text-gray-600">{a_.sinAcciones}</p>
           ) : (
             <ul className="divide-y divide-gray-100 text-sm">
               {acciones.map((a) => (
                 <li key={a.id} className="py-2">
-                  <p className="font-medium text-[#0f3d4c]">{TIPOS[a.tipo] ?? a.tipo}</p>
+                  <p className="font-medium text-[#0f3d4c]">{t.tiposAccion[a.tipo] ?? a.tipo}</p>
                   <p className="text-gray-700">{a.descripcion}</p>
                   <p className="text-xs text-gray-500">
-                    Desde {a.fecha_inicio}{a.fecha_revision ? ` · revisar el ${a.fecha_revision}` : ''}
-                    {a.resultado ? ` · resultado: ${a.resultado}` : ''}
+                    {a_.desde(fecha(a.fecha_inicio))}{a.fecha_revision ? a_.revisarEl(fecha(a.fecha_revision)) : ''}
+                    {a.resultado ? a_.resultado(a.resultado) : ''}
                   </p>
                 </li>
               ))}

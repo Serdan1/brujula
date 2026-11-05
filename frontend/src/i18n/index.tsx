@@ -2,7 +2,7 @@
 // Uso en un componente:   const { t, num } = useIdioma();   <h1>{t.portada.titulo}</h1>
 // Los diccionarios están en ./es.tsx, ./pt.tsx, ./en.tsx y ./fr.tsx. Los cuatro tienen el tipo de
 // es.tsx, así que si falta una clave en un idioma, TypeScript no compila.
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { Fragment, createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import es from './es';
 import pt from './pt';
 import en from './en';
@@ -42,8 +42,16 @@ type Contexto = {
 
 const IdiomaContext = createContext<Contexto | null>(null);
 
+// Idioma actual para el código que no es un componente (src/datos.ts, validación del CSV...).
+// Al cambiar de idioma, el proveedor vuelve a montar la web entera (key={idioma}), así que
+// todo lo que se dibuja lee ya el idioma nuevo.
+let actual: Idioma = 'es';
+export const tActual = (): Diccionario => DICCIONARIOS[actual];
+export const localeActual = (): string => IDIOMAS.find((i) => i.codigo === actual)!.locale;
+
 export function IdiomaProvider({ children }: { children: ReactNode }) {
   const [idioma, setIdioma] = useState<Idioma>(idiomaInicial);
+  actual = idioma;
   const locale = IDIOMAS.find((i) => i.codigo === idioma)!.locale;
 
   useEffect(() => {
@@ -56,7 +64,7 @@ export function IdiomaProvider({ children }: { children: ReactNode }) {
 
   return (
     <IdiomaContext.Provider value={{ idioma, setIdioma, t: DICCIONARIOS[idioma], locale, num }}>
-      {children}
+      <Fragment key={idioma}>{children}</Fragment>
     </IdiomaContext.Provider>
   );
 }
