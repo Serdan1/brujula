@@ -7,6 +7,7 @@ from datos_informes import (
     obtener_datos_clase_reales,
     obtener_datos_centro_reales
 )
+from datos_modelo import enriquecer_informe_centro, enriquecer_informe_clase, escuelas
 from pdf_generator import generar_pdf
 from supabase_client import SupabaseClient
 from subir_informes import subir_informe
@@ -74,6 +75,9 @@ def generar_informe_clase(
         periodo=periodo
     )
 
+    # Alertas individuales, nombre de la asignatura y resultados del modelo
+    datos = enriquecer_informe_clase(cliente, datos, clase_id, asignatura_id)
+
     nombre_archivo = (
         f"informe_clase_{clase_id}_"
         f"{asignatura_id}_p{periodo}.pdf"
@@ -100,13 +104,24 @@ def generar_informe_clase(
 
 
 def generar_informe_centro(cliente, periodo):
+    """Un informe por escuela: cada director ve solo su centro."""
+    rutas = []
+    for escuela in escuelas(cliente):
+        rutas.append(generar_informe_escuela(cliente, periodo, escuela["id"], escuela["nombre"]))
+    return rutas
+
+
+def generar_informe_escuela(cliente, periodo, escuela_id, nombre_escuela):
     datos = obtener_datos_centro_reales(
         cliente=cliente,
-        periodo=periodo
+        periodo=periodo,
+        escuela_id=escuela_id
     )
 
+    datos = enriquecer_informe_centro(cliente, datos, escuela_id, nombre_escuela)
+
     nombre_archivo = (
-        f"informe_centro_p{periodo}.pdf"
+        f"informe_centro_{escuela_id}_p{periodo}.pdf"
     )
 
     ruta_pdf = generar_pdf(
@@ -116,7 +131,7 @@ def generar_informe_centro(cliente, periodo):
     )
 
     ruta_storage = (
-        f"centros/periodo_{periodo}.pdf"
+        f"centros/{escuela_id}/periodo_{periodo}.pdf"
     )
 
     publicar_si_corresponde(

@@ -8,6 +8,7 @@ from collections import defaultdict
 # =====================================================
 
 COLUMNAS_RESUMEN = [
+    "escuela_id",
     "clase_id",
     "curso",
     "letra",
@@ -87,7 +88,8 @@ def promedio_ponderado(pares):
 
 def consultar_registros(cliente, periodo,
                         clase_id=None,
-                        asignatura_id=None):
+                        asignatura_id=None,
+                        escuela_id=None):
     """
     Recupera los registros académicos desde
     la vista v_clase_resumen.
@@ -104,6 +106,9 @@ def consultar_registros(cliente, periodo,
         filtros["asignatura_id"] = (
             f"eq.{asignatura_id}"
         )
+
+    if escuela_id is not None:
+        filtros["escuela_id"] = f"eq.{escuela_id}"
 
     return cliente.consultar_resumen(
         vista="v_clase_resumen",
@@ -295,7 +300,7 @@ def obtener_datos_clase_reales(
 # INFORME REAL DEL CENTRO
 # =====================================================
 
-def obtener_datos_centro_reales(cliente, periodo):
+def obtener_datos_centro_reales(cliente, periodo, escuela_id=None):
     """
     Genera un resumen académico del centro.
 
@@ -314,7 +319,8 @@ def obtener_datos_centro_reales(cliente, periodo):
 
     registros = consultar_registros(
         cliente=cliente,
-        periodo=periodo
+        periodo=periodo,
+        escuela_id=escuela_id
     )
 
     if not registros:
@@ -420,9 +426,10 @@ def obtener_datos_centro_reales(cliente, periodo):
 
     resumen_clases = []
 
-    for clase in clases.values():
+    for clase_id, clase in clases.items():
 
         resumen_clases.append({
+            "clase_id": clase_id,
             "nombre": clase["nombre"],
 
             "alumnos": clase["alumnos"],
