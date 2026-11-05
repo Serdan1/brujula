@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { cargarAlertas, nombreClase } from '../datos';
+import { cargarAlertas, nombreClase, num } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 import BotonInforme from '../components/BotonInforme';
 
@@ -87,10 +87,10 @@ export default function Clase() {
                   <Fragment key={alumno.id}>
                     <tr className={`border-b border-gray-100 ${suyas.length ? (alta ? 'bg-amber-50' : 'bg-amber-50/40') : ''}`}>
                       <td className="p-3 font-medium text-[#0f3d4c]">{alumno.nombre}</td>
-                      <td className="p-3">{r.nota_examen ?? '-'}</td>
-                      <td className="p-3">{r.nota_practicas ?? '-'}</td>
-                      <td className="p-3">{r.participacion ?? '-'}/10</td>
-                      <td className="p-3">{r.asistencia != null ? `${r.asistencia}%` : '-'}</td>
+                      <td className="p-3">{num(r.nota_examen)}</td>
+                      <td className="p-3">{num(r.nota_practicas)}</td>
+                      <td className="p-3">{num(r.participacion)}/10</td>
+                      <td className="p-3">{r.asistencia != null ? `${num(r.asistencia)} %` : '-'}</td>
                       <td className="p-3">
                         {suyas.length > 0 ? (
                           <button
