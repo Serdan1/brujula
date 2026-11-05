@@ -75,9 +75,28 @@ export default function Asignatura() {
       {grupo.length > 0 && (
         <>
           <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">Avisos de grupo</h2>
-          <div className="flex flex-col gap-3 mb-8">
-            {grupo.map((a) => (
-              <TarjetaAlerta key={a.id} alerta={a} />
+          <div className="flex flex-col gap-2 mb-8">
+            {grupo.map((alerta) => (
+              <details key={alerta.id} className="rounded-lg border border-gray-200 bg-white">
+                <summary className="cursor-pointer p-4 text-sm font-medium text-[#0f3d4c]">
+                  <span className={`mr-2 inline-block rounded px-2 py-0.5 text-xs ${
+                    alerta.severidad === 'alta'
+                      ? 'bg-amber-100 text-amber-900'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {alerta.severidad === 'alta' ? 'Prioridad alta' : 'Prioridad media'}
+                  </span>
+                  {alerta.titulo}
+                  {alerta.clase && (
+                    <span className="ml-2 font-normal text-gray-500">
+                      {nombreClase(alerta.clase)}
+                    </span>
+                  )}
+                </summary>
+                <div className="border-t border-gray-100 p-3">
+                  <TarjetaAlerta alerta={alerta} />
+                </div>
+              </details>
             ))}
           </div>
         </>

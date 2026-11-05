@@ -13,6 +13,8 @@ interface Accion {
   alerta: {
     titulo: string;
     estado: string;
+    alumno: { nombre: string } | null;
+    clase: { curso: number; letra: string } | null;
   };
 }
 
@@ -50,7 +52,7 @@ export default function MisAcciones() {
       .from('accion')
       .select(`
         id, alerta_id, tipo, descripcion, fecha_inicio, fecha_revision,
-        alerta (titulo, estado)
+        alerta (titulo, estado, alumno (nombre), clase (curso, letra))
       `)
       .eq('profesor_id', profesor.id)
       .order('fecha_inicio', { ascending: false });
@@ -68,35 +70,21 @@ export default function MisAcciones() {
       .finally(() => setCargando(false));
   }, []);
 
-  const eliminarAccion = async (id: string, alertaId: string) => {
+  const eliminarAccion = async (id: string) => {
     if (!confirm('¿Estás seguro de eliminar este registro? La alerta volverá a estado "nueva" y volverá a aparecer en Inicio.')) return;
 
     setError('');
     setMensaje('');
     setEliminandoId(id);
     try {
-      const { data: accionEliminada, error: errorEliminar } = await supabase
-        .from('accion')
-        .delete()
-        .eq('id', id)
-        .select('id')
-        .maybeSingle();
-      if (errorEliminar) throw errorEliminar;
-      if (!accionEliminada) {
-        throw new Error('No se eliminó el registro. Comprueba que sea una acción tuya y que la migración de permisos esté aplicada.');
-      }
-
-      const { data: alertaReabierta, error: errorReabrir } = await supabase
-        .from('alerta')
-        .update({ estado: 'nueva' })
-        .eq('id', alertaId)
-        .select('id')
-        .maybeSingle();
-      if (errorReabrir) {
-        throw new Error(`El registro se eliminó, pero no se pudo reabrir la alerta: ${errorReabrir.message}`);
-      }
-      if (!alertaReabierta) {
-        throw new Error('El registro se eliminó, pero no se encontró la alerta para reabrirla.');
+      const { error: errorEliminar } = await supabase.rpc('eliminar_accion_y_reabrir', {
+        p_accion_id: Number(id),
+      });
+      if (errorEliminar) {
+        if (errorEliminar.code === 'PGRST202' || errorEliminar.code === '42883') {
+          throw new Error('Falta aplicar la migración de Supabase para eliminar acciones. Aplícala en el mismo proyecto que usa esta web y vuelve a intentarlo.');
+        }
+        throw errorEliminar;
       }
 
       await cargarAcciones();
@@ -183,6 +171,13 @@ export default function MisAcciones() {
               <h3 className="mt-3 font-bold text-slate-800 text-lg">
                 {accion.alerta?.titulo || 'Alerta eliminada'}
               </h3>
+              {(accion.alerta?.alumno || accion.alerta?.clase) && (
+                <p className="mt-1 text-sm text-slate-600">
+                  {accion.alerta.alumno?.nombre}
+                  {accion.alerta.alumno && accion.alerta.clase ? ' · ' : ''}
+                  {accion.alerta.clase && `${accion.alerta.clase.curso}º ${accion.alerta.clase.letra}`}
+                </p>
+              )}
               
               <p className="text-sm text-slate-600 mt-2 bg-slate-50 p-3 rounded italic">
                 "{accion.descripcion}"
@@ -190,7 +185,7 @@ export default function MisAcciones() {
               
               <div className="mt-4 flex gap-4 pt-3 border-t border-slate-100">
                 <button 
-                  onClick={() => eliminarAccion(accion.id, accion.alerta_id)}
+                  onClick={() => eliminarAccion(accion.id)}
                   disabled={eliminandoId === accion.id}
                   className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
                 >

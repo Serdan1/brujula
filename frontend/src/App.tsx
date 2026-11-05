@@ -7,6 +7,26 @@ import Clase from './pages/Clase';
 import AnalisisCompleto from './pages/AnalisisCompleto';
 import MisAcciones from './pages/MisAcciones';
 
+function BotonTema() {
+  const [oscuro, setOscuro] = useState(() => localStorage.getItem('brujula-tema') === 'oscuro');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', oscuro);
+    localStorage.setItem('brujula-tema', oscuro ? 'oscuro' : 'claro');
+  }, [oscuro]);
+
+  return (
+    <button
+      type="button"
+      onClick={() => setOscuro((actual) => !actual)}
+      aria-label={oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+      className="fixed right-4 top-4 z-50 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+    >
+      {oscuro ? '☀️ Modo claro' : '🌙 Modo oscuro'}
+    </button>
+  );
+}
+
 export default function App() {
   const [session, setSession] = useState<any>(null);
   const [email, setEmail] = useState('');
@@ -22,6 +42,7 @@ export default function App() {
   if (!session) {
     return (
       <div className="p-8 bg-[#fdfbf7] min-h-screen flex flex-col items-center justify-center">
+        <BotonTema />
         <h1 className="text-3xl font-bold text-[#0f3d4c] mb-2">Brújula</h1>
         <p className="text-gray-600 mb-8">Alertas explicables para que la escuela aprenda de sus datos</p>
         <form
@@ -44,6 +65,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <BotonTema />
       <Routes>
         <Route path="/" element={<Inicio />} />
         <Route path="/asignatura/:id" element={<Asignatura />} />
