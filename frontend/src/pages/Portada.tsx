@@ -51,7 +51,7 @@ export default function Portada() {
                   <span className="text-xs text-[#78541B]">Podría necesitar apoyo</span>
                 </div>
                 <p className="font-semibold text-[#174A55]">Podría necesitar apoyo en Portugués</p>
-                <p className="text-sm text-[#64777A]">Alumna de 10.º C · ejemplo ficticio</p>
+                <p className="text-sm text-[#64777A]">Alumna de 4.º Primaria C · ejemplo ficticio</p>
                 <p className="mt-2 text-sm">Por qué salta:</p>
                 <ul className="text-sm list-disc pl-5">
                   <li>Nota del primer periodo: <strong>4,5</strong></li>

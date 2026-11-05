@@ -100,7 +100,7 @@ def motivos_del_modelo(sv_fila, x_fila, columnas, medias):
 def main():
     SALIDA.mkdir(parents=True, exist_ok=True)
     clase = pd.read_csv(TABLAS / "clase.csv").rename(columns={"id": "clase_id"})
-    clase["nombre_clase"] = clase["curso"].astype(str) + "º" + clase["letra"].astype(str)
+    clase["nombre_clase"] = clase["curso"].astype(str) + ".º Primaria " + clase["letra"].astype(str)
 
     # Datos de entrenamiento (para el fondo de SHAP) y de predicción (4 asignaturas)
     ds_tr = construir_variables(cargar_datos())

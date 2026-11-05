@@ -25,7 +25,7 @@ export function olvidarProfesor() {
   profesorCache = null;
 }
 
-export const nombreClase = (c: any) => (c ? `${c.curso}º ${c.letra}` : '');
+export const nombreClase = (c: any) => (c ? `${c.curso}.º Primaria ${c.letra}` : '');
 
 // Números con formato español: coma decimal (12,6 en vez de 12.6)
 export function num(v: any, decimales = 1): string {

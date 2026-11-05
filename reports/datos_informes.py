@@ -256,7 +256,7 @@ def obtener_datos_clase_reales(
 
     return {
         "clase": (
-            f"{registro['curso']}º "
+            f"{registro['curso']}.º Primaria "
             f"{registro['letra']}"
         ),
 
@@ -373,7 +373,7 @@ def obtener_datos_centro_reales(cliente, periodo, escuela_id=None):
         clase = clases[clase_id]
 
         clase["nombre"] = (
-            f"{registro['curso']}º "
+            f"{registro['curso']}.º Primaria "
             f"{registro['letra']}"
         )
 
