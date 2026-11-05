@@ -25,3 +25,4 @@ reports/.token
 
 # Informes PDF generados
 reports/output/*.pdf
+!.env.example
