@@ -19,11 +19,11 @@ select 'profesor.gp' as usuario,
        (select count(*) from v_clase_resumen)               as filas_vista_clase;
 rollback;
 
--- ---------- Prueba 2: profesor.ms (profesor 7, Portugués en MS) ----------
+-- ---------- Prueba 2: profesor.ms (profesor 8, Matemáticas en MS) ----------
 begin;
 select set_config('request.jwt.claims',
        json_build_object('sub', user_id, 'role', 'authenticated')::text, true)
-from profesor where id = 7;
+from profesor where id = 8;
 set local role authenticated;
 select 'profesor.ms' as usuario,
        (select count(*) from clase)                         as clases,

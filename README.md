@@ -29,7 +29,7 @@ La contraseña es la misma para todos: **`Brujula-2026!`**
 | Correo | Qué ve |
 | --- | --- |
 | `profesor.gp@example.com` | Profesor de Portugués · Escuela GP |
-| `profesor.ms@example.com` | Profesor de Portugués · Escuela MS |
+| `profesor.ms@example.com` | Profesor de Matemáticas · Escuela MS |
 | `director.gp@example.com` | Director · Escuela GP |
 | `director.ms@example.com` | Director · Escuela MS |
 
