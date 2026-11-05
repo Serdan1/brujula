@@ -30,37 +30,17 @@ export function TarjetaAlerta({ alerta: alertaInicial, soloLectura = false }: { 
   const [alumnoNombre, setAlumnoNombre] = useState(alertaInicial.alumno_nombre || '');
   const [claseNombre, setClaseNombre] = useState(alertaInicial.clase_nombre || '');
 
-  // 1. SOLUCIÓN AL NOMBRE DEL ALUMNO
   useEffect(() => {
     async function obtenerNombresFaltantes() {
-      // Solo buscamos alumno si la alerta es de nivel alumno
       if (alerta.nivel === 'alumno' && alerta.alumno_id && !alumnoNombre) {
-        const { data: alumno, error: errAlumno } = await supabase
-          .from('alumno')
-          .select('*')
-          .eq('id', alerta.alumno_id)
-          .single();
-
-        if (errAlumno) {
-          console.error('Error al cargar alumno desde Supabase:', errAlumno);
-        }
-        
+        const { data: alumno } = await supabase.from('alumno').select('*').eq('id', alerta.alumno_id).single();
         if (alumno) {
-          // Cubrimos todas las opciones posibles de cómo Aarón haya llamado a la columna en la BD
-          const nombre = alumno.nombre_ficticio || alumno['nombre ficticio'] || alumno.nombre || 'Alumno sin nombre';
+          const nombre = alumno.nombre_ficticio || alumno['nombre ficticio'] || alumno.nombre || 'Alumno desconocido';
           setAlumnoNombre(nombre);
         }
       }
-      
-      // Buscar el nombre de la clase
       if (alerta.clase_id && !claseNombre) {
-        const { data: clase, error: errClase } = await supabase
-          .from('clase')
-          .select('*')
-          .eq('id', alerta.clase_id)
-          .single();
-
-        if (errClase) console.error('Error al cargar clase:', errClase);
+        const { data: clase } = await supabase.from('clase').select('*').eq('id', alerta.clase_id).single();
         if (clase) setClaseNombre(`${clase.curso}º ${clase.letra}`);
       }
     }
@@ -102,10 +82,13 @@ export function TarjetaAlerta({ alerta: alertaInicial, soloLectura = false }: { 
     setMostrarForm(true);
   };
 
-  // 2. SOLUCIÓN AL ERROR DE GUARDADO
   const guardarAccion = async () => {
-    if (!descripcion || !fechaRevision) {
-      alert('Por favor, completa el motivo y la fecha.');
+    if (!descripcion) {
+      alert('Por favor, completa el motivo o descripción.');
+      return;
+    }
+    if (tipoAccion === 'intervencion' && !fechaRevision) {
+      alert('Por favor, indica la fecha de revisión.');
       return;
     }
 
@@ -114,38 +97,41 @@ export function TarjetaAlerta({ alerta: alertaInicial, soloLectura = false }: { 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuario no autenticado');
 
-      // Añadimos fecha_inicio como exige el contrato de la base de datos
+      // 1. OBTENER EL ID NUMÉRICO DEL PROFESOR
+      const { data: profesor, error: errProf } = await supabase
+        .from('profesor')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+        
+      if (errProf || !profesor) throw new Error('No se encontró el perfil de profesor en la base de datos.');
+
       const hoy = new Date().toISOString().split('T')[0];
 
+      // 2. GUARDAR CON EL ID CORRECTO Y SIN FECHA DE REVISIÓN SI ES DESCARTE
       const { error: errAccion } = await supabase.from('accion').insert({
         alerta_id: alerta.id,
-        profesor_id: user.id,
+        profesor_id: profesor.id,
         tipo: tipoAccion,
         descripcion: descripcion,
-        fecha_inicio: hoy, 
-        fecha_revision: fechaRevision,
+        fecha_inicio: hoy,
+        fecha_revision: tipoAccion === 'intervencion' ? fechaRevision : null,
         resultado: 'Pendiente'
       });
       
-      if (errAccion) {
-        console.error('Error insertando la acción en Supabase:', errAccion);
-        throw new Error(errAccion.message);
-      }
+      if (errAccion) throw new Error(errAccion.message);
 
       const nuevoEstado = tipoAccion === 'descarte' ? 'descartada' : 'revisada';
       const { error: errAlerta } = await supabase.from('alerta').update({ estado: nuevoEstado }).eq('id', alerta.id);
       
-      if (errAlerta) {
-        console.error('Error actualizando la alerta:', errAlerta);
-        throw new Error(errAlerta.message);
-      }
+      if (errAlerta) throw new Error(errAlerta.message);
 
       setAlerta({ ...alerta, estado: nuevoEstado });
       setMostrarForm(false);
       setDescripcion('');
       setFechaRevision('');
     } catch (error: any) {
-      console.error('Captura del error:', error);
+      console.error('Error al guardar:', error);
       alert(`No se pudo guardar la acción: ${error.message}`);
     } finally {
       setCargando(false);
@@ -154,12 +140,9 @@ export function TarjetaAlerta({ alerta: alertaInicial, soloLectura = false }: { 
 
   return (
     <div className="p-5 border border-amber-200 rounded-lg shadow-sm mb-4 bg-amber-50/30">
-      
       <div className="flex gap-2 mb-3 items-center">
         {alerta.severidad === 'alta' && (
-          <span className="bg-amber-400 text-amber-900 text-xs px-2 py-1 rounded font-medium">
-            Prioridad alta
-          </span>
+          <span className="bg-amber-400 text-amber-900 text-xs px-2 py-1 rounded font-medium">Prioridad alta</span>
         )}
         <span className="text-gray-600 text-sm">{alerta.motivo}</span>
         <span className={`text-xs px-2 py-1 rounded border font-medium uppercase tracking-wide ${
@@ -186,27 +169,17 @@ export function TarjetaAlerta({ alerta: alertaInicial, soloLectura = false }: { 
         <div className="mt-5 flex items-center gap-4 flex-wrap">
           {!soloLectura && (
             <>
-              <button 
-                onClick={() => abrirFormulario('intervencion')}
-                className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded font-medium text-sm transition-colors"
-              >
+              <button onClick={() => abrirFormulario('intervencion')} className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded font-medium text-sm transition-colors">
                 Registrar acción
               </button>
-              
-              <button 
-                onClick={() => abrirFormulario('descarte')}
-                className="text-slate-500 hover:text-slate-700 text-sm transition-colors"
-              >
+              <button onClick={() => abrirFormulario('descarte')} className="text-slate-500 hover:text-slate-700 text-sm transition-colors">
                 Descartar con motivo
               </button>
             </>
           )}
 
           {alerta.nivel === 'alumno' && alerta.clase_id && alerta.asignatura_id && (
-            <Link 
-              to={`/asignatura/${alerta.asignatura_id}/clase/${alerta.clase_id}?alumno=${alerta.alumno_id}`} 
-              className="ml-auto text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors flex items-center"
-            >
+            <Link to={`/asignatura/${alerta.asignatura_id}/clase/${alerta.clase_id}?alumno=${alerta.alumno_id}`} className="ml-auto text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors flex items-center">
               Ver expediente y clase del alumno <span className="ml-1">&rarr;</span>
             </Link>
           )}
@@ -224,25 +197,23 @@ export function TarjetaAlerta({ alerta: alertaInicial, soloLectura = false }: { 
               value={descripcion} onChange={e => setDescripcion(e.target.value)} 
               placeholder={tipoAccion === 'descarte' ? '¿Por qué descartas esta alerta?' : '¿Qué acción vas a tomar?'}
             />
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Fecha de revisión</label>
-              <input 
-                type="date" className="p-2 border rounded text-sm w-full md:w-auto"
-                value={fechaRevision} onChange={e => setFechaRevision(e.target.value)} 
-              />
-            </div>
+            
+            {/* SOLO MOSTRAMOS LA FECHA SI ES UNA INTERVENCIÓN */}
+            {tipoAccion === 'intervencion' && (
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Fecha prevista de revisión</label>
+                <input 
+                  type="date" className="p-2 border rounded text-sm w-full md:w-auto"
+                  value={fechaRevision} onChange={e => setFechaRevision(e.target.value)} 
+                />
+              </div>
+            )}
             
             <div className="flex gap-2 mt-2">
-              <button 
-                disabled={cargando} onClick={guardarAccion} 
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
-              >
+              <button disabled={cargando} onClick={guardarAccion} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
                 {cargando ? 'Guardando...' : 'Confirmar'}
               </button>
-              <button 
-                disabled={cargando} onClick={() => setMostrarForm(false)} 
-                className="text-slate-500 hover:text-slate-700 px-4 py-2 text-sm font-medium transition-colors"
-              >
+              <button disabled={cargando} onClick={() => setMostrarForm(false)} className="text-slate-500 hover:text-slate-700 px-4 py-2 text-sm font-medium transition-colors">
                 Cancelar
               </button>
             </div>

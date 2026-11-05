@@ -49,7 +49,7 @@ export default function App() {
         <Route path="/asignatura/:id" element={<Asignatura />} />
         <Route path="/asignatura/:asig/clase/:id" element={<Clase />} />
         <Route path="/asignatura/:asig/clase/:id/analisis" element={<AnalisisCompleto />} />
-        <Route path="/intervenciones" element={<MisAcciones />}/>
+        <Route path="/intervenciones" element={<MisAcciones />} />
       </Routes>
     </BrowserRouter>
   );
