@@ -7,6 +7,9 @@
 #   y genera informes PDF de clases y centro.
 # - solo_centro: genera y sube únicamente el informe
 #   del centro, sin ejecutar los modelos de IA.
+# - solo_informes: regenera y sube los informes PDF de
+#   todas las clases y del centro con los datos que ya hay
+#   en Supabase, sin ejecutar la IA ni tocar las alertas.
 #
 # PERIODO:
 # Se selecciona desde GitHub Actions: 1, 2 o 3.
@@ -32,6 +35,7 @@ on:
           - solo_pipeline
           - publicar_todo
           - solo_centro
+          - solo_informes
 
       periodo:
         description: "Periodo académico"
@@ -64,7 +68,7 @@ jobs:
   pipeline:
     if: >-
       github.event_name != 'workflow_dispatch' ||
-      inputs.modo != 'solo_centro'
+      (inputs.modo != 'solo_centro' && inputs.modo != 'solo_informes')
 
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -185,13 +189,14 @@ jobs:
           retention-days: 14
 
   # =====================================================
-  # TRABAJO 2: INFORME INDEPENDIENTE DEL CENTRO
+  # TRABAJO 2: INFORMES PDF SIN EJECUTAR LA IA
+  # (solo_centro: informe del centro · solo_informes: clases y centro)
   # =====================================================
 
   informe_centro:
     if: >-
       github.event_name == 'workflow_dispatch' &&
-      inputs.modo == 'solo_centro'
+      (inputs.modo == 'solo_centro' || inputs.modo == 'solo_informes')
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -223,17 +228,21 @@ jobs:
 
           pip install -r reports/requirements.txt
 
-      # 4. Generar y subir el informe del centro
-      - name: Generar y subir informe del centro
+      # 4. Generar y subir los informes
+      - name: Generar y subir informes
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           PUBLICAR_INFORMES: "true"
           PERIODO: ${{ inputs.periodo }}
+          MODO: ${{ inputs.modo }}
         run: |
-          echo "Iniciando informe del centro..."
-          echo "Periodo seleccionado: $PERIODO"
+          echo "Modo: $MODO · periodo: $PERIODO"
 
-          python reports/main.py --solo-centro --periodo "$PERIODO"
+          if [ "$MODO" = "solo_informes" ]; then
+            python reports/main.py --periodo "$PERIODO"
+          else
+            python reports/main.py --solo-centro --periodo "$PERIODO"
+          fi
 
-          echo "Informe del centro generado y subido."
+          echo "Informes generados y subidos."
