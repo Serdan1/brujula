@@ -17,6 +17,13 @@ const EXCLUIDAS = [
   { titulo: 'Sexo, zona y centro:', texto: 'no entran en el modelo. Solo sirven para comprobar que trata igual a todos.' },
 ];
 
+const LIMITES = [
+  { titulo: 'Sin decisiones automáticas', texto: 'Cada aviso termina en una decisión humana, y queda registrado quién la tomó.' },
+  { titulo: 'Sin rankings', texto: 'No hay listas de mejores y peores alumnos ni porcentajes de riesgo por alumno.' },
+  { titulo: 'Solo lo necesario', texto: 'No se guardan datos familiares, económicos ni de hábitos personales.' },
+  { titulo: 'Cada uno ve lo suyo', texto: 'Un profesor solo ve sus clases y sus asignaturas. La dirección, su centro.' },
+];
+
 export default function ElModelo() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
@@ -63,6 +70,16 @@ export default function ElModelo() {
         Cifras medidas con datos de dos institutos portugueses (curso 2005-06), ampliados con datos sintéticos. Antes de
         usarlo en una escuela, hay que volver a entrenarlo con sus propios datos.
       </p>
+
+      <h2 className="mt-14 text-2xl font-semibold text-[#174A55]">Lo que Brújula no hace</h2>
+      <ul className="mt-6 grid gap-6 sm:grid-cols-2">
+        {LIMITES.map((l) => (
+          <li key={l.titulo} className="border-l-4 border-[#174A55] pl-4">
+            <h3 className="font-semibold">{l.titulo}</h3>
+            <p className="text-sm text-[#64777A]">{l.texto}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { BellRing, Database, UserCheck } from 'lucide-react';
 import { supabase } from '../supabase';
 
 // Portada pública: se muestra antes de iniciar sesión. No consulta datos; la tarjeta es un ejemplo fijo.
 // El resto de apartados están en pages/publico/ y comparten cabecera y pie (Marco.tsx).
 
-const APARTADOS = [
-  { ruta: '/como-funciona', titulo: 'Cómo funciona', texto: 'Tres pasos, y decide el profesor.' },
-  { ruta: '/el-modelo', titulo: 'El modelo, por dentro', texto: 'Qué estima, qué deja fuera y cómo acierta.' },
-  { ruta: '/pocos-recursos', titulo: 'Pocos recursos', texto: 'Pensada para escuelas con menos medios.' },
-  { ruta: '/como-llega', titulo: 'Cómo llega', texto: 'Gratis para quien más lo necesita.' },
+const PASOS = [
+  { icono: Database, titulo: 'La escuela ya tiene los datos', texto: 'Notas, asistencia, prácticas y participación.' },
+  { icono: BellRing, titulo: 'Brújula avisa y explica', texto: 'Quién podría necesitar apoyo y qué datos lo indican.' },
+  { icono: UserCheck, titulo: 'El profesor decide', texto: 'Actúa o descarta el aviso con un motivo.' },
 ];
 
 export default function Portada() {
@@ -85,15 +85,22 @@ export default function Portada() {
         </form>
       </section>
 
-      <nav aria-label="Conoce Brújula" className="pb-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {APARTADOS.map((a) => (
-          <Link key={a.ruta} to={a.ruta}
-            className="group bg-white rounded-xl border border-[#CBD5D4] p-4 hover:border-[#174A55]">
-            <span className="font-semibold text-[#174A55] group-hover:underline underline-offset-4">{a.titulo} →</span>
-            <span className="block mt-1 text-sm text-[#64777A]">{a.texto}</span>
-          </Link>
-        ))}
-      </nav>
+      <section aria-labelledby="como-funciona" className="pb-16">
+        <h2 id="como-funciona" className="text-2xl sm:text-3xl font-bold text-[#174A55]">
+          Cómo funciona. <span className="text-[#64777A]">Tres pasos, y decide el profesor.</span>
+        </h2>
+        <ol className="mt-8 grid gap-4 sm:grid-cols-3">
+          {PASOS.map(({ icono: Icono, titulo, texto }, i) => (
+            <li key={titulo} className="bg-white rounded-xl border border-[#CBD5D4] p-6 flex flex-col items-center text-center">
+              <span className="w-14 h-14 rounded-full bg-[#174A55]/10 flex items-center justify-center">
+                <Icono aria-hidden="true" className="w-7 h-7 text-[#174A55]" />
+              </span>
+              <h3 className="mt-4 font-semibold"><span className="text-[#174A55]">{i + 1}.</span> {titulo}</h3>
+              <p className="mt-1 text-sm text-[#64777A]">{texto}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
     </div>
   );
 }

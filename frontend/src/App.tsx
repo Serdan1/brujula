@@ -7,7 +7,6 @@ import Clase from './pages/Clase';
 import AnalisisCompleto from './pages/AnalisisCompleto';
 import Portada from './pages/Portada';
 import Marco from './pages/publico/Marco';
-import ComoFunciona from './pages/publico/ComoFunciona';
 import ElModelo from './pages/publico/ElModelo';
 import PocosRecursos from './pages/publico/PocosRecursos';
 import ComoLlega from './pages/publico/ComoLlega';
@@ -29,7 +28,6 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Marco />}>
-            <Route path="/como-funciona" element={<ComoFunciona />} />
             <Route path="/el-modelo" element={<ElModelo />} />
             <Route path="/pocos-recursos" element={<PocosRecursos />} />
             <Route path="/como-llega" element={<ComoLlega />} />
