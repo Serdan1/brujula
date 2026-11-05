@@ -1,19 +1,12 @@
 import { Bell, Check, User } from 'lucide-react';
 import { TituloPagina } from './Marco';
 import ComoFunciona from '../../components/ComoFunciona';
+import { useIdioma } from '../../i18n';
 
 // ---- Cifras ----
 // Fuentes: docs/ficha-del-modelo.md (§4.1, §4.2, §6), ml/results/baselines.json (recall 0,835),
 // combinaciones.json (precisión 0,699), red_neuronal.json (MAE 1,054; cobertura 0,804; ancho medio 3,4).
-
-const DATOS_QUE_USA = 'Notas, faltas, asistencia, prácticas, participación y tiempo de estudio.';
-
-const LIMITES = [
-  { titulo: 'Sin decisiones automáticas', texto: 'Cada aviso termina en una decisión humana, y queda registrado quién la tomó.' },
-  { titulo: 'Sin rankings', texto: 'No hay listas de mejores y peores alumnos ni porcentajes de riesgo por alumno.' },
-  { titulo: 'Solo lo necesario', texto: 'No se guardan datos familiares, económicos ni de hábitos personales.' },
-  { titulo: 'Cada uno ve lo suyo', texto: 'Un profesor solo ve sus clases y sus asignaturas. La dirección, su centro.' },
-];
+// Los textos están en src/i18n (elModelo.*).
 
 // Fila de 10 iconos con los primeros "n" en azul petróleo
 function DeCadaDiez({ n, Icono }: { n: number; Icono: typeof User }) {
@@ -45,48 +38,46 @@ function Margen() {
 }
 
 export default function ElModelo() {
+  const { t } = useIdioma();
+  const m = t.elModelo;
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
-      <TituloPagina titulo="El modelo, por dentro"
-        entradilla="Al final de cada trimestre, Brújula estima para cada alumno y asignatura si podría necesitar apoyo para aprobar, y por qué, y su nota final con un margen." />
+      <TituloPagina titulo={m.titulo} entradilla={m.entradilla} />
 
       {/* Qué usa */}
       <div className="mt-10 bg-white rounded-xl border border-[#CBD5D4] p-5 flex items-center gap-4">
         <span className="shrink-0 w-10 h-10 rounded-full bg-[#174A55]/10 flex items-center justify-center">
           <Check aria-hidden="true" className="w-5 h-5 text-[#174A55]" />
         </span>
-        <p><strong className="text-[#174A55]">Usa:</strong> {DATOS_QUE_USA}</p>
+        <p><strong className="text-[#174A55]">{m.usa}</strong> {m.datosQueUsa}</p>
       </div>
 
       {/* Cifras */}
-      <h2 className="mt-14 text-2xl font-semibold text-[#174A55]">Cómo de bien acierta</h2>
+      <h2 className="mt-14 text-2xl font-semibold text-[#174A55]">{m.comoAcierta}</h2>
       <ul className="mt-6 grid gap-4 md:grid-cols-3">
         <li className="bg-white rounded-xl border border-[#CBD5D4] p-5 flex flex-col gap-3">
           <DeCadaDiez n={8} Icono={User} />
-          <p className="text-2xl font-bold text-[#174A55]">8 de cada 10</p>
-          <p className="text-sm">alumnos que acaban necesitando apoyo reciben un aviso al final del 1.º trimestre.</p>
+          <p className="text-2xl font-bold text-[#174A55]">{m.deCadaDiez(8)}</p>
+          <p className="text-sm">{m.cifra1}</p>
         </li>
         <li className="bg-white rounded-xl border border-[#CBD5D4] p-5 flex flex-col gap-3">
           <DeCadaDiez n={7} Icono={Bell} />
-          <p className="text-2xl font-bold text-[#174A55]">7 de cada 10</p>
-          <p className="text-sm">avisos son de alumnos que de verdad acaban necesitando apoyo.</p>
+          <p className="text-2xl font-bold text-[#174A55]">{m.deCadaDiez(7)}</p>
+          <p className="text-sm">{m.cifra2}</p>
         </li>
         <li className="bg-white rounded-xl border border-[#CBD5D4] p-5 flex flex-col gap-3">
           <Margen />
-          <p className="text-2xl font-bold text-[#174A55]">0,5 puntos</p>
-          <p className="text-sm">es lo que se desvía de media la nota estimada, sobre 10. El margen incluye la nota real 8 de cada 10 veces.</p>
+          <p className="text-2xl font-bold text-[#174A55]">{m.puntos}</p>
+          <p className="text-sm">{m.cifra3}</p>
         </li>
       </ul>
 
-      <p className="mt-6 text-xs text-[#64777A] max-w-3xl">
-        Cifras medidas con datos de dos institutos portugueses (curso 2005-06), ampliados con datos sintéticos. Antes de
-        usarlo en una escuela, hay que volver a entrenarlo con sus propios datos.
-      </p>
+      <p className="mt-6 text-xs text-[#64777A] max-w-3xl">{m.nota}</p>
 
-      <h2 className="mt-14 text-2xl font-semibold text-[#174A55]">Lo que Brújula no hace</h2>
+      <h2 className="mt-14 text-2xl font-semibold text-[#174A55]">{m.noHace}</h2>
       <ul className="mt-6 grid gap-6 sm:grid-cols-2">
-        {LIMITES.map((l) => (
-          <li key={l.titulo} className="border-l-4 border-[#174A55] pl-4">
+        {m.limites.map((l, i) => (
+          <li key={i} className="border-l-4 border-[#174A55] pl-4">
             <h3 className="font-semibold">{l.titulo}</h3>
             <p className="text-sm text-[#64777A]">{l.texto}</p>
           </li>
