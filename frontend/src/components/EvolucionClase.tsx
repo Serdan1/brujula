@@ -98,7 +98,7 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
                 <Tooltip formatter={fmt} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="Examen" stroke="#0f3d4c" strokeWidth={3} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="Prácticas*" stroke="#E9B45C" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="Prácticas*" stroke="#E9B45C" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3, strokeDasharray: 'none' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -114,8 +114,8 @@ export default function EvolucionClase({ claseId, asignaturaId }: { claseId: str
                 <YAxis yAxisId="asis" orientation="right" domain={[50, 100]} ticks={[50, 75, 100]} tick={{ fontSize: 12 }} unit="%" />
                 <Tooltip formatter={fmt} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line yAxisId="part" type="monotone" dataKey="Participación*" stroke="#0f3d4c" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3 }} />
-                <Line yAxisId="asis" type="monotone" dataKey="Asistencia*" stroke="#6b8f9a" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3 }} />
+                <Line yAxisId="part" type="monotone" dataKey="Participación*" stroke="#0f3d4c" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3, strokeDasharray: 'none' }} />
+                <Line yAxisId="asis" type="monotone" dataKey="Asistencia*" stroke="#6b8f9a" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3, strokeDasharray: 'none' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
