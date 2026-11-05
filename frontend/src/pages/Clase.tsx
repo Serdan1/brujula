@@ -4,6 +4,7 @@ import { supabase } from '../supabase';
 import { cargarAlertas, nombreClase, num } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 import BotonInforme from '../components/BotonInforme';
+import EvolucionClase from '../components/EvolucionClase';
 
 export default function Clase() {
   const { asig, id } = useParams();
@@ -124,6 +125,8 @@ export default function Clase() {
         </table>
       </div>
       <p className="text-xs text-gray-500 mt-2">* Variables sintéticas en esta demo. La tabla no está ordenada por rendimiento. Pulsa en un alumno para ver su ficha.</p>
+
+      {id && asig && <EvolucionClase claseId={id} asignaturaId={asig} />}
     </div>
   );
 }
