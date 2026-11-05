@@ -27,6 +27,15 @@ export function olvidarProfesor() {
 
 export const nombreClase = (c: any) => (c ? `${c.curso}º ${c.letra}` : '');
 
+// Números con formato español: coma decimal (12,6 en vez de 12.6)
+export function num(v: any, decimales = 1): string {
+  if (v === null || v === undefined || v === '' || isNaN(Number(v))) return '-';
+  return Number(v).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: decimales });
+}
+
+// Convierte los decimales con punto de un texto ("10.6", "68 %") a coma
+export const comaDecimal = (t: string) => t.replace(/(\d)\.(\d)/g, '$1,$2');
+
 // Textos para cada motivo de alerta
 export const MOTIVOS: Record<string, { corto: string; grupo: string }> = {
   riesgo_de_suspenso: { corto: 'Podría necesitar apoyo', grupo: 'podrían necesitar apoyo' },
@@ -55,7 +64,7 @@ export function motivosDe(alerta: any): { variable: string; nombre: string; valo
     .map((v: any) => ({
       variable: v.variable,
       nombre: v.nombre ?? NOMBRES_VARIABLES[v.variable] ?? v.variable,
-      valor: String(v.valor ?? ''),
+      valor: comaDecimal(String(v.valor ?? '')),
     }));
 }
 

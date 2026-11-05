@@ -5,12 +5,16 @@ import Inicio from './pages/Inicio';
 import Asignatura from './pages/Asignatura';
 import Clase from './pages/Clase';
 import AnalisisCompleto from './pages/AnalisisCompleto';
+import Portada from './pages/Portada';
+import Marco from './pages/publico/Marco';
+import ElModelo from './pages/publico/ElModelo';
+import PocosRecursos from './pages/publico/PocosRecursos';
+import ComoLlega from './pages/publico/ComoLlega';
+import ComoFuncionaPagina from './pages/ComoFuncionaPagina';
+import Alumno from './pages/Alumno';
 
 export default function App() {
   const [session, setSession] = useState<any>(null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -18,26 +22,19 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Sin sesión: portada y páginas públicas. Cualquier otra ruta lleva a la portada.
   if (!session) {
     return (
-      <div className="p-8 bg-[#fdfbf7] min-h-screen flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-bold text-[#0f3d4c] mb-2">Brújula</h1>
-        <p className="text-gray-600 mb-8">Alertas explicables para que la escuela aprenda de sus datos</p>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setError('');
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) setError('Correo o contraseña incorrectos.');
-          }}
-          className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 flex flex-col gap-4 w-80"
-        >
-          <input type="email" placeholder="Correo" value={email} onChange={(e) => setEmail(e.target.value)} className="border p-2 rounded" required />
-          <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} className="border p-2 rounded" required />
-          {error && <p className="text-sm text-red-700">{error}</p>}
-          <button type="submit" className="bg-[#0f3d4c] text-white p-2 rounded">Entrar</button>
-        </form>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Marco />}>
+            <Route path="/el-modelo" element={<ElModelo />} />
+            <Route path="/pocos-recursos" element={<PocosRecursos />} />
+            <Route path="/como-llega" element={<ComoLlega />} />
+            <Route path="*" element={<Portada />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     );
   }
 
@@ -48,6 +45,8 @@ export default function App() {
         <Route path="/asignatura/:id" element={<Asignatura />} />
         <Route path="/asignatura/:asig/clase/:id" element={<Clase />} />
         <Route path="/asignatura/:asig/clase/:id/analisis" element={<AnalisisCompleto />} />
+        <Route path="/asignatura/:asig/clase/:clase/alumno/:id" element={<Alumno />} />
+        <Route path="/como-funciona" element={<ComoFuncionaPagina />} />
       </Routes>
     </BrowserRouter>
   );
