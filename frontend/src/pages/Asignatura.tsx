@@ -36,10 +36,22 @@ export default function Asignatura() {
   const pendientesDe = (claseId: number) => alertas.filter((a) => a.clase_id === claseId && a.nivel === 'alumno' && a.estado === 'nueva').length;
   const grupo = alertas.filter((a) => a.nivel !== 'alumno');
   const deAlumnos = alertas.filter((a) => a.nivel === 'alumno');
+  const alertasPorUrgencia = [
+    { severidad: 'alta', nombre: 'Prioridad alta', alertas: deAlumnos.filter((a) => a.severidad === 'alta') },
+    { severidad: 'media', nombre: 'Prioridad media', alertas: deAlumnos.filter((a) => a.severidad !== 'alta') },
+  ].filter((grupoUrgencia) => grupoUrgencia.alertas.length > 0);
 
   return (
     <div className="p-8 bg-[#fdfbf7] min-h-screen max-w-5xl mx-auto">
-      <Link to="/" className="text-sm text-gray-500 hover:text-[#0f3d4c] underline mb-4 inline-block">← Inicio</Link>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <Link to="/" className="text-sm text-gray-500 hover:text-[#0f3d4c] underline">← Inicio</Link>
+        <Link
+          to="/intervenciones?tipo=intervencion"
+          className="rounded bg-[#0f3d4c] px-4 py-2 text-sm font-medium text-white hover:bg-[#164f60]"
+        >
+          Próximas revisiones
+        </Link>
+      </div>
       <h1 className="text-2xl font-bold text-[#0f3d4c] mb-6">{nombre}</h1>
 
       <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">Mis clases</h2>
@@ -72,11 +84,47 @@ export default function Asignatura() {
       )}
 
       <h2 className="text-lg font-semibold text-[#0f3d4c] mb-3">Alertas de alumnos ({deAlumnos.length})</h2>
-      <div className="flex flex-col gap-3">
-        {deAlumnos.map((a) => (
-          <TarjetaAlerta key={a.id} alerta={a} />
-        ))}
-      </div>
+      {loading ? (
+        <p className="text-gray-500">Cargando alertas...</p>
+      ) : alertasPorUrgencia.length === 0 ? (
+        <p className="text-gray-600">No hay alertas de alumnos.</p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {alertasPorUrgencia.map((grupoUrgencia) => (
+            <details
+              key={grupoUrgencia.severidad}
+              open={grupoUrgencia.severidad === 'alta'}
+              className="rounded-lg border border-gray-200 bg-white"
+            >
+              <summary className="cursor-pointer list-none p-4 font-semibold text-[#0f3d4c] marker:hidden">
+                <span className={`mr-2 inline-block rounded px-2 py-0.5 text-xs ${
+                  grupoUrgencia.severidad === 'alta'
+                    ? 'bg-amber-100 text-amber-900'
+                    : 'bg-gray-100 text-gray-700'
+                }`}>
+                  {grupoUrgencia.nombre}
+                </span>
+                <span className="text-sm font-normal text-gray-600">
+                  {grupoUrgencia.alertas.length} {grupoUrgencia.alertas.length === 1 ? 'alerta' : 'alertas'} · pulsa para desplegar
+                </span>
+              </summary>
+              <div className="flex flex-col gap-2 border-t border-gray-100 p-3">
+                {grupoUrgencia.alertas.map((alerta) => (
+                  <details key={alerta.id} className="rounded-md border border-gray-200">
+                    <summary className="cursor-pointer p-3 text-sm font-medium text-[#0f3d4c]">
+                      {alerta.alumno?.nombre ?? 'Alumno'}: {alerta.titulo}
+                      <span className="ml-2 text-xs font-normal text-gray-500">{alerta.estado}</span>
+                    </summary>
+                    <div className="px-3 pb-3">
+                      <TarjetaAlerta alerta={alerta} />
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
