@@ -1,5 +1,6 @@
 import { Bell, Check, User } from 'lucide-react';
 import { TituloPagina } from './Marco';
+import ComoFunciona from '../../components/ComoFunciona';
 
 // ---- Cifras ----
 // Fuentes: docs/ficha-del-modelo.md (§4.1, §4.2, §6), ml/results/baselines.json (recall 0,835),
@@ -91,6 +92,11 @@ export default function ElModelo() {
           </li>
         ))}
       </ul>
+
+      {/* Detalle técnico: datos, variables excluidas, comparación de modelos y equidad */}
+      <div className="mt-16">
+        <ComoFunciona soloDetalle />
+      </div>
     </div>
   );
 }
