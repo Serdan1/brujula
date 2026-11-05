@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { cargarAlertas, nombreClase, num } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
@@ -9,6 +9,8 @@ import ImportarTrimestre from '../components/ImportarTrimestre';
 
 export default function Clase() {
   const { asig, id } = useParams();
+  const [params] = useSearchParams();
+  const resaltado = params.get('alumno');
   const [clase, setClase] = useState<any>(null);
   const [alumnos, setAlumnos] = useState<any[]>([]);
   const [alertas, setAlertas] = useState<any[]>([]);
@@ -37,6 +39,13 @@ export default function Clase() {
   useEffect(() => {
     cargar();
   }, [id, asig]);
+
+  // Si se llega desde una alerta (?alumno=), se abre y se resalta ese alumno
+  useEffect(() => {
+    if (loading || !resaltado) return;
+    setAbierto(Number(resaltado));
+    document.getElementById(`alumno-${resaltado}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [loading, resaltado]);
 
   const alertasDe = (alumnoId: number) => alertas.filter((a) => a.nivel === 'alumno' && a.alumno_id === alumnoId);
   const deGrupo = alertas.filter((a) => a.nivel === 'clase');
@@ -88,7 +97,7 @@ export default function Clase() {
                 const alta = suyas.some((a) => a.severidad === 'alta');
                 return (
                   <Fragment key={alumno.id}>
-                    <tr className={`border-b border-gray-100 ${suyas.length ? (alta ? 'bg-amber-50' : 'bg-amber-50/40') : ''}`}>
+                    <tr id={`alumno-${alumno.id}`} className={`border-b border-gray-100 ${resaltado === String(alumno.id) ? 'bg-yellow-50 ring-2 ring-inset ring-yellow-400' : suyas.length ? (alta ? 'bg-amber-50' : 'bg-amber-50/40') : ''}`}>
                       <td className="p-3 font-medium"><Link to={`/asignatura/${asig}/clase/${id}/alumno/${alumno.id}`} className="text-[#0f3d4c] hover:underline">{alumno.nombre}</Link></td>
                       <td className="p-3">{num(r.nota_examen)}</td>
                       <td className="p-3">{num(r.nota_practicas)}</td>

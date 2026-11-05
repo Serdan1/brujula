@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MOTIVOS, SINTETICAS, descartarAlerta, marcarRevisada, motivosDe, nombreClase } from '../datos';
 import FormularioAccion from './FormularioAccion';
 
@@ -62,6 +63,14 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
 {mostrarContexto && contexto && alerta.nivel === 'alumno' && (
   <p className="text-sm text-gray-600">
     {contexto}
+    {conAcciones && alerta.clase_id && alerta.alumno_id && (
+      <Link
+        to={`/asignatura/${alerta.asignatura_id}/clase/${alerta.clase_id}?alumno=${alerta.alumno_id}`}
+        className="ml-2 text-[#174A55] underline hover:no-underline"
+      >
+        Ver en la clase →
+      </Link>
+    )}
   </p>
 )}
 

@@ -12,6 +12,7 @@ import PocosRecursos from './pages/publico/PocosRecursos';
 import ComoLlega from './pages/publico/ComoLlega';
 import ComoFuncionaPagina from './pages/ComoFuncionaPagina';
 import Alumno from './pages/Alumno';
+import MisAcciones from './pages/MisAcciones';
 
 export default function App() {
   const [session, setSession] = useState<any>(null);
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/asignatura/:asig/clase/:id/analisis" element={<AnalisisCompleto />} />
         <Route path="/asignatura/:asig/clase/:clase/alumno/:id" element={<Alumno />} />
         <Route path="/como-funciona" element={<ComoFuncionaPagina />} />
+        <Route path="/intervenciones" element={<MisAcciones />} />
       </Routes>
     </BrowserRouter>
   );

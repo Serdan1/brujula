@@ -133,15 +133,23 @@ export default function Inicio() {
             </p>
           </div>
 
+          <div className="flex flex-wrap items-center gap-3 self-start">
+            <Link
+              to="/intervenciones?tipo=intervencion"
+              className="rounded-xl bg-[#174A55] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#123b44]"
+            >
+              Próximas revisiones
+            </Link>
           <button
             onClick={() => {
               olvidarProfesor();
               supabase.auth.signOut();
             }}
-            className="self-start rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-[#174A55] transition hover:border-[#174A55] hover:bg-gray-50"
+            className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-[#174A55] transition hover:border-[#174A55] hover:bg-gray-50"
           >
             Cerrar sesión
           </button>
+          </div>
         </header>
 
         {/* INDICADORES */}
