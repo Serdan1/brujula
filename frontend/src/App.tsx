@@ -11,6 +11,8 @@ import ComoFunciona from './pages/publico/ComoFunciona';
 import ElModelo from './pages/publico/ElModelo';
 import PocosRecursos from './pages/publico/PocosRecursos';
 import ComoLlega from './pages/publico/ComoLlega';
+import ComoFuncionaPagina from './pages/ComoFuncionaPagina';
+import Alumno from './pages/Alumno';
 
 export default function App() {
   const [session, setSession] = useState<any>(null);
@@ -45,6 +47,8 @@ export default function App() {
         <Route path="/asignatura/:id" element={<Asignatura />} />
         <Route path="/asignatura/:asig/clase/:id" element={<Clase />} />
         <Route path="/asignatura/:asig/clase/:id/analisis" element={<AnalisisCompleto />} />
+        <Route path="/asignatura/:asig/clase/:clase/alumno/:id" element={<Alumno />} />
+        <Route path="/como-funciona" element={<ComoFuncionaPagina />} />
       </Routes>
     </BrowserRouter>
   );

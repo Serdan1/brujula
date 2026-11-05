@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { cargarAlertas, nombreClase } from '../datos';
+import { cargarAlertas, nombreClase, num } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 import BotonInforme from '../components/BotonInforme';
 
@@ -86,11 +86,11 @@ export default function Clase() {
                 return (
                   <Fragment key={alumno.id}>
                     <tr className={`border-b border-gray-100 ${suyas.length ? (alta ? 'bg-amber-50' : 'bg-amber-50/40') : ''}`}>
-                      <td className="p-3 font-medium text-[#0f3d4c]">{alumno.nombre}</td>
-                      <td className="p-3">{r.nota_examen ?? '-'}</td>
-                      <td className="p-3">{r.nota_practicas ?? '-'}</td>
-                      <td className="p-3">{r.participacion ?? '-'}/10</td>
-                      <td className="p-3">{r.asistencia != null ? `${r.asistencia}%` : '-'}</td>
+                      <td className="p-3 font-medium"><Link to={`/asignatura/${asig}/clase/${id}/alumno/${alumno.id}`} className="text-[#0f3d4c] hover:underline">{alumno.nombre}</Link></td>
+                      <td className="p-3">{num(r.nota_examen)}</td>
+                      <td className="p-3">{num(r.nota_practicas)}</td>
+                      <td className="p-3">{num(r.participacion)}/10</td>
+                      <td className="p-3">{r.asistencia != null ? `${num(r.asistencia)} %` : '-'}</td>
                       <td className="p-3">
                         {suyas.length > 0 ? (
                           <button
@@ -123,7 +123,7 @@ export default function Clase() {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-gray-500 mt-2">* Variables sintéticas en esta demo. La tabla no está ordenada por rendimiento.</p>
+      <p className="text-xs text-gray-500 mt-2">* Variables sintéticas en esta demo. La tabla no está ordenada por rendimiento. Pulsa en un alumno para ver su ficha.</p>
     </div>
   );
 }
