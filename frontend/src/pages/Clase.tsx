@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { cargarAlertas, nombreClase, num } from '../datos';
+import { cargarAlertas, nombreClase, num, sobre10 } from '../datos';
 import TarjetaAlerta from '../components/TarjetaAlerta';
 import BotonInforme from '../components/BotonInforme';
 import EvolucionClase from '../components/EvolucionClase';
@@ -99,8 +99,8 @@ export default function Clase() {
                   <Fragment key={alumno.id}>
                     <tr id={`alumno-${alumno.id}`} className={`border-b border-gray-100 ${resaltado === String(alumno.id) ? 'bg-yellow-50 ring-2 ring-inset ring-yellow-400' : suyas.length ? (alta ? 'bg-amber-50' : 'bg-amber-50/40') : ''}`}>
                       <td className="p-3 font-medium"><Link to={`/asignatura/${asig}/clase/${id}/alumno/${alumno.id}`} className="text-[#0f3d4c] hover:underline">{alumno.nombre}</Link></td>
-                      <td className="p-3">{num(r.nota_examen)}</td>
-                      <td className="p-3">{num(r.nota_practicas)}</td>
+                      <td className="p-3">{num(sobre10(r.nota_examen), 2)}</td>
+                      <td className="p-3">{num(sobre10(r.nota_practicas), 2)}</td>
                       <td className="p-3">{num(r.participacion)}/10</td>
                       <td className="p-3">{r.asistencia != null ? `${num(r.asistencia)} %` : '-'}</td>
                       <td className="p-3">

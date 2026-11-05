@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../supabase';
-import { SINTETICAS, cargarAlertas, comaDecimal, nombreClase, num } from '../datos';
+import { NOTA_MAX, SINTETICAS, cargarAlertas, comaDecimal, nombreClase, num, sobre10, valorNota } from '../datos';
 
 // Análisis de UNA clase: solo información propia de esa clase.
 // Cómo se eligió el modelo y su equidad están en el apartado «Cómo funciona Brújula».
@@ -75,9 +75,9 @@ export default function AnalisisCompleto() {
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <p className="text-sm text-gray-600">Nota final estimada media</p>
           <p className="text-3xl font-bold text-[#0f3d4c]">
-            {num(resumen.nota_estimada_media)} <span className="text-base font-normal text-gray-500">/ 20</span>
+            {num(sobre10(resumen.nota_estimada_media))} <span className="text-base font-normal text-gray-500">/ {NOTA_MAX}</span>
           </p>
-          <p className="text-xs text-gray-500">Red neuronal · error medio ±{num(error)} puntos</p>
+          <p className="text-xs text-gray-500">Red neuronal · error medio ±{num(sobre10(error), 2)} puntos</p>
         </div>
       </div>
 
@@ -120,7 +120,7 @@ export default function AnalisisCompleto() {
                 <p className="font-medium text-[#0f3d4c]">{nombres[a.alumno_id] ?? `Alumno ${a.alumno_id}`}</p>
                 <p className="text-sm text-gray-700">
                   {(a.motivos ?? []).length
-                    ? a.motivos.map((m: any) => `${m.nombre}${SINTETICAS.has(m.variable) ? '*' : ''}: ${comaDecimal(String(m.valor))}`).join(' · ')
+                    ? a.motivos.map((m: any) => `${m.nombre}${SINTETICAS.has(m.variable) ? '*' : ''}: ${comaDecimal(valorNota(m.variable, String(m.valor)))}`).join(' · ')
                     : 'Combinación de varios factores pequeños'}
                 </p>
               </li>

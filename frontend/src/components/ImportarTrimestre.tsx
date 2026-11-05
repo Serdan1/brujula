@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { MOTIVOS, miProfesor, num } from '../datos';
+import { ESCALA, MOTIVOS, NOTA_MAX, miProfesor, num } from '../datos';
 
 // Importar desde un CSV (exportado de Excel) las notas y la asistencia del 2.º o 3.º trimestre de una clase.
 // Solo lo ve el profesor que imparte esta asignatura en esta clase; nunca un director.
@@ -19,7 +19,13 @@ const NOMBRE: Record<Campo, string> = {
   asistencia: 'la asistencia',
   faltas: 'el número de faltas',
 };
-const MAXIMO: Record<Campo, number> = { nota_examen: 20, nota_practicas: 20, participacion: 10, asistencia: 100, faltas: Infinity };
+// Las notas se escriben sobre 10 (como se ven en la web); Supabase las guarda sobre 20
+const MAXIMO: Record<Campo, number> = { nota_examen: NOTA_MAX, nota_practicas: NOTA_MAX, participacion: 10, asistencia: 100, faltas: Infinity };
+const aGuardar = (v: Record<Campo, number | null>) => ({
+  ...v,
+  nota_examen: v.nota_examen === null ? null : v.nota_examen * ESCALA,
+  nota_practicas: v.nota_practicas === null ? null : v.nota_practicas * ESCALA,
+});
 
 type Fila = {
   linea: number;                       // línea del archivo (la 1 es la cabecera)
@@ -186,7 +192,7 @@ export default function ImportarTrimestre({ claseId, asignaturaId, onGuardado }:
       p_clase: Number(claseId),
       p_asignatura: Number(asignaturaId),
       p_periodo: periodo,
-      p_filas: filas.map((f) => ({ alumno_id: f.alumnoId, ...f.valores })),
+      p_filas: filas.map((f) => ({ alumno_id: f.alumnoId, ...aGuardar(f.valores) })),
     });
     setGuardando(false);
     if (error) return setGeneral([`No se ha podido guardar: ${error.message}`]);

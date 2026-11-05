@@ -26,10 +26,10 @@ function DeCadaDiez({ n, Icono }: { n: number; Icono: typeof User }) {
   );
 }
 
-// Escala de 0 a 20 con una nota estimada de ejemplo y su margen (ancho medio real: 3,4 puntos)
+// Escala de 0 a 10 con una nota estimada de ejemplo y su margen (ancho medio real: 1,7 puntos)
 function Margen() {
-  const estimada = 11, ancho = 3.4;
-  const pct = (v: number) => `${(v / 20) * 100}%`;
+  const estimada = 5.5, ancho = 1.7;
+  const pct = (v: number) => `${(v / 10) * 100}%`;
   return (
     <div aria-hidden="true">
       <div className="relative h-5">
@@ -39,7 +39,7 @@ function Margen() {
         <div className="absolute top-1/2 w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#174A55]"
           style={{ left: pct(estimada) }} />
       </div>
-      <div className="flex justify-between text-xs text-[#64777A]"><span>0</span><span>10</span><span>20</span></div>
+      <div className="flex justify-between text-xs text-[#64777A]"><span>0</span><span>5</span><span>10</span></div>
     </div>
   );
 }
@@ -73,8 +73,8 @@ export default function ElModelo() {
         </li>
         <li className="bg-white rounded-xl border border-[#CBD5D4] p-5 flex flex-col gap-3">
           <Margen />
-          <p className="text-2xl font-bold text-[#174A55]">1 punto</p>
-          <p className="text-sm">es lo que se desvía de media la nota estimada, sobre 20. El margen incluye la nota real 8 de cada 10 veces.</p>
+          <p className="text-2xl font-bold text-[#174A55]">0,5 puntos</p>
+          <p className="text-sm">es lo que se desvía de media la nota estimada, sobre 10. El margen incluye la nota real 8 de cada 10 veces.</p>
         </li>
       </ul>
 

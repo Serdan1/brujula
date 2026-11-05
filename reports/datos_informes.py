@@ -2,6 +2,8 @@
 from datetime import date
 from collections import defaultdict
 
+from escala import sobre10
+
 
 # =====================================================
 # CONFIGURACIÓN GENERAL
@@ -140,7 +142,7 @@ def obtener_datos_clase(modo="demo"):
         "fecha": fecha_actual(),
         "fuente": "Datos ficticios de demostración",
         "total_alumnos": 25,
-        "nota_media": 13.5,
+        "nota_media": 6.75,
         "asistencia_media": 92,
         "total_alertas": 3,
         "alertas": [
@@ -187,21 +189,21 @@ def obtener_datos_centro(modo="demo"):
             {
                 "nombre": "3º A",
                 "alumnos": 25,
-                "nota_media": 13.5,
+                "nota_media": 6.75,
                 "asistencia": 92,
                 "alertas": 3
             },
             {
                 "nombre": "3º B",
                 "alumnos": 25,
-                "nota_media": 14.2,
+                "nota_media": 7.1,
                 "asistencia": 95,
                 "alertas": 2
             },
             {
                 "nombre": "3º C",
                 "alumnos": 25,
-                "nota_media": 12.8,
+                "nota_media": 6.4,
                 "asistencia": 89,
                 "alertas": 3
             }
@@ -275,11 +277,8 @@ def obtener_datos_clase_reales(
             registro["n_alumnos"]
         ),
 
-        "nota_media": (
-            round(float(registro["media_examen"]), 2)
-            if registro["media_examen"] is not None
-            else None
-        ),
+        # Supabase guarda las notas sobre 20; el informe las muestra sobre 10
+        "nota_media": sobre10(registro["media_examen"]),
 
         "asistencia_media": (
             round(float(registro["media_asistencia"]), 2)
@@ -399,7 +398,7 @@ def obtener_datos_centro_reales(cliente, periodo, escuela_id=None):
         if registro["media_examen"] is not None:
             clase["notas"].append(
                 (
-                    registro["media_examen"],
+                    sobre10(registro["media_examen"]),
                     n_alumnos
                 )
             )
