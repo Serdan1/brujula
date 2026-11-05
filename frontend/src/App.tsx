@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { supabase } from './supabase';
-import Inicio from './pages/Inicio';
+import InicioSegunRol from './pages/InicioSegunRol';
 import Asignatura from './pages/Asignatura';
 import Clase from './pages/Clase';
 import AnalisisCompleto from './pages/AnalisisCompleto';
@@ -41,7 +41,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Inicio />} />
+        <Route path="/" element={<InicioSegunRol />} />
         <Route path="/asignatura/:id" element={<Asignatura />} />
         <Route path="/asignatura/:asig/clase/:id" element={<Clase />} />
         <Route path="/asignatura/:asig/clase/:id/analisis" element={<AnalisisCompleto />} />
