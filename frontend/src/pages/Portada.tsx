@@ -36,22 +36,32 @@ export default function Portada() {
             cada aviso y espacio para decidir qué hacer.
           </p>
 
-          {/* Ejemplo ilustrativo: datos inventados, sin conexión a la base de datos */}
-          <div className="mt-8 max-w-md rounded-xl border border-[#E9B45C] bg-[#F9E9C9] p-4" aria-label="Ejemplo de aviso">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[#E9B45C] text-[#24343A]">Prioridad alta</span>
-              <span className="text-xs text-[#78541B]">Podría necesitar apoyo</span>
+          {/* Ejemplo ilustrativo: ventana de la app con datos inventados, sin conexión a la base de datos */}
+          <div className="mt-8 rounded-2xl border border-[#CBD5D4] bg-white shadow-sm overflow-hidden" aria-label="Ejemplo de la aplicación con datos ficticios">
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-[#CBD5D4] bg-[#F7F4ED]" aria-hidden="true">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#CBD5D4]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#CBD5D4]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#CBD5D4]" />
+              <span className="ml-2 text-xs text-[#64777A]">Brújula · Portugués</span>
             </div>
-            <p className="font-semibold text-[#174A55]">Podría necesitar apoyo en Portugués</p>
-            <p className="text-sm text-[#64777A]">Alumna de 10.º C · ejemplo ficticio</p>
-            <p className="mt-2 text-sm">Por qué salta:</p>
-            <ul className="text-sm list-disc pl-5">
-              <li>Nota del primer periodo: <strong>9</strong></li>
-              <li>Asistencia: <strong>68 %</strong></li>
-            </ul>
-            <div className="mt-3 flex flex-wrap items-center gap-3" aria-hidden="true">
-              <span className="text-xs px-3 py-1 rounded-lg bg-[#174A55] text-white">Registrar acción</span>
-              <span className="text-xs text-[#64777A]">Descartar con motivo</span>
+            <div className="p-4">
+              <div className="rounded-xl border border-[#E9B45C] bg-[#F9E9C9] p-4">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[#E9B45C] text-[#24343A]">Prioridad alta</span>
+                  <span className="text-xs text-[#78541B]">Podría necesitar apoyo</span>
+                </div>
+                <p className="font-semibold text-[#174A55]">Podría necesitar apoyo en Portugués</p>
+                <p className="text-sm text-[#64777A]">Alumna de 10.º C · ejemplo ficticio</p>
+                <p className="mt-2 text-sm">Por qué salta:</p>
+                <ul className="text-sm list-disc pl-5">
+                  <li>Nota del primer periodo: <strong>9</strong></li>
+                  <li>Asistencia: <strong>68 %</strong></li>
+                </ul>
+                <div className="mt-3 flex flex-wrap items-center gap-3" aria-hidden="true">
+                  <span className="text-xs px-3 py-1 rounded-lg bg-[#174A55] text-white">Registrar acción</span>
+                  <span className="text-xs text-[#64777A]">Descartar con motivo</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
