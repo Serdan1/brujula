@@ -259,6 +259,11 @@ const pt: Diccionario = {
     notaTabla: '* Dados sintéticos nesta demo. Só se mostram grupos de 5 ou mais alunos.',
     clases: 'Turmas',
     pendientes: (n: number) => `${n} ${n === 1 ? 'pendente' : 'pendentes'}`,
+    filtros: 'Filtros',
+    filtroCurso: 'Ano',
+    todos: 'Todos',
+    filtroPrioridad: 'Prioridade',
+    todas: 'Todas',
   },
 
   asignatura: {
@@ -410,7 +415,7 @@ const pt: Diccionario = {
     intro: 'Descarregue o modelo, preencha-o no Excel e carregue-o. O Brújula revê os dados antes de guardar.',
     trimestre: 'Período',
     plantilla: 'Descarregar modelo',
-    importar: 'Importar .csv',
+    importar: 'Importar Excel',
     resumen: (guardadas: number, total: number, detalle: string) =>
       `${guardadas} ${guardadas === 1 ? 'aluno guardado' : 'alunos guardados'}, `
       + `${total === 0 ? 'nenhum alerta novo' : `${total} ${total === 1 ? 'alerta novo' : 'alertas novos'}`}`

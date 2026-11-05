@@ -295,32 +295,88 @@
         su peso no es un hallazgo sobre el aprendizaje.
     </p>
 
-    <h2>3. Interpretación de los resultados</h2>
+    <h2>3. Por dónde empezar</h2>
 
+    {% if sin_accion %}
     <p>
-        Los indicadores académicos permiten analizar
-        el rendimiento general de la clase y detectar
-        posibles necesidades de seguimiento educativo.
+        Alumnos con <strong>prioridad alta</strong> que todavía no tienen ninguna acción registrada.
+        Conviene revisarlos primero.
     </p>
+    <table>
+        <thead>
+            <tr><th>Alumno</th><th>Motivo</th><th>Por qué</th></tr>
+        </thead>
+        <tbody>
+            {% for a in sin_accion %}
+            <tr class="alta">
+                <td>{{ a.alumno }}</td>
+                <td>{{ a.motivo }}</td>
+                <td>
+                    <ul class="motivos">
+                        {% for m in a.detalle %}<li>{{ m }}</li>{% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="sin-alertas">
+        <p>Todos los alumnos con prioridad alta tienen ya alguna acción registrada, o no hay ninguno.</p>
+    </div>
+    {% endif %}
 
+    {% if acciones_clase %}
+    <h3>Acciones registradas en esta clase</h3>
+    <table>
+        <thead>
+            <tr><th>Alumno</th><th>Acción</th><th>Revisar el</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+            {% for a in acciones_clase %}
+            <tr>
+                <td>{{ a.alumno }}</td>
+                <td>{{ a.tipo }}</td>
+                <td>{{ a.revision or '—' }}</td>
+                <td>{{ a.estado }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <h2>4. Qué vigilar en la clase</h2>
+
+    {% if vigilar %}
     <p>
-        Las alertas y las predicciones de inteligencia
-        artificial son herramientas de apoyo para
-        el profesorado. No constituyen diagnósticos
-        ni sustituyen la valoración del docente.
+        Cuántos alumnos tienen cada tipo de alerta y una idea que suele ayudar.
+        Son orientaciones: la decisión es siempre del profesor.
     </p>
+    <table>
+        <thead>
+            <tr><th>Motivo</th><th>Alumnos</th><th>Idea de actuación</th></tr>
+        </thead>
+        <tbody>
+            {% for v in vigilar %}
+            <tr>
+                <td>{{ v.motivo }}</td>
+                <td>{{ v.alumnos }}</td>
+                <td>{{ v.idea }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="sin-alertas">
+        <p>No hay alertas activas en esta clase y asignatura.</p>
+    </div>
+    {% endif %}
 
-    <h2>4. Información del informe</h2>
-
-    <p>
-        <strong>Fuente de datos:</strong>
-        {{ fuente }}, alerta y analisis_clase (modelo de alertas logística + LightGBM;
-        nota estimada con red neuronal)
-    </p>
-
-    <p>
-        <strong>Periodo analizado:</strong>
-        {{ periodo }}
+    <p class="nota">
+        Las alertas y las estimaciones son herramientas de apoyo para el profesorado:
+        no son diagnósticos ni sustituyen su valoración.
+        Fuente: {{ fuente }}, alertas y análisis del modelo (alertas con logística + LightGBM;
+        nota estimada con red neuronal). Periodo analizado: {{ periodo }}.
     </p>
 
     <div class="pie">

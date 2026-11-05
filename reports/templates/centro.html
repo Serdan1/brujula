@@ -128,78 +128,76 @@
         </tbody>
     </table>
 
-    <!-- 3. EQUIDAD DEL MODELO -->
-    <!-- Solo se muestra si existen métricas reales -->
+    <!-- 3. DÓNDE PONER EL FOCO -->
+    <h2>3. Dónde poner el foco</h2>
 
-    {% if equidad %}
-
-    <h2>3. Equidad del modelo</h2>
-
-    <p>
-        Calculada con los alumnos de los dos centros. Sexo, zona y escuela no entran
-        al modelo: solo se usan para auditarlo.
-    </p>
-
+    {% if foco_clases %}
+    <h3>Clases con más alumnos con alerta</h3>
     <table>
         <thead>
-            <tr>
-                <th>Grupo</th>
-                <th>Alumnos</th>
-                <th>Detectados</th>
-                <th>Falsas alarmas</th>
-            </tr>
+            <tr><th>Clase</th><th>Alumnos</th><th>Alumnos con alerta</th></tr>
         </thead>
         <tbody>
-            {% for g in equidad %}
+            {% for c in foco_clases %}
             <tr>
-                <td>{{ g.grupo }}</td>
-                <td>{{ g.n }}</td>
-                <td>{{ g.detectados }} %</td>
-                <td>{{ g.falsas_alarmas }} %</td>
+                <td>{{ c.nombre }}</td>
+                <td>{{ c.alumnos }}</td>
+                <td>{{ c.alertas }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-
-    <p>
-        El modelo detecta por igual a todos los grupos, pero da más falsas alarmas en
-        zona rural. Por eso ninguna alerta decide nada: el profesorado la revisa y puede
-        descartarla.
-    </p>
-
     {% endif %}
 
-    <!-- 4. ACCIONES DE SEGUIMIENTO -->
-    <!-- Solo se muestra si existen acciones -->
-
-    {% if acciones %}
-
-    <h2>
-        {% if equidad %}
-            4. Acciones de seguimiento
-        {% else %}
-            3. Acciones de seguimiento
-        {% endif %}
-    </h2>
-
+    {% if foco_asignaturas %}
+    <h3>Alumnos con alerta por asignatura</h3>
     <table>
         <thead>
-            <tr>
-                <th>Tipo de acción</th>
-                <th>Cantidad</th>
-            </tr>
+            <tr><th>Asignatura</th><th>Alumnos con alerta</th></tr>
         </thead>
-
         <tbody>
-            {% for accion in acciones %}
-            <tr>
-                <td>{{ accion.tipo }}</td>
-                <td>{{ accion.cantidad }}</td>
-            </tr>
+            {% for a in foco_asignaturas %}
+            <tr><td>{{ a.asignatura }}</td><td>{{ a.alumnos }}</td></tr>
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
 
+    {% if avisos_grupo %}
+    <h3>Avisos de grupo</h3>
+    {% for g in avisos_grupo %}
+    <p>
+        <strong>{{ g.titulo }}</strong>{% if g.alta %} (prioridad alta){% endif %}<br>
+        {{ g.descripcion }}
+    </p>
+    {% endfor %}
+    {% if avisos_mas %}<p class="nota">Y {{ avisos_mas }} avisos de grupo más: se pueden consultar en la web.</p>{% endif %}
+    {% endif %}
+
+    <!-- 4. SEGUIMIENTO DEL PROFESORADO -->
+    <h2>4. Seguimiento del profesorado</h2>
+
+    <div class="resumen">
+        <p>Alertas de alumnos: {{ seguimiento.total }}</p>
+        <p>Pendientes de revisar: {{ seguimiento.pendientes }}</p>
+        <p>Revisadas: {{ seguimiento.revisadas }} · Descartadas con motivo: {{ seguimiento.descartadas }}</p>
+        <p>Atendidas: {{ seguimiento.pct_atendidas }} %</p>
+        <p>Acciones registradas: {{ seguimiento.acciones }} ({{ seguimiento.resueltas }} resueltas)</p>
+        <p>Revisiones con la fecha ya pasada: {{ seguimiento.vencidas }}</p>
+    </div>
+
+    {% if acciones %}
+    <h3>Acciones por tipo</h3>
+    <table>
+        <thead>
+            <tr><th>Tipo de acción</th><th>Cantidad</th></tr>
+        </thead>
+        <tbody>
+            {% for accion in acciones %}
+            <tr><td>{{ accion.tipo }}</td><td>{{ accion.cantidad }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% endif %}
 
     <!-- INFORMACIÓN DE LA FUENTE -->
