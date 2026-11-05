@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SINTETICAS, descartarAlerta, marcarRevisada, motivoCorto, motivosDe, nombreClase, textoSobre10 } from '../datos';
+import { SINTETICAS, descartarAlerta, descripcionAlerta, marcarRevisada, motivoCorto, motivosDe, nombreClase, tituloAlerta } from '../datos';
 import { useIdioma } from '../i18n';
 import FormularioAccion from './FormularioAccion';
 
@@ -59,7 +59,7 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
 
       
 <h3 className="font-semibold text-[#0f3d4c]">
-  {alerta.titulo}
+  {tituloAlerta(alerta)}
 </h3>
 
 {mostrarContexto && contexto && alerta.nivel === 'alumno' && (
@@ -85,7 +85,7 @@ export default function TarjetaAlerta({ alerta, mostrarContexto = true, conAccio
           ))}
         </ul>
       ) : (
-        <p className="mt-1 text-sm text-gray-700">{textoSobre10(alerta.descripcion)}</p>
+        <p className="mt-1 text-sm text-gray-700">{descripcionAlerta(alerta)}</p>
       )}
 
       {conAcciones && alerta.nivel === 'alumno' && (

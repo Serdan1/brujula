@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../supabase';
-import { NOTA_MAX, SINTETICAS, cargarAlertas, comaDecimal, nombreAsignatura, nombreClase, num, sobre10, valorNota } from '../datos';
+import { NOTA_MAX, SINTETICAS, cargarAlertas, nombreAsignatura, nombreClase, nombreVariable, num, sobre10, valorLegible } from '../datos';
 import { useIdioma } from '../i18n';
 
 // Análisis de UNA clase: solo información propia de esa clase.
@@ -47,7 +47,7 @@ export default function AnalisisCompleto() {
   if (!resumen) return <div className="p-8">{volver}<p className="text-gray-600">{n.noDisponible}</p></div>;
 
   const importancia = (resumen.importancia ?? []).map((v: any) => ({
-    nombre: v.nombre + (SINTETICAS.has(v.variable) ? '*' : ''),
+    nombre: nombreVariable(v.variable, v.nombre) + (SINTETICAS.has(v.variable) ? '*' : ''),
     valor: Number(v.valor),
   }));
   const error = resumen.nota_red_neuronal?.mae ?? 1.05;
@@ -123,7 +123,7 @@ export default function AnalisisCompleto() {
                 <p className="font-medium text-[#0f3d4c]">{nombres[a.alumno_id] ?? n.alumnoN(a.alumno_id)}</p>
                 <p className="text-sm text-gray-700">
                   {(a.motivos ?? []).length
-                    ? a.motivos.map((m: any) => `${m.nombre}${SINTETICAS.has(m.variable) ? '*' : ''}: ${comaDecimal(valorNota(m.variable, String(m.valor)))}`).join(' · ')
+                    ? a.motivos.map((m: any) => `${nombreVariable(m.variable, m.nombre)}${SINTETICAS.has(m.variable) ? '*' : ''}: ${valorLegible(m.variable, m.valor)}`).join(' · ')
                     : n.combinacion}
                 </p>
               </li>

@@ -432,6 +432,36 @@ const fr: Diccionario = {
     rango: (campo: string, max: number) => `${campo} doit être entre 0 et ${max}.`,
     vacio: 'Le fichier ne contient aucun élève.',
   },
+
+  alertas: {
+    riesgo: (asig: string) => `Pourrait avoir besoin d’aide en ${asig.toLowerCase()}`,
+    faltas: (asig: string) => `Assiduité faible en ${asig.toLowerCase()}`,
+    practicas: (asig: string) => `Travaux pratiques sous la moyenne en ${asig.toLowerCase()}`,
+    participacion: (asig: string) => `Participation faible en ${asig.toLowerCase()}`,
+    bajada: (asig: string) => `Notes en baisse en ${asig.toLowerCase()}`,
+    enTrimestre: (p: number) => ` au ${p === 1 ? '1er' : `${p}e`} trimestre`,
+    clase: (clase: string, pct: string, asig: string) => `${clase} : ${pct} pourraient avoir besoin d’aide en ${asig.toLowerCase()}`,
+    asignatura: (asig: string) => `${asig} : plus d’élèves avec alerte que la moyenne de l’établissement`,
+    descClase: (con: number, n: number, pctCentro: string) => `${con} élèves sur ${n} avec une alerte ; la moyenne de l’établissement est de ${pctCentro}.`,
+    descAsignatura: (pct: string, pctCentro: string) => `${pct} des élèves, contre ${pctCentro} dans l’établissement.`,
+    combinacion: 'Une combinaison de plusieurs facteurs (voir l’analyse complète).',
+  },
+
+  variables: {
+    G1: 'Note du 1er trimestre', failures: 'Redoublements antérieurs', studytime: 'Temps d’étude hebdomadaire',
+    traveltime: 'Temps de trajet', age: 'Âge', faltas_log: 'Absences', schoolsup: 'Soutien scolaire de l’établissement',
+    famsup: 'Soutien scolaire familial', paid: 'Cours particuliers', activities: 'Activités extrascolaires',
+    higher: 'Veut faire des études supérieures', internet: 'Internet à la maison', es_matematicas: 'Matière (mathématiques)',
+    nota_practicas: 'Note de travaux pratiques', participacion: 'Participation en classe', asistencia: 'Assiduité',
+    nota_examen: 'Note d’examen', faltas: 'Absences',
+  },
+
+  valores: {
+    deA: (a: string, b: string) => `de ${a} à ${b}`,
+    faltasPeriodo1: (n: number) => `${n} absences au 1er trimestre`,
+    si: 'oui',
+    no: 'non',
+  },
 };
 
 export default fr;

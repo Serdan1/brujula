@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { fecha, miProfesor, nombreClase } from '../datos';
+import { fecha, miProfesor, nombreClase, tituloAlerta } from '../datos';
 import { useIdioma } from '../i18n';
 
 type Pestana = 'intervencion' | 'descarte';
@@ -30,11 +30,11 @@ export default function MisAcciones() {
     const [{ data: acc, error: e1 }, { data: desc, error: e2 }] = await Promise.all([
       supabase
         .from('accion')
-        .select('id, tipo, descripcion, fecha_inicio, fecha_revision, resultado, alerta ( titulo, alumno_id, clase_id, asignatura_id, alumno ( nombre ), clase ( curso, letra ) )')
+        .select('id, tipo, descripcion, fecha_inicio, fecha_revision, resultado, alerta ( titulo, nivel, motivo, periodo, variables, alumno_id, clase_id, asignatura_id, alumno ( nombre ), clase ( curso, letra ), asignatura ( nombre ) )')
         .eq('profesor_id', prof.id),
       supabase
         .from('alerta')
-        .select('id, titulo, motivo_descarte, alumno_id, clase_id, asignatura_id, alumno ( nombre ), clase ( curso, letra )')
+        .select('id, titulo, nivel, motivo, periodo, variables, motivo_descarte, alumno_id, clase_id, asignatura_id, alumno ( nombre ), clase ( curso, letra ), asignatura ( nombre )')
         .eq('estado', 'descartada')
         .eq('nivel', 'alumno'),
     ]);
@@ -113,7 +113,7 @@ export default function MisAcciones() {
                     {enlace ? <Link to={enlace} className="hover:underline">{al?.alumno?.nombre}</Link> : al?.alumno?.nombre}
                     {al?.clase ? <span className="text-gray-500 font-normal"> · {nombreClase(al.clase)}</span> : null}
                   </h3>
-                  <p className="text-sm text-gray-500">{al?.titulo ?? m.alertaNoDisponible}</p>
+                  <p className="text-sm text-gray-500">{al ? tituloAlerta(al) : m.alertaNoDisponible}</p>
                   <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded">{a.descripcion}</p>
                   {a.resultado && <p className="text-sm text-gray-700 mt-2"><strong>{m.resultado}</strong> {a.resultado}</p>}
                   {!a.resultado && (
@@ -141,7 +141,7 @@ export default function MisAcciones() {
                   {enlace ? <Link to={enlace} className="hover:underline">{d.alumno?.nombre}</Link> : d.alumno?.nombre}
                   {d.clase ? <span className="text-gray-500 font-normal"> · {nombreClase(d.clase)}</span> : null}
                 </h3>
-                <p className="text-sm text-gray-500">{d.titulo}</p>
+                <p className="text-sm text-gray-500">{tituloAlerta(d)}</p>
                 {d.motivo_descarte && <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded">{m.motivo(d.motivo_descarte)}</p>}
                 <div className="mt-4 pt-3 border-t border-gray-100">
                   <button onClick={() => reabrir(d.id)} className="text-sm font-medium text-[#174A55] hover:underline">

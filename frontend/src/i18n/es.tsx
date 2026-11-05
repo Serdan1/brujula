@@ -436,6 +436,40 @@ const es = {
     rango: (campo: string, max: number) => `${campo} debe estar entre 0 y ${max}.`,
     vacio: 'El archivo no tiene alumnos.',
   },
+
+  // ================= Textos de las alertas (fase 3) =================
+  // Se montan en la web a partir de los datos de cada alerta (motivo, nivel, trimestre, variables).
+  alertas: {
+    riesgo: (asig: string) => `Podría necesitar apoyo en ${asig}`,
+    faltas: (asig: string) => `Asistencia baja en ${asig}`,
+    practicas: (asig: string) => `Prácticas por debajo del aprobado en ${asig}`,
+    participacion: (asig: string) => `Participación baja en ${asig}`,
+    bajada: (asig: string) => `Bajada de notas en ${asig}`,
+    enTrimestre: (p: number) => ` en el ${p}.º trimestre`,
+    clase: (clase: string, pct: string, asig: string) => `${clase}: el ${pct} podría necesitar apoyo en ${asig}`,
+    asignatura: (asig: string) => `${asig}: más alumnos con alertas que la media del centro`,
+    descClase: (con: number, n: number, pctCentro: string) => `${con} de ${n} alumnos con alerta; la media del centro es del ${pctCentro}.`,
+    descAsignatura: (pct: string, pctCentro: string) => `El ${pct} de los alumnos frente al ${pctCentro} del centro.`,
+    combinacion: 'Combinación de varios factores (ver Análisis completo).',
+  },
+
+  // Nombres de las variables que explican las alertas
+  variables: {
+    G1: 'Nota del primer periodo', failures: 'Suspensos previos', studytime: 'Tiempo de estudio semanal',
+    traveltime: 'Tiempo de trayecto', age: 'Edad', faltas_log: 'Faltas', schoolsup: 'Apoyo educativo del centro',
+    famsup: 'Apoyo educativo familiar', paid: 'Clases particulares', activities: 'Actividades extraescolares',
+    higher: 'Quiere hacer estudios superiores', internet: 'Internet en casa', es_matematicas: 'Asignatura (Matemáticas)',
+    nota_practicas: 'Nota de prácticas', participacion: 'Participación en clase', asistencia: 'Asistencia',
+    nota_examen: 'Nota de examen', faltas: 'Faltas',
+  } as Record<string, string>,
+
+  // Valores de esas variables
+  valores: {
+    deA: (a: string, b: string) => `de ${a} a ${b}`,
+    faltasPeriodo1: (n: number) => `${n} faltas en el periodo 1`,
+    si: 'sí',
+    no: 'no',
+  },
 };
 
 export default es;

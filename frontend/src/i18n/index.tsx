@@ -48,10 +48,12 @@ const IdiomaContext = createContext<Contexto | null>(null);
 let actual: Idioma = 'es';
 export const tActual = (): Diccionario => DICCIONARIOS[actual];
 export const localeActual = (): string => IDIOMAS.find((i) => i.codigo === actual)!.locale;
+// Fija el idioma actual sin React (lo usa el proveedor y las pruebas de los textos de alerta)
+export const fijarIdiomaActual = (i: Idioma) => { actual = i; };
 
 export function IdiomaProvider({ children }: { children: ReactNode }) {
   const [idioma, setIdioma] = useState<Idioma>(idiomaInicial);
-  actual = idioma;
+  fijarIdiomaActual(idioma);
   const locale = IDIOMAS.find((i) => i.codigo === idioma)!.locale;
 
   useEffect(() => {
