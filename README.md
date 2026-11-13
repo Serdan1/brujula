@@ -6,9 +6,11 @@
 
 Al acabar cada trimestre, el profesorado sube las notas, la asistencia y la participación de su clase. Brújula avisa de qué alumnos podrían necesitar apoyo para aprobar **y explica por qué**, por ejemplo con «nota del primer periodo: 4,5» o «asistencia: 68 %». También estima la nota final de cada alumno, propone por dónde empezar y comprueba al cerrar el curso si los avisos acertaron. La decisión siempre es del profesor: Brújula avisa y explica, no etiqueta.
 
+> **Nota:** la demo pública ya no está disponible. Brújula se desarrolló para #hack4edu 2026 (3–5 de noviembre); el código, la documentación y la [ficha del modelo](docs/ficha-del-modelo.md) se mantienen como referencia. Para ejecutarla de nuevo haría falta un proyecto propio de Supabase con el esquema de [`supabase/`](supabase/) y los datos de [`data/`](data/).
+
 ---
 
-## Probarla sin instalar nada
+## Probarla sin instalar nada (ya no disponible)
 
 **👉 https://brujula-nu-one.vercel.app**
 
